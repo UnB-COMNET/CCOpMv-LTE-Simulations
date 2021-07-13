@@ -27,9 +27,18 @@ def main():
     hp.writeIniMobility(f,object_name= 'eNB', iniX= 500, iniY= 500)
     hp.writeConstraint(f, object_name= 'eNB')
     hp.writeComment(f, text= "UEs")
+    hp.writeNumUEs(f, numUEs)
     hp.writeUesMobilityType(f, type= "StationaryMobility")
     hp.writeUeMobilityPerso(f, number= numUEs, iniX=[100,300,300], iniY=[200,400,400], iniZ=[0,0,0])
     hp.writeConstraint(f, object_name= 'ue[*]')
+    hp.writeSeparation(f, "Apps")
+    hp.writeComment(f, text= "VoIP UL")
+    hp.writeAppVoipUL(f, numUEs, n_app= 0)
+    hp.writeComment(f, text= "VoIP DL")
+    hp.writeAppVoipDL(f, numUEs, n_app= 1)
+    hp.writeSeparation(f, "Channel Control")
+    hp.writePropagation(f, model= "FreeSpaceModel")
+
 
 def defaultGeneral(f):
   # General
@@ -39,10 +48,10 @@ def defaultGeneral(f):
   # Statistics
   f.write('\n' + hp.separation + " Statistics " + hp.separation + '\n')
   hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
-  f.write("seed-set = ${repetition}\n**.vector-recording = false\n")
+  f.write("seed-set = ${repetition}\n")
   #Transmission power
   hp.writeSeparation(f, "Transmission Power")
-  f.write("**.ueTxPower = 24\n**eNodeBTxPower = 46\n")
+  f.write("**.ueTxPower = 24\n**.eNodeBTxPower = 46\n")
   #Resource blocks
   hp.writeSeparation(f, "Resource Blocks")
   f.write('''**.numRbDl = 6\n**.numRbUl = 6
