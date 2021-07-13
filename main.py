@@ -2,7 +2,6 @@ import helper as hp
 import random
 import typing as ty
 
-# test
 def main():
 
   filename = 'teste.ini'
