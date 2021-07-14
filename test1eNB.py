@@ -19,8 +19,9 @@ def main():
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
-    hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
+    hp.writeOutput(f, "${resultdir}/${configname}/${sched}-${repetition}")
     hp.writeSeparation(f, "UEs")
+    hp.writeNumUEs(f, numUEs)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
     hp.writeConnectUE(f, numENB= 1)
     hp.writeComment(f, text= "Scheduler")
@@ -30,7 +31,6 @@ def main():
     hp.writeIniMobility(f,object_name= 'eNB', iniX= pos_macrocell[0], iniY= pos_macrocell[1])
     hp.writeConstraint(f, object_name= 'eNB')
     hp.writeComment(f, text= "UEs")
-    hp.writeNumUEs(f, numUEs)
     hp.nl(f)
     pos_hotspot, pos_ues = genUEsPos(numUEs, pos_macrocell)
     hp.writeUesMobilityType(f, type= "StationaryMobility")
@@ -43,7 +43,7 @@ def main():
     hp.writeComment(f, text= "VoIP DL")
     hp.writeAppVoipDL(f, numUEs, n_app= 1)
     hp.writeSeparation(f, "Channel Control")
-    hp.writePropagation(f, model= "FreeSpaceModel")
+    hp.writePropagation(f, model= "LogNormalShadow")
 
 
 
