@@ -48,10 +48,14 @@ def main():
   #print(x.y)
   center = geo.Coordinate(1500,1500)
   map = geo.MapHexagonal(center)
-  center = geo.Coordinate(500,700)
-  map.placeMacrocells()
+  #print(map.macrocells[0].center.x)
 
-
+  print("small cell")
+  position = geo.Coordinate(800,300)
+  sc = geo.Smallcell(position, 120) 
+  position = geo.placeObject(sc, sc.radius, 0)
+  print(position.x)
+  print(position.y)
   None
 
 def defaultGeneral(f):
