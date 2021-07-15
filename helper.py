@@ -103,7 +103,7 @@ def writeAppVoipDL(f, numUEs, n_app = 0):
 *.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)
 *.server.app[{n}..{f}].startTime = 0.01s\n'''.format(numUEs = numUEs, n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
   f.write('''*.ue[*].app[{n}].typename="VoIPReceiver"
-*.ue[*].app[{n}].localPort = 4000 + ancestorIndex(0)\n'''.format(n = n_app))
+*.ue[*].app[{n}].localPort = 3000\n'''.format(n = n_app))
 
 def writeNumUEs(f, numUEs):
   f.write("**.numUe = {}\n".format(numUEs))
