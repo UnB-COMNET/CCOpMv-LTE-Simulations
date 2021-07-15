@@ -1,7 +1,8 @@
 import helper as hp
 import random
 import typing as ty
-
+import geometry as geo
+'''
 def main():
 
   filename = 'teste.ini'
@@ -38,7 +39,24 @@ def main():
     hp.writeAppVoipDL(f, numUEs, n_app= 1)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "FreeSpaceModel")
+'''
 
+def main():
+  #x = geo.Position(4,3)
+  #x.setPosition(67,56)
+
+  #print(x.y)
+  center = geo.Coordinate(1500,1500)
+  map = geo.MapHexagonal(center)
+  #print(map.macrocells[0].center.x)
+
+  print("small cell")
+  position = geo.Coordinate(800,300)
+  sc = geo.Smallcell(position, 120) 
+  position = geo.placeObject(sc, sc.radius, 0)
+  print(position.x)
+  print(position.y)
+  None
 
 def defaultGeneral(f):
   # General
