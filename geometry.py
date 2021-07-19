@@ -3,7 +3,7 @@ from typing import List, Union
 from random import random
 import matplotlib
 import matplotlib.pyplot as plt
-
+# teste do git
 class Coordinate:
     def __init__(self, x, y):
         self.x = x
