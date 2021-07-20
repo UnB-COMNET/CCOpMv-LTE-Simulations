@@ -24,8 +24,17 @@ def writeTime(f, time, repeat):
 def writeNetwork(f, network):
   f.write("network = {}\n".format(network))
 
-def writeConnectUE(f, numENB = 1):
-  f.write("**.ue[*].macCellId = {}\n**.ue[*].masterId = {}\n".format(numENB, numENB))
+def writeConnectUE(f, numUEs, ENBs = [1]):
+  for i in range(len(ENBs)):
+    for l in range(int(numUEs/len(ENBs))):
+      f.write('''**.ue[{number}].macCellId = {enb}
+**.ue[{number}].masterId = {enb}\n'''.format(number = int(i*numUEs/len(ENBs)) + l, enb = ENBs[i]))
+
+  dif = numUEs - len(ENBs)*int(numUEs/len(ENBs))
+  if dif != 0:
+    for i in range(numUEs-dif, numUEs):
+      f.write('''**.ue[{number}].macCellId = {enb}
+**.ue[{number}].masterId = {enb}\n'''.format(number = i, enb = ENBs[-1]))
 
 def writeComment(f, text):
   f.write("\n# {}\n".format(text))
@@ -110,3 +119,6 @@ def writeNumUEs(f, numUEs):
 
 def writePropagation(f, model):
   f.write('**.propagationModel = "{}"\n'.format(model))
+
+def writeTransmissionPower(f, ue_power= 24, enb_power= 46, micro_power= 30):
+  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))

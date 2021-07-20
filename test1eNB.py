@@ -4,7 +4,7 @@ import typing as ty
 import numpy as np
 
 import geometry as geo
-'''
+
 def main():
 
   filename = 'teste.ini'
@@ -17,15 +17,17 @@ def main():
     # General
     defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config Teste')
-    hp.writeNetwork(f, network= 'networks.SimpleNet')
+    hp.writeNetwork(f, network= 'networks.UrbanMacro')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${sched}-${repetition}")
+    hp.writeSeparation(f, "Transmission Power")
+    hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, numUEs)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
-    hp.writeConnectUE(f, numENB= 1)
+    hp.writeConnectUE(f, numUEs= numUEs, ENBs= [1])
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF', 'ALLOCATOR_BESTFIT'])
     hp.writeSeparation(f, "Mobility")
@@ -38,6 +40,9 @@ def main():
     hp.writeUesMobilityType(f, type= "StationaryMobility")
     hp.writeUeMobilityPerso(f, number= numUEs, iniX= [x for x,y in pos_ues], iniY=[y for x,y in pos_ues], iniZ=np.zeros(len(pos_ues)))
     hp.writeConstraint(f, object_name= 'ue[*]')
+    hp.writeComment(f, text= "Micro-cell")
+    hp.writeIniMobility(f,object_name= 'microCell', iniX= pos_hotspot[0], iniY= pos_hotspot[1])
+    hp.writeConstraint(f, object_name= 'microCell')
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= numUEs, directions= directions)
     hp.writeComment(f, text= "VoIP UL")
@@ -46,24 +51,6 @@ def main():
     hp.writeAppVoipDL(f, numUEs, n_app= 1)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
-'''
-
-def main():
-  #x = geo.Position(4,3)
-  #x.setPosition(67,56)
-
-  #print(x.y)
-  center = geo.Coordinate(1500,1500)
-  map = geo.MapHexagonal(center)
-  #print(map.macrocells[0].center.x)
-
-  print("small cell")
-  position = geo.Coordinate(800,300)
-  sc = geo.Smallcell(position, 120) 
-  position = geo.placeObject(sc, sc.radius, 0)
-  print(position.x)
-  print(position.y)
-  None
 
 def defaultGeneral(f):
   # General
@@ -76,7 +63,7 @@ def defaultGeneral(f):
   f.write("seed-set = ${repetition}\n")
   #Transmission power
   hp.writeSeparation(f, "Transmission Power")
-  f.write("**.ueTxPower = 24\n**.eNodeBTxPower = 46\n")
+  f.write("**.ueTxPower = 24\n**.eNodeBTxPower = 46\n**.microTxPower = 30\n")
   #Resource blocks
   hp.writeSeparation(f, "Resource Blocks")
   f.write('''**.numRbDl = 6\n**.numRbUl = 6
