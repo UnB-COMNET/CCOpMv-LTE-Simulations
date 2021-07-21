@@ -1,4 +1,6 @@
+from geometry import MapHexagonal
 import typing as ty
+import numpy as np
 
 separation = "###############"
 
@@ -49,7 +51,14 @@ def writeIniMobility(f, object_name, iniX, iniY, iniZ: ty.Union[str, int] = 0, d
 *.{name}.mobility.initFromDisplayString = {display}
 '''.format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
-def writeUeMobilityPerso(f, number, iniX: list, iniY: list, iniZ: list, display = False):
+def writeUeMobilityPerso(f, map: MapHexagonal, display = False):
+  number = map.n_ues
+  iniZ=np.zeros(map.n_ues)
+  [iniX, iniY] = map.macrocells[0].getUEsPositionList()
+  [iniX_smallcell, iniY_smallcell] = map.macrocells[0].smallcells[0].getUEsPositionList()
+  iniX = iniX + iniX_smallcell
+  iniY = iniY + iniY_smallcell
+  pass
   for i in range(len(iniX)):
     for l in range(int(number/len(iniX))):
       f.write('''*.ue[{number}].mobility.initialX = {iniX}m
