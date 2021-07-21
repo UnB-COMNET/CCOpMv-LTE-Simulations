@@ -132,7 +132,7 @@ class MapHexagonal:
         # place macrocell center
         macrocell = Macrocell(self.center)
         self.macrocells.append(macrocell)
-
+        
         # place vertices of the hexagon
         for i in range(1,(self.n_site*2)-2,2):
             position = Coordinate(self.center.x + self.d_macromacro*cos(i*pi/6), self.center.y + self.d_macromacro*sin(i*pi/6))
