@@ -131,3 +131,6 @@ def writePropagation(f, model):
 
 def writeTransmissionPower(f, ue_power= 24, enb_power= 46, micro_power= 30):
   f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))
+
+def writeNodeIsMicro(f, node_name, micro = True):
+  f.write("**.{}.microCell = {}\n".format(node_name, "true" if micro else "false"))

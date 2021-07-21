@@ -10,12 +10,16 @@ def main():
 
   filename = 'teste.ini'
   directions = 2
-  pos_macrocell = (500,500)
+  center = geo.Coordinate(500,500)
+  numUEs = 30
   random.seed(123)
+  scen = startSimpleScenario(numUEs, center)
+  pos_macrocell = (scen.macrocells[0].center.x, scen.macrocells[0].center.y)
+  pos_microcell = (scen.macrocells[0].smallcells[0].center.x, scen.macrocells[0].smallcells[0].center.y)
 
   with open(filename, 'wt') as f:
     # General
-    map = geo.startScenario()
+
     defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config Teste')
     hp.writeNetwork(f, network= 'networks.UrbanMacro')
@@ -23,10 +27,12 @@ def main():
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${sched}-${repetition}")
+    hp.writeSeparation(f, "Micro Cell")
+    hp.writeNodeIsMicro(f, "microCell")
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "UEs")
-    hp.writeNumUEs(f, map.n_ues)
+    hp.writeNumUEs(f, scen.n_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
     hp.writeConnectUE(f, numUEs= numUEs, ENBs= [1])
     hp.writeComment(f, text= "Scheduler")
@@ -38,17 +44,17 @@ def main():
     hp.writeComment(f, text= "UEs")
     hp.nl(f)    
     hp.writeUesMobilityType(f, type= "StationaryMobility")
-    hp.writeUeMobilityPerso(f, map= map)
+    hp.writeUeMobilityPerso(f, map= scen)
     hp.writeConstraint(f, object_name= 'ue[*]')
     hp.writeComment(f, text= "Micro-cell")
-    hp.writeIniMobility(f,object_name= 'microCell', iniX= pos_hotspot[0], iniY= pos_hotspot[1])
+    hp.writeIniMobility(f,object_name= 'microCell', iniX= pos_microcell[0], iniY= pos_microcell[1])
     hp.writeConstraint(f, object_name= 'microCell')
     hp.writeSeparation(f, "Apps")
-    hp.writeNumApps(f, numUEs= map.n_ues, directions= directions)
+    hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions)
     hp.writeComment(f, text= "VoIP UL")
-    hp.writeAppVoipUL(f, map.n_ues, n_app= 0)
+    hp.writeAppVoipUL(f, scen.n_ues, n_app= 0)
     hp.writeComment(f, text= "VoIP DL")
-    hp.writeAppVoipDL(f, map.n_ues, n_app= 1)
+    hp.writeAppVoipDL(f, scen.n_ues, n_app= 1)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
 '''   
@@ -74,26 +80,26 @@ def defaultGeneral(f):
   f.write('''**.numRbDl = 6\n**.numRbUl = 6
 **.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')
 
-# Remover
-def genUEsPos(numUEs, pos_macrocell):
-  result = []
-  pos_hotspot = dropObject(pos_macrocell, 425, 105)
-  for n in range(numUEs):
-    if random.random() < 0.6666:
-      result.append(dropObject(pos_hotspot, 70, 0))
-    else:
-      result.append(dropObject(pos_macrocell, 425, 35)) #425
-  return pos_hotspot, result
+def startSimpleScenario(numUEs, center):
 
-# Remover
-def dropObject(center: tuple, radius, min_distance):
-  not_done = True
-  while not_done:
-    radius_ue = radius * np.sqrt(random.random())
-    theta_ue = 2 * np.pi * random.random()
-    result = (radius_ue*np.cos(theta_ue) + center[0], radius_ue*np.sin(theta_ue) + center[1])
-    not_done = np.linalg.norm(np.array(result) - np.array(center)) < min_distance #distancia euclidiana
-  return result
+  scen = geo.MapHexagonal(center)
+  scen.n_site = 1
+  scen.macrocells = scen.macrocells[0:1]
+  scen.n_ues = numUEs
+
+  for i in range(len(scen.macrocells)):
+    # For each macrocell, it places the smallcells
+    scen.placeSmallCell(scen.macrocells[i], scen.d_macromacro*0.425, scen.d_macrocluster)
+    # For each smallcell in a given macrocell, it places the antennas
+    position = scen.macrocells[i].getSmallcellsPositionList()
+    antenna = geo.Antenna(geo.Coordinate(position[0][0], position[1][0]), None)
+    scen.macrocells[i].smallcells[0].antennas.append(antenna)          
+
+  scen.placeUEs()
+
+  return scen
+
+
 
 if __name__ == "__main__":
   main()
