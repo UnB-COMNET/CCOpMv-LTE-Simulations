@@ -148,7 +148,7 @@ def writeScenarioUEsPerso(f, numUEs, num_and_scen = [[1,1]]):
   for i in range(len(num_and_scen)):
     for l in range(num_and_scen[i][0]):
       if count < numUEs:
-        f.write('**.ue[{}].lteNic.channelModel.scenario = {}\n'.format(count, num_and_scen[i][1]))
+        f.write('**.ue[{}].lteNic.channelModel.scenario = "{}"\n'.format(count, num_and_scen[i][1]))
         count += 1
       else:
         break
@@ -156,4 +156,4 @@ def writeScenarioUEsPerso(f, numUEs, num_and_scen = [[1,1]]):
   dif = numUEs - count
   if dif != 0:
     for i in range(numUEs-dif, numUEs):
-      f.write('**.ue[{}].lteNic.channelModel.scenario = {}\n'.format(i, num_and_scen[-1][1]))
+      f.write('**.ue[{}].lteNic.channelModel.scenario = "{}"\n'.format(i, num_and_scen[-1][1]))
