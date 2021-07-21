@@ -1,9 +1,9 @@
 from math import cos, pi, sqrt, sin
-from typing import List, Union, Tuple
+from typing import List, Mapping, Union, Tuple
 from random import random
 import matplotlib
 import matplotlib.pyplot as plt
-from numpy import arctan
+from numpy import arctan, not_equal
 
 class Coordinate:
     def __init__(self, x, y):
@@ -120,7 +120,7 @@ class MapHexagonal:
         self.n_site = 7
         self.n_cluster = 1
         self.n_antennas = 10
-        self.n_ues = 60
+        self.n_ues = 30
         
         self.center = center
         self.macrocells = []     
@@ -132,7 +132,7 @@ class MapHexagonal:
         # place macrocell center
         macrocell = Macrocell(self.center)
         self.macrocells.append(macrocell)
-        
+
         # place vertices of the hexagon
         for i in range(1,(self.n_site*2)-2,2):
             position = Coordinate(self.center.x + self.d_macromacro*cos(i*pi/6), self.center.y + self.d_macromacro*sin(i*pi/6))
@@ -197,8 +197,8 @@ def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordi
         angle_obj = 2 * pi * random()
         positionPolar = PolarCoordinate(radius_obj, angle_obj)
         x, y = polar2rect(positionPolar.r, positionPolar.phi)
-        x = radius * (1 - 2 * random()) + obj.center.x
-        y = radius * (1 - 2 * random()) + obj.center.y
+        x = x + obj.center.x
+        y = y + obj.center.y
         position = Coordinate(x,y)
         
         not_Done = euclidianDistance(position, obj.center) < min_distance
@@ -234,7 +234,7 @@ def rect2polar(x, y) -> Tuple[float, float]:
 
     return r, phi
 
-def startScenario() :
+def startScenario() -> MapHexagonal:
     # Creating hexagonal map
     center = Coordinate(1500,1500)
     map = MapHexagonal(center)
@@ -248,16 +248,15 @@ def startScenario() :
 
     map.placeUEs()
 
-    plotMap(map, plotUEs=True, n_macrocells=1)
+    plotMap(map, plotUEs=True, n_macrocells=7)
 
-    None
+    return map
 
 def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
     if n_macrocells != 1 and n_macrocells != 7:
         print("Invalid number of macrocells. Insert 1 or 7.")        
         return
 
-    
     [macrocells_eixoX, macrocells_eixoY] = map.getMacrocellsPositionList() 
     if n_macrocells == 1:
         plt.plot(macrocells_eixoX[0], macrocells_eixoY[0], linestyle='', marker='o', color='red')
@@ -288,3 +287,6 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
     
     plt.show()
     print("Plot")
+
+def exportMap():
+    None
