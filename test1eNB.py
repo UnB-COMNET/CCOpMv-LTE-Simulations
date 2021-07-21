@@ -1,3 +1,4 @@
+from math import pi
 import helper as hp
 import random
 import typing as ty
@@ -8,13 +9,13 @@ import geometry as geo
 def main():
 
   filename = 'teste.ini'
-  numUEs = 30
   directions = 2
   pos_macrocell = (500,500)
   random.seed(123)
 
   with open(filename, 'wt') as f:
     # General
+    map = geo.startScenario()
     defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config Teste')
     hp.writeNetwork(f, network= 'networks.SimpleNet')
@@ -23,7 +24,7 @@ def main():
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${sched}-${repetition}")
     hp.writeSeparation(f, "UEs")
-    hp.writeNumUEs(f, numUEs)
+    hp.writeNumUEs(f, map.n_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
     hp.writeConnectUE(f, numENB= 1)
     hp.writeComment(f, text= "Scheduler")
@@ -33,20 +34,24 @@ def main():
     hp.writeIniMobility(f,object_name= 'eNB', iniX= pos_macrocell[0], iniY= pos_macrocell[1])
     hp.writeConstraint(f, object_name= 'eNB')
     hp.writeComment(f, text= "UEs")
-    hp.nl(f)
-    pos_hotspot, pos_ues = genUEsPos(numUEs, pos_macrocell)
+    hp.nl(f)    
     hp.writeUesMobilityType(f, type= "StationaryMobility")
-    hp.writeUeMobilityPerso(f, number= numUEs, iniX= [x for x,y in pos_ues], iniY=[y for x,y in pos_ues], iniZ=np.zeros(len(pos_ues)))
+    hp.writeUeMobilityPerso(f, map= map)
     hp.writeConstraint(f, object_name= 'ue[*]')
     hp.writeSeparation(f, "Apps")
-    hp.writeNumApps(f, numUEs= numUEs, directions= directions)
+    hp.writeNumApps(f, numUEs= map.n_ues, directions= directions)
     hp.writeComment(f, text= "VoIP UL")
-    hp.writeAppVoipUL(f, numUEs, n_app= 0)
+    hp.writeAppVoipUL(f, map.n_ues, n_app= 0)
     hp.writeComment(f, text= "VoIP DL")
-    hp.writeAppVoipDL(f, numUEs, n_app= 1)
+    hp.writeAppVoipDL(f, map.n_ues, n_app= 1)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
+'''   
+def main():
+  geo.startScenario()
 
+  None
+'''
 def defaultGeneral(f):
   # General
   f.write("[General]\n")
@@ -64,6 +69,7 @@ def defaultGeneral(f):
   f.write('''**.numRbDl = 6\n**.numRbUl = 6
 **.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')
 
+# Remover
 def genUEsPos(numUEs, pos_macrocell):
   result = []
   pos_hotspot = dropObject(pos_macrocell, 425, 105)
@@ -74,6 +80,7 @@ def genUEsPos(numUEs, pos_macrocell):
       result.append(dropObject(pos_macrocell, 425, 35)) #425
   return pos_hotspot, result
 
+# Remover
 def dropObject(center: tuple, radius, min_distance):
   not_done = True
   while not_done:
