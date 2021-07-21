@@ -15,6 +15,9 @@ def main():
   random.seed(123)
   scen = startSimpleScenario(numUEs, center)
   pos_macrocell = (scen.macrocells[0].center.x, scen.macrocells[0].center.y)
+  num_ues_macro = len(scen.macrocells[0].ues)
+  num_ues_micro = len(scen.macrocells[0].smallcells[0].ues)
+  print(num_ues_macro, num_ues_micro)
   pos_microcell = (scen.macrocells[0].smallcells[0].center.x, scen.macrocells[0].smallcells[0].center.y)
 
   with open(filename, 'wt') as f:
@@ -34,9 +37,16 @@ def main():
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, scen.n_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
-    hp.writeConnectUE(f, numUEs= numUEs, ENBs= [1])
+    hp.writeConnectUE(f, numUEs= numUEs, ENBs= [num_ues_macro, num_ues_micro])
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF', 'ALLOCATOR_BESTFIT'])
+    hp.writeSeparation(f, "Mobility")
+    hp.writeComment(f, text= "eNodeB")
+    hp.writeScenario(f, object_name= 'eNB', scenario= 'URBAN_MACROCELL')
+    hp.writeComment(f, text= "Microcell")
+    hp.writeScenario(f, object_name= 'microCell', scenario= 'URBAN_MICROCELL')
+    hp.writeComment(f, text= "UEs")
+    hp.writeScenarioUEsPerso(f, numUEs= numUEs, num_and_scen=[(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeIniMobility(f,object_name= 'eNB', iniX= pos_macrocell[0], iniY= pos_macrocell[1])
@@ -46,7 +56,7 @@ def main():
     hp.writeUesMobilityType(f, type= "StationaryMobility")
     hp.writeUeMobilityPerso(f, map= scen)
     hp.writeConstraint(f, object_name= 'ue[*]')
-    hp.writeComment(f, text= "Micro-cell")
+    hp.writeComment(f, text= "Microcell")
     hp.writeIniMobility(f,object_name= 'microCell', iniX= pos_microcell[0], iniY= pos_microcell[1])
     hp.writeConstraint(f, object_name= 'microCell')
     hp.writeSeparation(f, "Apps")
@@ -72,9 +82,6 @@ def defaultGeneral(f):
   f.write('\n' + hp.separation + " Statistics " + hp.separation + '\n')
   hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
   f.write("seed-set = ${repetition}\n")
-  #Transmission power
-  hp.writeSeparation(f, "Transmission Power")
-  f.write("**.ueTxPower = 24\n**.eNodeBTxPower = 46\n**.microTxPower = 30\n")
   #Resource blocks
   hp.writeSeparation(f, "Resource Blocks")
   f.write('''**.numRbDl = 6\n**.numRbUl = 6

@@ -27,16 +27,21 @@ def writeNetwork(f, network):
   f.write("network = {}\n".format(network))
 
 def writeConnectUE(f, numUEs, ENBs = [1]):
+  count = 0
   for i in range(len(ENBs)):
-    for l in range(int(numUEs/len(ENBs))):
-      f.write('''**.ue[{number}].macCellId = {enb}
-**.ue[{number}].masterId = {enb}\n'''.format(number = int(i*numUEs/len(ENBs)) + l, enb = ENBs[i]))
+    for l in range(ENBs[i]):
+      if count < numUEs:
+        f.write('''**.ue[{number}].macCellId = {enb}
+**.ue[{number}].masterId = {enb}\n'''.format(number = count, enb = i+1))
+        count += 1
+      else:
+        break
 
-  dif = numUEs - len(ENBs)*int(numUEs/len(ENBs))
+  dif = numUEs - count
   if dif != 0:
     for i in range(numUEs-dif, numUEs):
       f.write('''**.ue[{number}].macCellId = {enb}
-**.ue[{number}].masterId = {enb}\n'''.format(number = i, enb = ENBs[-1]))
+**.ue[{number}].masterId = {enb}\n'''.format(number = i, enb = len(ENBs)))
 
 def writeComment(f, text):
   f.write("\n# {}\n".format(text))
@@ -133,4 +138,22 @@ def writeTransmissionPower(f, ue_power= 24, enb_power= 46, micro_power= 30):
   f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))
 
 def writeNodeIsMicro(f, node_name, micro = True):
-  f.write("**.{}.microCell = {}\n".format(node_name, "true" if micro else "false"))
+  f.write('**.{}.cellInfo.microCell = {}\n'.format(node_name, "true" if micro else "false"))
+
+def writeScenario(f, object_name, scenario = 'URBAN_MACROCELL'):
+  f.write('**.{}.lteNic.channelModel.scenario = "{}"\n'.format(object_name, scenario))
+
+def writeScenarioUEsPerso(f, numUEs, num_and_scen = [[1,1]]):
+  count = 0
+  for i in range(len(num_and_scen)):
+    for l in range(num_and_scen[i][0]):
+      if count < numUEs:
+        f.write('**.ue[{}].lteNic.channelModel.scenario = {}\n'.format(count, num_and_scen[i][1]))
+        count += 1
+      else:
+        break
+
+  dif = numUEs - count
+  if dif != 0:
+    for i in range(numUEs-dif, numUEs):
+      f.write('**.ue[{}].lteNic.channelModel.scenario = {}\n'.format(i, num_and_scen[-1][1]))
