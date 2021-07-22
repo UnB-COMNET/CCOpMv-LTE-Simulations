@@ -11,7 +11,7 @@
 // 
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
-//
+// 
 
 package networks;
 
@@ -27,7 +27,7 @@ import lte.world.radio.LteChannelControl;
 import lte.epc.PgwStandardSimplified;
 import lte.common.LteNetworkConfigurator;
 
-network SimpleNet
+network UrbanMacro
 {
     parameters:
         int numUe = default(1);
@@ -59,11 +59,14 @@ network SimpleNet
             @display("p=500,500;is=vl");
         }
         ue[numUe]: Ue {
-            @display("p=301.855,236.72876");
+            @display("p=200.02,308.25");
+        }
+        microCell: eNodeB {
+            @display("p=360.31,308.25");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++; //TODO: entender Eth10G e as ligações
         router.pppg++ <--> Eth10G <--> pgw.filterGate;
         pgw.pppg++ <--> Eth10G <--> eNB.ppp;
+        pgw.pppg++ <--> Eth10G <--> microCell.ppp;
 }
-
