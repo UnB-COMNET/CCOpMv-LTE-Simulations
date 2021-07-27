@@ -8,7 +8,7 @@ import geometry as geo
 
 def main():
 
-  filename = 'Network_CCOpMv/simulations/urban_simple_1enb.ini'
+  filename = 'Network_CCOpMv/simulations/eNB1.ini'
   directions = 2
   center = geo.Coordinate(500,500)
   numUEs = 30
