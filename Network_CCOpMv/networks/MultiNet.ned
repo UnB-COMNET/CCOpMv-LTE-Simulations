@@ -26,12 +26,15 @@ import lte.corenetwork.nodes.eNodeB;
 import lte.world.radio.LteChannelControl;
 import lte.epc.PgwStandardSimplified;
 import lte.common.LteNetworkConfigurator;
+//import lte.corenetwork.nodes.ExtCell;
 
-network SimpleNet
+network MultiNet
 {
     parameters:
         int numUe = default(1);
-        @display("bgb=822,681;bgi=background/streetmap");
+        int numeNB = 3;
+        @display("bgb=781,505;bgi=background/streetmap");
+
     submodules:
         channelControl: LteChannelControl {
             @display("p=101,76;is=s");
@@ -55,15 +58,26 @@ network SimpleNet
             nodeType = "PGW";
             @display("p=529.28,130.2525;is=l");
         }
-        eNB: eNodeB {
-            @display("p=500,500;is=vl");
+        eNB0: eNodeB {
+            @display("p=444,269;is=vl");
         }
-        ue[numUe]: Ue {
-            @display("p=301.855,236.72876");
+        eNB1: eNodeB {
+            @display("p=344,240;is=vl");
         }
-    connections:
-        server.pppg++ <--> Eth10G <--> router.pppg++; //TODO: entender Eth10G e as ligações
-        router.pppg++ <--> Eth10G <--> pgw.filterGate;
-        pgw.pppg++ <--> Eth10G <--> eNB.ppp;
-}
+        ue0[numUe]: Ue {
+            @display("p=451,385");
+        }
+        ue1[numUe]: Ue {
+            @display("p=302,359");
+        }
 
+
+    connections:
+        server.pppg++ <--> Eth10G <--> router.pppg++;
+        router.pppg++ <--> Eth10G <--> pgw.filterGate;
+        pgw.pppg++ <--> Eth10G <--> eNB0.ppp;
+        pgw.pppg++ <--> Eth10G <--> eNB1.ppp;
+        
+        //# X2 connections
+        eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
+}
