@@ -1,4 +1,4 @@
-from geometry import MapHexagonal
+from geometry import MapHexagonal, Macrocell
 import typing as ty
 import numpy as np
 
@@ -26,22 +26,25 @@ def writeTime(f, time: int, repeat: int):
 def writeNetwork(f, network: str):
   f.write("network = {}\n".format(network))
 
-def writeConnectUE(f, numUEs: int, ENBs : ty.List[int] = [1]):
+def writeConnectUE(f, UEs: ty.List[int] = [1], ENBs: ty.List[int] = [1], object_name: str= "ue"):
   count = 0
-  for i in range(len(ENBs)):
-    for l in range(ENBs[i]):
+  if len(UEs) > len(ENBs):
+    print("ERROR: missing element in ENBs")
+  numUEs = np.sum(UEs)
+  for i in range(len(UEs)):
+    for l in range(UEs[i]):
       if count < numUEs:
-        f.write('''**.ue[{number}].macCellId = {enb}
-**.ue[{number}].masterId = {enb}\n'''.format(number = count, enb = i+1))
+        f.write('''**.{name}[{number}].macCellId = {enb}
+**.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = ENBs[i], name = object_name))
         count += 1
       else:
         break
 
-  dif = numUEs - count
-  if dif != 0:
-    for i in range(numUEs-dif, numUEs):
-      f.write('''**.ue[{number}].macCellId = {enb}
-**.ue[{number}].masterId = {enb}\n'''.format(number = i, enb = len(ENBs)))
+def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
+  for i in range(len(macrocells)):
+    ues = [len(macrocells[i].ues)] + [len(x.ues) for x in macrocells[i].smallcells]
+    enbs = [i, i+7]
+    writeConnectUE(f, ues, enbs, "ue"+str(i))
 
 def writeComment(f, text):
   f.write("\n# {}\n".format(text))
@@ -142,8 +145,16 @@ def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_pow
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   f.write('**.{}.cellInfo.microCell = {}\n'.format(node_name, "true" if micro else "false"))
 
+def writeMultiMicro(f, number, node_name = "microCell", micro: bool = True):
+  for i in range(number):
+    writeNodeIsMicro(f, node_name+str(i))
+
 def writeScenario(f, object_name, scenario: str = 'URBAN_MACROCELL'):
   f.write('**.{}.lteNic.channelModel.scenario = "{}"\n'.format(object_name, scenario))
+
+def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL'):
+  for i in range(num):
+    writeScenario(f, object_name+str(i), scenario)
 
 def writeScenarioUEsPerso(f, numUEs: int, num_and_scen: ty.List[ty.List[int]] = [[1,1]]):
   count = 0
@@ -159,3 +170,17 @@ def writeScenarioUEsPerso(f, numUEs: int, num_and_scen: ty.List[ty.List[int]] = 
   if dif != 0:
     for i in range(numUEs-dif, numUEs):
       f.write('**.ue[{}].lteNic.channelModel.scenario = "{}"\n'.format(i, num_and_scen[-1][1]))
+
+def defaultGeneral(f):
+  # General
+  f.write("[General]\n")
+  #Time
+  f.write("sim-time-limit = 10s\n")
+  # Statistics
+  f.write('\n' + separation + " Statistics " + separation + '\n')
+  writeOutput(f, "${resultdir}/${configname}/${repetition}")
+  f.write("seed-set = ${repetition}\n")
+  #Resource blocks
+  writeSeparation(f, "Resource Blocks")
+  f.write('''**.numRbDl = 6\n**.numRbUl = 6
+**.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')

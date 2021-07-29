@@ -1,19 +1,16 @@
-from math import pi
 import helper as hp
 import random
-import typing as ty
-import numpy as np
-
 import geometry as geo
 
 def main():
 
-  filename = 'Network_CCOpMv/simulations/eNB1.ini'
+  filename = 'eNB2.ini'
   directions = 2
   center = geo.Coordinate(500,500)
   numUEs = 30
   random.seed(123)
-  scen = startSimpleScenario(numUEs, center)
+  scen = startScenario(numUEs, center)
+  num_macros = len(scen.macrocells)
   pos_macrocell = (scen.macrocells[0].center.x, scen.macrocells[0].center.y)
   num_ues_macro = len(scen.macrocells[0].ues)
   num_ues_micro = len(scen.macrocells[0].smallcells[0].ues)
@@ -30,20 +27,20 @@ def main():
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${sched}-${repetition}")
     hp.writeSeparation(f, "Micro Cell")
-    hp.writeNodeIsMicro(f, "microCell")
+    hp.writeMultiMicro(f, number= 7)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, scen.n_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
-    hp.writeConnectUE(f, UEs= [num_ues_macro, num_ues_micro], ENBs= [1,2])
+    hp.writeConnectMultiUE(f, scen.macrocells)
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF', 'ALLOCATOR_BESTFIT'])
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
-    hp.writeScenario(f, object_name= 'eNB', scenario= 'URBAN_MACROCELL')
+    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_macros, scenario= 'URBAN_MACROCELL')
     hp.writeComment(f, text= "Microcell")
-    hp.writeScenario(f, object_name= 'microCell', scenario= 'URBAN_MICROCELL')
+    hp.writeMultiScenarios(f, object_name= 'microCell', num = num_macros, scenario= 'URBAN_MICROCELL')
     hp.writeComment(f, text= "UEs")
     hp.writeScenarioUEsPerso(f, numUEs= numUEs, num_and_scen=[(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
     hp.writeSeparation(f, "Mobility")
@@ -67,11 +64,9 @@ def main():
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
 
-def startSimpleScenario(numUEs, center):
+def startScenario(numUEs, center):
 
   scen = geo.MapHexagonal(center)
-  scen.n_site = 1
-  scen.macrocells = scen.macrocells[0:1]
   scen.n_ues = numUEs
 
   for i in range(len(scen.macrocells)):
@@ -85,8 +80,6 @@ def startSimpleScenario(numUEs, center):
   scen.placeUEs()
 
   return scen
-
-
 
 if __name__ == "__main__":
   main()
