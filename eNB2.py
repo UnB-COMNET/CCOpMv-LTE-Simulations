@@ -6,7 +6,7 @@ def main():
 
   filename = 'eNB2.ini'
   directions = 2
-  center = geo.Coordinate(500,500)
+  center = geo.Coordinate(425*7/2,425*7/2)
   numUEs = 30
   random.seed(123)
   scen = startScenario(numUEs, center)
@@ -18,7 +18,7 @@ def main():
 
     hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config Teste')
-    hp.writeNetwork(f, network= 'networks.UrbanMacro')
+    hp.writeNetwork(f, network= 'networks.UrbanMacro7')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
@@ -32,7 +32,7 @@ def main():
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
     hp.writeConnectMultiUE(f, scen.macrocells)
     hp.writeComment(f, text= "Scheduler")
-    hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF', 'ALLOCATOR_BESTFIT'])
+    hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF'])
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeMultiScenarios(f, object_name= 'eNB', num= num_macros, scenario= 'URBAN_MACROCELL')
