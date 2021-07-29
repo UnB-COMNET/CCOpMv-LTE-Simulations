@@ -42,7 +42,7 @@ def main():
     hp.writeComment(f, text= "Microcell")
     hp.writeMultiScenarios(f, object_name= 'microCell', num = num_macros, scenario= 'URBAN_MICROCELL')
     hp.writeComment(f, text= "UEs")
-    hp.writeScenarioUEsPerso(f, numUEs= numUEs, num_and_scen=[(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
+    hp.writeMultiScenariosPerso(f, macrocells= scen.macrocells)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeIniMobility(f,object_name= 'eNB', iniX= pos_macrocell[0], iniY= pos_macrocell[1])

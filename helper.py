@@ -156,20 +156,18 @@ def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL'):
   for i in range(num):
     writeScenario(f, object_name+str(i), scenario)
 
-def writeScenarioUEsPerso(f, numUEs: int, num_and_scen: ty.List[ty.List[int]] = [[1,1]]):
+def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.List[int]] = [[1,1]]):
   count = 0
   for i in range(len(num_and_scen)):
     for l in range(num_and_scen[i][0]):
-      if count < numUEs:
-        f.write('**.ue[{}].lteNic.channelModel.scenario = "{}"\n'.format(count, num_and_scen[i][1]))
+        f.write('**.{}[{}].lteNic.channelModel.scenario = "{}"\n'.format(object_name, count, num_and_scen[i][1]))
         count += 1
-      else:
-        break
 
-  dif = numUEs - count
-  if dif != 0:
-    for i in range(numUEs-dif, numUEs):
-      f.write('**.ue[{}].lteNic.channelModel.scenario = "{}"\n'.format(i, num_and_scen[-1][1]))
+def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str = 'ue'):
+  for i in range(len(macrocells)):
+    num_ues_macro = len(macrocells[i].ues)
+    num_ues_micro = np.sum([len(x.ues) for x in macrocells[i].smallcells])
+    writeScenarioPerso(f, object_name+str(i), [(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
 
 def defaultGeneral(f):
   # General
