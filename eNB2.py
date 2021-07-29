@@ -55,7 +55,7 @@ def main():
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions, num_macros= num_macros, multi= True)
     hp.writeComment(f, text= "VoIP UL")
-    hp.writeAppVoipUL(f, scen.n_ues, n_app= 0)
+    hp.writeMultiAppVoipUL(f, numUEs= scen.n_ues, num_macros= num_macros)
     hp.writeComment(f, text= "VoIP DL")
     hp.writeAppVoipDL(f, scen.n_ues, n_app= 1)
     hp.writeSeparation(f, "Channel Control")

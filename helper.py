@@ -135,15 +135,28 @@ def writeNumApps(f, numUEs: int, directions: int, num_macros: int = 1, multi: bo
     f.write("*.ue[*].numApps = {}\n".format(directions))
   f.write("*.server.numApps = {} * {} * {}\n".format(directions, numUEs, num_macros))
 
-def writeAppVoipUL(f, numUEs: int, n_app: int = 0):
-  f.write('''*.ue[*].app[{n}].typename="VoIPSender"
-*.ue[*].app[{n}].PacketSize = default
-*.ue[*].app[{n}].destAddress = "server"
-*.ue[*].app[{n}].destPort = 4000 + ancestorIndex(1) #Pega o valor id de ue
-*.ue[*].app[{n}].localPort = 4088
-*.ue[*].app[{n}].startTime = 0.01s\n'''.format(n = n_app))
+def writeAppVoipUL(f, numUEs: int, n_app: int = 0, object_name: str = "ue[*]", port: int = 4000):
+  f.write('''*.{name}.app[{n}].typename="VoIPSender"
+*.{name}.app[{n}].PacketSize = default
+*.{name}.app[{n}].destAddress = "server"
+*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue
+*.{name}.app[{n}].localPort = 4888
+*.{name}.app[{n}].startTime = 0.01s\n'''.format(name = object_name, n = n_app, port = port))
   f.write('''*.server.app[{n}..{f}].typename="VoIPReceiver"
-*.server.app[{n}..{f}].localPort = 4000 + ancestorIndex(0)\n'''.format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
+*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}\n'''.format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1, port = port))
+
+def writeMultiAppVoipUL(f, numUEs: int, num_macros: int, number_app: int = 0, num_apps: int = 2):
+  for m in range(num_macros):
+    f.write('''*.{name}.app[{n}].typename="VoIPSender"
+*.{name}.app[{n}].PacketSize = default
+*.{name}.app[{n}].destAddress = "server"
+*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue
+*.{name}.app[{n}].localPort = 4888
+*.{name}.app[{n}].startTime = 0.01s\n'''.format(name = "ue"+str(m)+"[*]", n = number_app, port = 4000 + m*numUEs))
+    f.write('''*.server.app[{n}..{f}].typename="VoIPReceiver"
+*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}
+'''.format(n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 4000 + m*numUEs))
+
 
 def writeAppVoipDL(f, numUEs: int, n_app: int = 0):
   f.write('''*.server.app[{n}..{f}].typename="VoIPSender"
