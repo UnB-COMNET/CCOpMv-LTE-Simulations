@@ -128,9 +128,12 @@ def writeSchedulingOptions(f, sched: ty.List[str]):
     temp += ' "' + s + '",'
   f.write(temp[:-1] + '}\n**.schedulingDisciplineDl = ${sched}\n')
 
-def writeNumApps(f, numUEs: int, directions: int):
-  f.write('''*.ue[*].numApps = {directions}
-*.server.numApps = {directions} * {numUEs}\n'''.format(directions = directions, numUEs = numUEs))
+def writeNumApps(f, numUEs: int, directions: int, num_macros: int = 1, multi: bool = False):
+  if multi:
+    f.write("*.ue*[*].numApps = {}\n".format(directions))
+  else:
+    f.write("*.ue[*].numApps = {}\n".format(directions))
+  f.write("*.server.numApps = {} * {} * {}\n".format(directions, numUEs, num_macros))
 
 def writeAppVoipUL(f, numUEs: int, n_app: int = 0):
   f.write('''*.ue[*].app[{n}].typename="VoIPSender"

@@ -53,7 +53,7 @@ def main():
     hp.writeMultiIniMobility(f,object_name= 'microCell', coordenates= microPositions)
     hp.writeConstraint(f, object_name= 'microCell*')
     hp.writeSeparation(f, "Apps")
-    hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions)
+    hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions, num_macros= num_macros, multi= True)
     hp.writeComment(f, text= "VoIP UL")
     hp.writeAppVoipUL(f, scen.n_ues, n_app= 0)
     hp.writeComment(f, text= "VoIP DL")
