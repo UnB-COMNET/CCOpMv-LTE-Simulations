@@ -30,15 +30,16 @@ def writeConnectUE(f, UEs: ty.List[int] = [1], ENBs: ty.List[int] = [1], object_
   count = 0
   if len(UEs) > len(ENBs):
     print("ERROR: missing element in ENBs")
-  numUEs = np.sum(UEs)
-  for i in range(len(UEs)):
-    for l in range(UEs[i]):
-      if count < numUEs:
-        f.write('''**.{name}[{number}].macCellId = {enb}
-**.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = ENBs[i], name = object_name))
-        count += 1
-      else:
-        break
+  else:
+    numUEs = np.sum(UEs)
+    for i in range(len(UEs)):
+      for l in range(UEs[i]):
+        if count < numUEs:
+          f.write('''**.{name}[{number}].macCellId = {enb}
+  **.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = ENBs[i], name = object_name))
+          count += 1
+        else:
+          break
 
 def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
   for i in range(len(macrocells)):
@@ -49,8 +50,8 @@ def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
 def writeComment(f, text):
   f.write("\n# {}\n".format(text))
 
-def writeUesMobilityType(f, type: str):
-  f.write('*.ue[*].mobilityType = "{}"\n'.format(type))
+def writeMobilityType(f, type: str, object_name = "ue[*]"):
+  f.write('*.{}.mobilityType = "{}"\n'.format(object_name, type))
 
 def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[str, float] = 0, display = False):
   f.write('''*.{name}.mobility.initialX = {iniX}m
@@ -58,6 +59,20 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
 *.{name}.mobility.initialZ = {iniZ}m
 *.{name}.mobility.initFromDisplayString = {display}
 '''.format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
+
+def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
+  num_coords = len(coordenates)
+  count = 0
+  if num_coords < 2:
+    print("ERROR: necessary list with x coordinate list and y coordinate list")
+  elif num_coords == 2:
+    for x, y in zip(coordenates[0], coordenates[1]):
+      writeIniMobility(f, object_name+str(count), x, y)
+      count += 1
+  else:
+    for x, y in zip(coordenates[0], coordenates[1], coordenates[2]):
+      writeIniMobility(f, object_name+str(count), x, y, y)
+      count += 1
 
 def writeUeMobilityPerso(f, map: MapHexagonal, display: bool = False):
   number = map.n_ues
@@ -95,6 +110,14 @@ def writeConstraint(f, object_name, maxX: ty.Union[str, float] = 'inf', maxY: ty
 '''.format(name = object_name, maxX = maxX, maxY = maxY, maxZ = maxZ, 
           minX = minX, minY = minY, minZ = minZ))
 
+'''def writeMultiConstraint(f, object_name, maxX = [], maxY = [],
+                    maxZ = [], minX = [],
+                    minY = [], minZ = []):
+  count = 0
+  for xa, ya, za, xb, yb, zb in zip(maxX, maxY, maxZ, minX, minY, minZ):
+    writeConstraint(f, object_name+str(count), xa, ya, za, xb, yb, zb)
+    count += 1 
+'''
 # seeds deve ser uma lista de inteiros
 def writeSeeds(f, seed_set: ty.Union[str, int] = "${repetition}", num_rngs: int = 1, seeds: ty.List[int] = []):
   f.write("seed-set = {}\nnum-rngs = {}\n".format(seed_set, num_rngs))

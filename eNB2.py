@@ -11,10 +11,7 @@ def main():
   random.seed(123)
   scen = startScenario(numUEs, center)
   num_macros = len(scen.macrocells)
-  pos_macrocell = (scen.macrocells[0].center.x, scen.macrocells[0].center.y)
-  num_ues_macro = len(scen.macrocells[0].ues)
-  num_ues_micro = len(scen.macrocells[0].smallcells[0].ues)
-  pos_microcell = (scen.macrocells[0].smallcells[0].center.x, scen.macrocells[0].smallcells[0].center.y)
+  microPositions = getMicroPositions(scen.macrocells)
 
   with open(filename, 'wt') as f:
     # General
@@ -45,16 +42,16 @@ def main():
     hp.writeMultiScenariosPerso(f, macrocells= scen.macrocells)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
-    hp.writeIniMobility(f,object_name= 'eNB', iniX= pos_macrocell[0], iniY= pos_macrocell[1])
-    hp.writeConstraint(f, object_name= 'eNB')
+    hp.writeMultiIniMobility(f,object_name= 'eNB', coordenates= scen.getMacrocellsPositionList())
+    hp.writeConstraint(f, object_name= 'eNB*')
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
-    hp.writeUesMobilityType(f, type= "StationaryMobility")
+    hp.writeMobilityType(f, type= "StationaryMobility", object_name= "ue*[*]")
     hp.writeUeMobilityPerso(f, map= scen)
-    hp.writeConstraint(f, object_name= 'ue[*]')
+    hp.writeConstraint(f, object_name= 'ue*[*]')
     hp.writeComment(f, text= "Microcell")
-    hp.writeIniMobility(f,object_name= 'microCell', iniX= pos_microcell[0], iniY= pos_microcell[1])
-    hp.writeConstraint(f, object_name= 'microCell')
+    hp.writeMultiIniMobility(f,object_name= 'microCell', coordenates= microPositions)
+    hp.writeConstraint(f, object_name= 'microCell*')
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions)
     hp.writeComment(f, text= "VoIP UL")
@@ -80,6 +77,14 @@ def startScenario(numUEs, center):
   scen.placeUEs()
 
   return scen
+
+def getMicroPositions(macrocells):
+  positions = [[],[]]
+  for m in macrocells:
+    tmp = m.getSmallcellsPositionList()
+    positions[0] += tmp[0]
+    positions[1] += tmp[1]
+  return positions
 
 if __name__ == "__main__":
   main()

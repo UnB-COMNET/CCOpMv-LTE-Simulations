@@ -52,7 +52,7 @@ def main():
     hp.writeConstraint(f, object_name= 'eNB')
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
-    hp.writeUesMobilityType(f, type= "StationaryMobility")
+    hp.writeMobilityType(f, type= "StationaryMobility")
     hp.writeUeMobilityPerso(f, map= scen)
     hp.writeConstraint(f, object_name= 'ue[*]')
     hp.writeComment(f, text= "Microcell")
