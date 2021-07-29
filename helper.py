@@ -157,7 +157,6 @@ def writeMultiAppVoipUL(f, numUEs: int, num_macros: int, number_app: int = 0, nu
 *.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}
 '''.format(n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 4000 + m*numUEs))
 
-
 def writeAppVoipDL(f, numUEs: int, n_app: int = 0):
   f.write('''*.server.app[{n}..{f}].typename="VoIPSender"
 *.server.app[{n}..{f}].PacketSize = default
@@ -167,6 +166,18 @@ def writeAppVoipDL(f, numUEs: int, n_app: int = 0):
 *.server.app[{n}..{f}].startTime = 0.01s\n'''.format(numUEs = numUEs, n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
   f.write('''*.ue[*].app[{n}].typename="VoIPReceiver"
 *.ue[*].app[{n}].localPort = 3000\n'''.format(n = n_app))
+
+def writeMultiAppVoipDL(f, numUEs: int, num_macros: int, number_app: int = 0, num_apps: int = 2):
+  for m in range(num_macros):
+    f.write('''*.server.app[{n}..{f}].typename="VoIPSender"
+*.server.app[{n}..{f}].PacketSize = default
+*.server.app[{n}..{f}].destAddress = "ue{m}[" + string(ancestorIndex(0) - {n}) + "]"
+*.server.app[{n}..{f}].destPort = 3000
+*.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)
+*.server.app[{n}..{f}].startTime = 0.01s
+'''.format(m = m, n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 3000 + m*numUEs))
+    f.write('''*.{name}.app[{n}].typename="VoIPReceiver"
+*.{name}.app[{n}].localPort = 3000\n'''.format(name = "ue"+str(m)+"[*]", n = number_app))
 
 def writeNumUEs(f, numUEs: int):
   f.write("**.numUe = {}\n".format(numUEs))
