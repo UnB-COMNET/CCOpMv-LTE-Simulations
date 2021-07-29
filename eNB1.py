@@ -53,7 +53,7 @@ def main():
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "StationaryMobility")
-    hp.writeUeMobilityPerso(f, map= scen)
+    hp.writeUeMobilityPerso(f, scen= scen)
     hp.writeConstraint(f, object_name= 'ue[*]')
     hp.writeComment(f, text= "Microcell")
     hp.writeIniMobility(f,object_name= 'microCell', iniX= pos_microcell[0], iniY= pos_microcell[1])

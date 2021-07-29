@@ -36,7 +36,7 @@ def writeConnectUE(f, UEs: ty.List[int] = [1], ENBs: ty.List[int] = [1], object_
       for l in range(UEs[i]):
         if count < numUEs:
           f.write('''**.{name}[{number}].macCellId = {enb}
-  **.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = ENBs[i], name = object_name))
+**.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = ENBs[i], name = object_name))
           count += 1
         else:
           break
@@ -74,28 +74,24 @@ def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
       writeIniMobility(f, object_name+str(count), x, y, y)
       count += 1
 
-def writeUeMobilityPerso(f, map: MapHexagonal, display: bool = False):
-  number = map.n_ues
-  iniZ=np.zeros(map.n_ues)
-  [iniX, iniY] = map.macrocells[0].getUEsPositionList()
-  [iniX_smallcell, iniY_smallcell] = map.macrocells[0].smallcells[0].getUEsPositionList()
-  iniX = iniX + iniX_smallcell
-  iniY = iniY + iniY_smallcell
-  pass
-  for i in range(len(iniX)):
-    for l in range(int(number/len(iniX))):
-      f.write('''*.ue[{number}].mobility.initialX = {iniX}m
-*.ue[{number}].mobility.initialY = {iniY}m
-*.ue[{number}].mobility.initialZ = {iniZ}m
-'''.format(number = int(i*number/len(iniX)) + l, iniX = iniX[i], iniY = iniY[i], iniZ = iniZ[i]))
+def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bool = False):
+  count = 0
+  for m in scen.macrocells:
+    if not multi: count = ''
+    iniZ=np.zeros(scen.n_ues)
+    [iniX, iniY] = m.getUEsPositionList()
+    [iniX_smallcell, iniY_smallcell] = m.smallcells[0].getUEsPositionList()
+    iniX = iniX + iniX_smallcell
+    iniY = iniY + iniY_smallcell
+    for i in range(len(iniX)):
+      f.write('''*.ue{num}[{number}].mobility.initialX = {iniX}m
+*.ue{num}[{number}].mobility.initialY = {iniY}m
+*.ue{num}[{number}].mobility.initialZ = {iniZ}m
+'''.format(number = i, num = count, iniX = iniX[i], iniY = iniY[i], iniZ = iniZ[i]))
 
-  dif = number - len(iniX)*int(number/len(iniX))
-  if dif != 0:
-    for i in range(number-dif, number):
-      f.write('''*.ue[{number}].mobility.initialX = {iniX}m
-*.ue[{number}].mobility.initialY = {iniY}m\n'''.format(number = i, iniX = iniX[-1], iniY = iniY[-1]))
-
-  f.write("*.ue[*].mobility.initFromDisplayString = {display}\n".format(display = 'true' if display else 'false'))
+    f.write("*.ue{num}[*].mobility.initFromDisplayString = {display}\n".format(display = 'true' if display else 'false', num = count,))
+    if not multi: break
+    else: count += 1
 
 def writeConstraint(f, object_name, maxX: ty.Union[str, float] = 'inf', maxY: ty.Union[str, float] = 'inf',
                     maxZ: ty.Union[str, float] = 'inf', minX: ty.Union[str, float] = '-inf',
