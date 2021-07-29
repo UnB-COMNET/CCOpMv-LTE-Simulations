@@ -1,6 +1,6 @@
 # LTE Scenarios Simulation with Omnet++
 ## Versions
-**Operational Systems:** Lubuntu 18.04
+**Operational Systems:** Lubuntu 18.04 and Ubuntu 18.04.5
 
 **Omnet++:** 5.6.2
 
