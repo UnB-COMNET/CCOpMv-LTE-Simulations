@@ -4,7 +4,7 @@ import geometry as geo
 
 def main():
 
-  filename = 'eNB2.ini'
+  filename = 'Network_CCOpMv/simulations/eNB2.ini'
   directions = 2
   center = geo.Coordinate(425*7/2,425*7/2)
   numUEs = 30
@@ -60,6 +60,8 @@ def main():
     hp.writeMultiAppVoipDL(f, numUEs= scen.n_ues, num_macros= num_macros, number_app= 1, num_apps = 2)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
+
+  #geo.plotMap(scen, False, 7)
 
 def startScenario(numUEs, center):
 

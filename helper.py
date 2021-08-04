@@ -44,7 +44,7 @@ def writeConnectUE(f, UEs: ty.List[int] = [1], ENBs: ty.List[int] = [1], object_
 def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
   for i in range(len(macrocells)):
     ues = [len(macrocells[i].ues)] + [len(x.ues) for x in macrocells[i].smallcells]
-    enbs = [i, i+7]
+    enbs = [i+1, i+1+len(macrocells)]
     writeConnectUE(f, ues, enbs, "ue"+str(i))
 
 def writeComment(f, text):
