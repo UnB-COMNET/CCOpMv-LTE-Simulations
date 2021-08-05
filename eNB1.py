@@ -8,7 +8,7 @@ import geometry as geo
 
 def main():
 
-  filename = 'Network_CCOpMv/simulations/urban_simple_1enb.ini'
+  filename = 'Network_CCOpMv/simulations/eNB1.ini'
   directions = 2
   center = geo.Coordinate(500,500)
   numUEs = 30
@@ -17,13 +17,12 @@ def main():
   pos_macrocell = (scen.macrocells[0].center.x, scen.macrocells[0].center.y)
   num_ues_macro = len(scen.macrocells[0].ues)
   num_ues_micro = len(scen.macrocells[0].smallcells[0].ues)
-  print(num_ues_macro, num_ues_micro)
   pos_microcell = (scen.macrocells[0].smallcells[0].center.x, scen.macrocells[0].smallcells[0].center.y)
 
   with open(filename, 'wt') as f:
     # General
 
-    defaultGeneral(f)
+    hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config Teste')
     hp.writeNetwork(f, network= 'networks.UrbanMacro')
     hp.writeTime(f, time= 10, repeat= 10)
@@ -37,7 +36,7 @@ def main():
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, scen.n_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
-    hp.writeConnectUE(f, numUEs= numUEs, ENBs= [num_ues_macro, num_ues_micro])
+    hp.writeConnectUE(f, UEs= [num_ues_macro, num_ues_micro], ENBs= [1,2])
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF', 'ALLOCATOR_BESTFIT'])
     hp.writeSeparation(f, "Mobility")
@@ -46,15 +45,15 @@ def main():
     hp.writeComment(f, text= "Microcell")
     hp.writeScenario(f, object_name= 'microCell', scenario= 'URBAN_MICROCELL')
     hp.writeComment(f, text= "UEs")
-    hp.writeScenarioUEsPerso(f, numUEs= numUEs, num_and_scen=[(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
+    hp.writeScenarioPerso(f, num_and_scen=[(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeIniMobility(f,object_name= 'eNB', iniX= pos_macrocell[0], iniY= pos_macrocell[1])
     hp.writeConstraint(f, object_name= 'eNB')
     hp.writeComment(f, text= "UEs")
-    hp.nl(f)    
-    hp.writeUesMobilityType(f, type= "StationaryMobility")
-    hp.writeUeMobilityPerso(f, map= scen)
+    hp.nl(f)
+    hp.writeMobilityType(f, type= "StationaryMobility")
+    hp.writeUeMobilityPerso(f, scen= scen)
     hp.writeConstraint(f, object_name= 'ue[*]')
     hp.writeComment(f, text= "Microcell")
     hp.writeIniMobility(f,object_name= 'microCell', iniX= pos_microcell[0], iniY= pos_microcell[1])
@@ -67,25 +66,6 @@ def main():
     hp.writeAppVoipDL(f, scen.n_ues, n_app= 1)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
-'''   
-def main():
-  geo.startScenario()
-
-  None
-'''
-def defaultGeneral(f):
-  # General
-  f.write("[General]\n")
-  #Time
-  f.write("sim-time-limit = 10s\n")
-  # Statistics
-  f.write('\n' + hp.separation + " Statistics " + hp.separation + '\n')
-  hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
-  f.write("seed-set = ${repetition}\n")
-  #Resource blocks
-  hp.writeSeparation(f, "Resource Blocks")
-  f.write('''**.numRbDl = 6\n**.numRbUl = 6
-**.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')
 
 def startSimpleScenario(numUEs, center):
 
