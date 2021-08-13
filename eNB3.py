@@ -33,7 +33,7 @@ def main():
     hp.writeConnectMultiUE(f, scen.macrocells)
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF'])
-    hp.writeSeparation(f, "Mobility")
+    hp.writeSeparation(f, "Scenario")
     hp.writeComment(f, text= "eNodeB")
     hp.writeMultiScenarios(f, object_name= 'eNB', num= num_macros, scenario= 'URBAN_MACROCELL')
     hp.writeComment(f, text= "Microcell")
@@ -50,7 +50,7 @@ def main():
     hp.writeUeMobilityPerso(f, scen= scen, multi= True)
     hp.writeConstraint(f, object_name= 'ue*[*]')
     hp.writeComment(f, text= "Microcell")
-    hp.writeMultiIniMobility(f,object_name= 'microCell', coordenates= microPositions)
+    hp.writeMultiIniMobility(f,object_name= 'microCell', coordenates= microPositions) #Todo: mudar as coordenadas
     hp.writeConstraint(f, object_name= 'microCell*')
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions, num_macros= num_macros, multi= True)
@@ -68,14 +68,14 @@ def startScenario(numUEs, center):
 
   scen = geo.MapHexagonal(center)
   scen.n_ues = numUEs
+  scen.n_antennas = 4
 
   for i in range(len(scen.macrocells)):
     # For each macrocell, it places the smallcells
     scen.placeSmallCell(scen.macrocells[i], scen.d_macromacro*0.425, scen.d_macrocluster)
     # For each smallcell in a given macrocell, it places the antennas
-    position = scen.macrocells[i].getSmallcellsPositionList()
-    antenna = geo.Antenna(geo.Coordinate(position[0][0], position[1][0]), None)
-    scen.macrocells[i].smallcells[0].antennas.append(antenna)          
+    for j in range(len(scen.macrocells[i].smallcells)):
+            scen.placeAntennas(scen.macrocells[i].smallcells[j],scen.dropradius_sc_cluster,0,scen.n_antennas)           
 
   scen.placeUEs()
 

@@ -33,7 +33,7 @@ def main():
     hp.writeConnectMultiUE(f, scen.macrocells)
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI', 'DRR', 'PF'])
-    hp.writeSeparation(f, "Mobility")
+    hp.writeSeparation(f, "Scenario")
     hp.writeComment(f, text= "eNodeB")
     hp.writeMultiScenarios(f, object_name= 'eNB', num= num_macros, scenario= 'URBAN_MACROCELL')
     hp.writeComment(f, text= "Microcell")
