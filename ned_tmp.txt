@@ -1,3 +1,87 @@
+		microCell0: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell1: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell2: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell3: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell4: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell5: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell6: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell7: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell8: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell9: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell10: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell11: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell12: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell13: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell14: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell15: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell16: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell17: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell18: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell19: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell20: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell21: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell22: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell23: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell24: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell25: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell26: eNodeB {
+			@display("p=442.51,335.65");
+		}
+		microCell27: eNodeB {
+			@display("p=442.51,335.65");
+		}
 
 		//############### X2 Connections ###############
 

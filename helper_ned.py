@@ -29,6 +29,13 @@ def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int]
 
   return 0
 
+def writeNode(f, object_name):
+  f.write("\t\t{}".format(object_name)+": eNodeB {\n\t\t\t@display(\"p=442.51,335.65\");\n\t\t}\n")
+
+def writeNodes(f, object_name, quantity : int, initial : int = 0):
+  for i in range(initial, initial+quantity):
+    writeNode(f, object_name+str(i))
+
 def writeSeparation(f, name):
   f.write('\n\t\t//' + separation + ' ' + name + ' ' + separation + '\n')
 
