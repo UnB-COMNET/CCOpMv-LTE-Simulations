@@ -6,6 +6,11 @@ def main():
   with open(filename, 'wt') as f:
     #hned.writeX2Connections(f, object_names = ["eNB", "microCell"], quantities= [7, 4*7])
     hned.writeNodes(f, object_name= "microCell", quantity= 28)
+    f.write('\n\tconnections:\n'
+    '\t\tserver.pppg++ <--> Eth10G <--> router.pppg++;\n'
+    '\t\trouter.pppg++ <--> Eth10G <--> pgw.filterGate;\n')
+    hned.writeNodeConnections(f, object_name= "eNB", number= 7)
+    hned.writeNodeConnections(f, object_name= "microCell", number= 28)
     hned.writeSeparation(f, "X2 Connections")
     hned.writeComment(f, text= "Hotspot0")
     hned.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [0])

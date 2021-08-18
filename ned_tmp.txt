@@ -83,6 +83,45 @@
 			@display("p=442.51,335.65");
 		}
 
+	connections:
+		server.pppg++ <--> Eth10G <--> router.pppg++;
+		router.pppg++ <--> Eth10G <--> pgw.filterGate;
+		pgw.pppg++ <--> Eth10G <--> eNB0.ppp;
+		pgw.pppg++ <--> Eth10G <--> eNB1.ppp;
+		pgw.pppg++ <--> Eth10G <--> eNB2.ppp;
+		pgw.pppg++ <--> Eth10G <--> eNB3.ppp;
+		pgw.pppg++ <--> Eth10G <--> eNB4.ppp;
+		pgw.pppg++ <--> Eth10G <--> eNB5.ppp;
+		pgw.pppg++ <--> Eth10G <--> eNB6.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell0.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell1.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell2.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell3.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell4.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell5.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell6.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell7.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell8.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell9.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell10.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell11.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell12.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell13.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell14.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell15.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell16.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell17.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell18.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell19.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell20.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell21.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell22.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell23.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell24.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell25.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell26.ppp;
+		pgw.pppg++ <--> Eth10G <--> microCell27.ppp;
+
 		//############### X2 Connections ###############
 
 		//# Hotspot0

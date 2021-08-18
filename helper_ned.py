@@ -36,6 +36,11 @@ def writeNodes(f, object_name, quantity : int, initial : int = 0):
   for i in range(initial, initial+quantity):
     writeNode(f, object_name+str(i))
 
+def writeNodeConnections(f, object_name, number: int):
+  for i in range(number):
+    f.write("\t\tpgw.pppg++ <--> Eth10G <--> {}{}.ppp;\n".format(object_name, i))
+  
+
 def writeSeparation(f, name):
   f.write('\n\t\t//' + separation + ' ' + name + ' ' + separation + '\n')
 
