@@ -63,6 +63,11 @@ def main():
     hp.writeMultiAppVoipDL(f, numUEs= scen.n_ues, num_macros= num_macros, number_app= 1, num_apps = 2)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
+    hp.writeSeparation(f, "Handover")
+    hp.writeComment(f, text= "Enable handover")
+    hp.writeEnableHandover(f, enable= True)
+    hp.writeComment(f, text= "X2 configuration")
+
 
     #TODO: Enable Handover
 

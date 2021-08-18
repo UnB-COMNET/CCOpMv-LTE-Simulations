@@ -219,6 +219,12 @@ def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str
     num_ues_micro = np.sum([len(x.ues) for x in macrocells[i].smallcells])
     writeScenarioPerso(f, object_name+str(i), [(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
 
+def writeEnableHandover(f, enable = True):
+  f.write('**.lteNic.phy.enableHandover = {}\n'.format("true" if enable else "false"))
+
+def writeX2Configuration(f, object_name, quantity):
+  pass
+
 def defaultGeneral(f):
   # General
   f.write("[General]\n")

@@ -1,0 +1,58 @@
+
+		//############### X2 Connections ###############
+
+		//# Hotspot0
+		microCell0.x2++ <--> Eth10G <--> microCell1.x2++;
+		microCell0.x2++ <--> Eth10G <--> microCell2.x2++;
+		microCell0.x2++ <--> Eth10G <--> microCell3.x2++;
+		microCell1.x2++ <--> Eth10G <--> microCell2.x2++;
+		microCell1.x2++ <--> Eth10G <--> microCell3.x2++;
+		microCell2.x2++ <--> Eth10G <--> microCell3.x2++;
+
+		//# Hotspot1
+		microCell4.x2++ <--> Eth10G <--> microCell5.x2++;
+		microCell4.x2++ <--> Eth10G <--> microCell6.x2++;
+		microCell4.x2++ <--> Eth10G <--> microCell7.x2++;
+		microCell5.x2++ <--> Eth10G <--> microCell6.x2++;
+		microCell5.x2++ <--> Eth10G <--> microCell7.x2++;
+		microCell6.x2++ <--> Eth10G <--> microCell7.x2++;
+
+		//# Hotspot2
+		microCell8.x2++ <--> Eth10G <--> microCell9.x2++;
+		microCell8.x2++ <--> Eth10G <--> microCell10.x2++;
+		microCell8.x2++ <--> Eth10G <--> microCell11.x2++;
+		microCell9.x2++ <--> Eth10G <--> microCell10.x2++;
+		microCell9.x2++ <--> Eth10G <--> microCell11.x2++;
+		microCell10.x2++ <--> Eth10G <--> microCell11.x2++;
+
+		//# Hotspot3
+		microCell12.x2++ <--> Eth10G <--> microCell13.x2++;
+		microCell12.x2++ <--> Eth10G <--> microCell14.x2++;
+		microCell12.x2++ <--> Eth10G <--> microCell15.x2++;
+		microCell13.x2++ <--> Eth10G <--> microCell14.x2++;
+		microCell13.x2++ <--> Eth10G <--> microCell15.x2++;
+		microCell14.x2++ <--> Eth10G <--> microCell15.x2++;
+
+		//# Hotspot4
+		microCell16.x2++ <--> Eth10G <--> microCell17.x2++;
+		microCell16.x2++ <--> Eth10G <--> microCell18.x2++;
+		microCell16.x2++ <--> Eth10G <--> microCell19.x2++;
+		microCell17.x2++ <--> Eth10G <--> microCell18.x2++;
+		microCell17.x2++ <--> Eth10G <--> microCell19.x2++;
+		microCell18.x2++ <--> Eth10G <--> microCell19.x2++;
+
+		//# Hotspot5
+		microCell20.x2++ <--> Eth10G <--> microCell21.x2++;
+		microCell20.x2++ <--> Eth10G <--> microCell22.x2++;
+		microCell20.x2++ <--> Eth10G <--> microCell23.x2++;
+		microCell21.x2++ <--> Eth10G <--> microCell22.x2++;
+		microCell21.x2++ <--> Eth10G <--> microCell23.x2++;
+		microCell22.x2++ <--> Eth10G <--> microCell23.x2++;
+
+		//# Hotspot6
+		microCell24.x2++ <--> Eth10G <--> microCell25.x2++;
+		microCell24.x2++ <--> Eth10G <--> microCell26.x2++;
+		microCell24.x2++ <--> Eth10G <--> microCell27.x2++;
+		microCell25.x2++ <--> Eth10G <--> microCell26.x2++;
+		microCell25.x2++ <--> Eth10G <--> microCell27.x2++;
+		microCell26.x2++ <--> Eth10G <--> microCell27.x2++;
