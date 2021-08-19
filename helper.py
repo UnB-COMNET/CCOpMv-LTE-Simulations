@@ -219,11 +219,36 @@ def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str
     num_ues_micro = np.sum([len(x.ues) for x in macrocells[i].smallcells])
     writeScenarioPerso(f, object_name+str(i), [(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
 
-def writeEnableHandover(f, enable = True):
-  f.write('**.lteNic.phy.enableHandover = {}\n'.format("true" if enable else "false"))
+def writeEnableHandover(f, object_name, enable = True):# Enable handover
+  f.write('*.{}.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
 
 def writeX2Configuration(f, object_name, quantity):
-  pass
+  f.write('*.{}.numX2Apps = {}    # one x2App per peering eNodeB\n'.format(object_name, quantity-1))
+  f.write('*.{}.x2App[*].server.localPort = 5000 + ancestorIndex(1)\n'.format(object_name))
+
+#Connecting only between same object_name
+def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int], initial_values : ty.List[int] = None):
+  if initial_values is None:
+    initial_values = np.zeros(len(quantities), dtype= int)
+
+  if len(object_names) > len(quantities):
+    print("ERROR: Missing quantities for all objects.")
+    return -1
+
+  for i in range(len(object_names)):
+    ports = np.zeros(quantities[i], dtype= int)
+
+    for number in range(initial_values[i], initial_values[i]+quantities[i]):
+      app = 0
+      for count in range(initial_values[i], initial_values[i]+quantities[i]):
+        if count == number:
+          continue
+        else:
+          f.write('*.{name}{number}.x2App[{app}].client.connectAddress = "{name}{count}%x2ppp{port}"\n'
+                  .format(name=object_names[i], number=number, app=app, count = count, port = ports[count-initial_values[i]]))
+          app += 1
+          ports[count-initial_values[i]] += 1
+
 
 def defaultGeneral(f):
   # General

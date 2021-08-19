@@ -21,7 +21,7 @@ def main():
 
     hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config eNB3_Base')
-    hp.writeNetwork(f, network= 'networks.UrbanMacro7')
+    hp.writeNetwork(f, network= 'networks.UrbanMacro7_4')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
@@ -65,8 +65,24 @@ def main():
     hp.writePropagation(f, model= "LogNormalShadow")
     hp.writeSeparation(f, "Handover")
     hp.writeComment(f, text= "Enable handover")
-    hp.writeEnableHandover(f, enable= True)
+    hp.writeEnableHandover(f, object_name= "microCell*", enable= True)
     hp.writeComment(f, text= "X2 configuration")
+    hp.writeX2Configuration(f, object_name= "microCell*", quantity= 4) #Connections in groups of 4
+    #hp.writeX2Connections(f, object_names= ["eNB", "microCell"], quantities= [7, 28])
+    hp.writeComment(f, text= "Hotspot0")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [0])
+    hp.writeComment(f, text= "Hotspot1")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [4])
+    hp.writeComment(f, text= "Hotspot2")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [8])
+    hp.writeComment(f, text= "Hotspot3")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [12])
+    hp.writeComment(f, text= "Hotspot4")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [16])
+    hp.writeComment(f, text= "Hotspot5")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [20])
+    hp.writeComment(f, text= "Hotspot6")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [24])
 
 
     #TODO: Enable Handover
