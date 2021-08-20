@@ -220,7 +220,7 @@ def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str
     writeScenarioPerso(f, object_name+str(i), [(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')])
 
 def writeEnableHandover(f, object_name, enable = True):# Enable handover
-  f.write('*.{}.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
+  f.write('*.{}.lteNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
 
 def writeX2Configuration(f, object_name, quantity):
   f.write('*.{}.numX2Apps = {}    # one x2App per peering eNodeB\n'.format(object_name, quantity-1))
