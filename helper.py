@@ -222,6 +222,15 @@ def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str
 def writeEnableHandover(f, object_name, enable = True):# Enable handover
   f.write('*.{}.lteNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
 
+def writeEnableHandoverMultiUE(f, macrocells: ty.List[Macrocell], only_micro = True):
+  for i in range(len(macrocells)):
+    if only_micro:
+      ues_macro = len(macrocells[i].ues)
+      ues_micro = np.sum([len(x.ues) for x in macrocells[i].smallcells])
+      writeEnableHandover(f, "ue{}[{}..{}]".format(i, ues_macro, ues_macro+ues_micro-1))
+    else:
+      writeEnableHandover(f, "ue{}[*]".format(i))
+
 def writeX2Configuration(f, object_name, quantity):
   f.write('*.{}.numX2Apps = {}    # one x2App per peering eNodeB\n'.format(object_name, quantity-1))
   f.write('*.{}.x2App[*].server.localPort = 5000 + ancestorIndex(1)\n'.format(object_name))

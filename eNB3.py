@@ -66,6 +66,7 @@ def main():
     hp.writeSeparation(f, "Handover")
     hp.writeComment(f, text= "Enable handover")
     hp.writeEnableHandover(f, object_name= "microCell*", enable= True)
+    hp.writeEnableHandoverMultiUE(f, macrocells= scen.macrocells, only_micro= True)
     hp.writeComment(f, text= "X2 configuration")
     hp.writeX2Configuration(f, object_name= "microCell*", quantity= 4) #Connections in groups of 4
     #hp.writeX2Connections(f, object_names= ["eNB", "microCell"], quantities= [7, 28])
