@@ -4,27 +4,30 @@ import geometry as geo
 
 def main():
 
-  filename = 'Network_CCOpMv/simulations/eNB2_60.ini'
+  filename = 'Network_CCOpMv/simulations/eNB3_60.ini'
   directions = 2
   center = geo.Coordinate(425*7/2,425*7/2)
   numUEs = 60
+  sites = 7
+  micro_per_small = 4
+  small_per_site = 1
   random.seed(123)
   scen = startScenario(numUEs, center)
   num_macros = len(scen.macrocells)
-  microPositions = getMicroPositions(scen.macrocells)
+  antennasPositions = getMicroAntennasPositions(scen.macrocells)
 
   with open(filename, 'wt') as f:
     # General
 
     hp.defaultGeneral(f)
-    hp.makeNewConfig(f, name= 'Config eNB2_Base')
-    hp.writeNetwork(f, network= 'networks.UrbanMacro7')
+    hp.makeNewConfig(f, name= 'Config eNB3_Base')
+    hp.writeNetwork(f, network= 'networks.UrbanMacro7_4')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${sched}-${repetition}")
     hp.writeSeparation(f, "Micro Cell")
-    hp.writeMultiMicro(f, number= 7)
+    hp.writeMultiMicro(f, number= sites*micro_per_small*small_per_site)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "UEs")
@@ -50,7 +53,7 @@ def main():
     hp.writeUeMobilityPerso(f, scen= scen, multi= True)
     hp.writeConstraint(f, object_name= 'ue*[*]')
     hp.writeComment(f, text= "Microcell")
-    hp.writeMultiIniMobility(f,object_name= 'microCell', coordenates= microPositions)
+    hp.writeMultiIniMobility(f,object_name= 'microCell', coordenates= antennasPositions)
     hp.writeConstraint(f, object_name= 'microCell*')
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions, num_macros= num_macros, multi= True)
@@ -60,32 +63,58 @@ def main():
     hp.writeMultiAppVoipDL(f, numUEs= scen.n_ues, num_macros= num_macros, number_app= 1, num_apps = 2)
     hp.writeSeparation(f, "Channel Control")
     hp.writePropagation(f, model= "LogNormalShadow")
+    hp.writeSeparation(f, "Handover")
+    hp.writeComment(f, text= "Enable handover")
+    hp.writeEnableHandover(f, object_name= "microCell*", enable= True)
+    hp.writeEnableHandoverMultiUE(f, macrocells= scen.macrocells, only_micro= True)
+    hp.writeComment(f, text= "X2 configuration")
+    hp.writeX2Configuration(f, object_name= "microCell*", quantity= 4) #Connections in groups of 4
+    #hp.writeX2Connections(f, object_names= ["eNB", "microCell"], quantities= [7, 28])
+    hp.writeComment(f, text= "Hotspot0")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [0])
+    hp.writeComment(f, text= "Hotspot1")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [4])
+    hp.writeComment(f, text= "Hotspot2")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [8])
+    hp.writeComment(f, text= "Hotspot3")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [12])
+    hp.writeComment(f, text= "Hotspot4")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [16])
+    hp.writeComment(f, text= "Hotspot5")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [20])
+    hp.writeComment(f, text= "Hotspot6")
+    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [24])
+
+
+    #TODO: Enable Handover
 
   #geo.plotMap(scen, False, 7)
+
 
 def startScenario(numUEs, center):
 
   scen = geo.MapHexagonal(center)
   scen.n_ues = numUEs
+  scen.n_antennas = 4
 
   for i in range(len(scen.macrocells)):
     # For each macrocell, it places the smallcells
     scen.placeSmallCell(scen.macrocells[i], scen.d_macromacro*0.425, scen.d_macrocluster)
     # For each smallcell in a given macrocell, it places the antennas
-    position = scen.macrocells[i].getSmallcellsPositionList()
-    antenna = geo.Antenna(geo.Coordinate(position[0][0], position[1][0]), None)
-    scen.macrocells[i].smallcells[0].antennas.append(antenna)          
+    for j in range(len(scen.macrocells[i].smallcells)):
+            scen.placeAntennas(scen.macrocells[i].smallcells[j],scen.dropradius_sc_cluster,0,scen.n_antennas)           
 
   scen.placeUEs()
 
   return scen
 
-def getMicroPositions(macrocells):
+def getMicroAntennasPositions(macrocells):
   positions = [[],[]]
   for m in macrocells:
-    tmp = m.getSmallcellsPositionList()
-    positions[0] += tmp[0]
-    positions[1] += tmp[1]
+    for s in m.smallcells:
+      tmp = s.getAntennasPositionList()
+      positions[0] += tmp[0]
+      positions[1] += tmp[1]
   return positions
 
 if __name__ == "__main__":
