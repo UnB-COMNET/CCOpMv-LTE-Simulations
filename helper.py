@@ -85,6 +85,12 @@ def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bo
     iniZ=np.zeros(scen.n_ues)
     [iniX, iniY] = m.getUEsPositionList()
     [iniX_smallcell, iniY_smallcell] = m.smallcells[0].getUEsPositionList()
+    if iniX is None:
+      iniX = []
+      iniY = []
+    if iniX_smallcell is None:
+      iniX_smallcell = []
+      iniY_smallcell = []
     iniX = iniX + iniX_smallcell
     iniY = iniY + iniY_smallcell
     for i in range(len(iniX)):

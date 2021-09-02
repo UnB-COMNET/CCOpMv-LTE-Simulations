@@ -4,10 +4,10 @@ import geometry as geo
 
 def main():
 
-  filename = 'Network_CCOpMv/simulations/eNB2_60.ini'
+  filename = 'Network_CCOpMv/simulations/eNB2_1.ini'#'Network_CCOpMv/simulations/eNB2_60.ini'
   directions = 2
   center = geo.Coordinate(425*7/2,425*7/2)
-  numUEs = 60
+  numUEs = 1#60
   random.seed(123)
   scen = startScenario(numUEs, center)
   num_macros = len(scen.macrocells)
