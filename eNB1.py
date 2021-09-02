@@ -8,7 +8,7 @@ import geometry as geo
 
 def main():
 
-  filename = 'Network_CCOpMv/simulations/eNB1.ini'
+  filename = 'Network_CCOpMv/simulations/Exp-xxxx.ini'
   directions = 2
   center = geo.Coordinate(500,500)
   numUEs = 30
@@ -23,8 +23,8 @@ def main():
     # General
 
     hp.defaultGeneral(f)
-    hp.makeNewConfig(f, name= 'Config Teste')
-    hp.writeNetwork(f, network= 'networks.UrbanMacro')
+    hp.makeNewConfig(f, name= 'Config UrbanMacrocell5G')
+    hp.writeNetwork(f, network= 'networks.UrbanMacro5G')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
