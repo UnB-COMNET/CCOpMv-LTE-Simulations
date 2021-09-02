@@ -196,7 +196,7 @@ def writeMultiMicro(f, number, node_name = "microCell", micro: bool = True):
     writeNodeIsMicro(f, node_name+str(i))
 
 def writeScenario(f, object_name, scenario: str = 'URBAN_MACROCELL'):
-  f.write('**.{}.lteNic.channelModel.scenario = "{}"\n'.format(object_name, scenario))
+  f.write('**.{}.cellularNic.channelModel[*].scenario = "{}"\n'.format(object_name, scenario))
 
 def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL'):
   for i in range(num):
@@ -206,7 +206,7 @@ def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.List
   count = 0
   for i in range(len(num_and_scen)):
     for l in range(num_and_scen[i][0]):
-        f.write('**.{}[{}].lteNic.channelModel.scenario = "{}"\n'.format(object_name, count, num_and_scen[i][1]))
+        f.write('**.{}[{}].cellularNic.channelModel[*].scenario = "{}"\n'.format(object_name, count, num_and_scen[i][1]))
         count += 1
 
 def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str = 'ue'):
