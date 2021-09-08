@@ -270,6 +270,19 @@ def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int]
           app += 1
           ports[count-initial_values[i]] += 1
 
+def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x, center_y, sites, micro_per_small, small_per_site, seed):
+  f.write('''#Function: {}
+#Parameters: 
+#  filename = '{}'
+#  directions = {}
+#  num_ues = {}
+#  center_x = {}
+#  center_y = {}
+#  sites = {}
+#  micro_per_small = {}
+#  small_per_site = {}
+#  seed = {}\n'''.format(function_name, filename, directions, num_ues, center_x,
+                        center_y, sites, micro_per_small, small_per_site, seed))
 
 def defaultGeneral(f):
   # General

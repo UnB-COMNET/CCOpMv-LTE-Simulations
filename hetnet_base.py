@@ -2,22 +2,19 @@ import helper as hp
 import random
 import geometry as geo
 
-def main():
+def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed):
 
-  filename = 'Network_CCOpMv/simulations/eNB3_60.ini'
-  directions = 2
-  center = geo.Coordinate(425*7/2,425*7/2)
-  numUEs = 60
-  sites = 7
-  micro_per_small = 4
-  small_per_site = 1
-  random.seed(123)
-  scen = startScenario(numUEs, center)
+  center = geo.Coordinate(center_x,center_y)
+  random.seed(seed)
+  scen = startScenario(num_ues, center, micro_per_small)
   num_macros = len(scen.macrocells)
   antennasPositions = getMicroAntennasPositions(scen.macrocells)
 
   with open(filename, 'wt') as f:
     # General
+
+    hp.writeCommentConfig(f, "hetnet_base", filename, directions, center_x, center_y,
+                          num_ues, sites, micro_per_small, small_per_site, seed)
 
     hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config eNB3_Base')
@@ -27,7 +24,7 @@ def main():
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${sched}-${repetition}")
     hp.writeSeparation(f, "Micro Cell")
-    hp.writeMultiMicro(f, number= sites*micro_per_small*small_per_site)
+    hp.writeMultiMicro(f, number= num_macros*micro_per_small*small_per_site)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "UEs")
@@ -68,34 +65,21 @@ def main():
     hp.writeEnableHandover(f, object_name= "microCell*", enable= True)
     hp.writeEnableHandoverMultiUE(f, macrocells= scen.macrocells, only_micro= True)
     hp.writeComment(f, text= "X2 configuration")
-    hp.writeX2Configuration(f, object_name= "microCell*", quantity= 4) #Connections in groups of 4
+    hp.writeX2Configuration(f, object_name= "microCell*", quantity= micro_per_small) #Connections in groups of 4
     #hp.writeX2Connections(f, object_names= ["eNB", "microCell"], quantities= [7, 28])
-    hp.writeComment(f, text= "Hotspot0")
-    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [0])
-    hp.writeComment(f, text= "Hotspot1")
-    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [4])
-    hp.writeComment(f, text= "Hotspot2")
-    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [8])
-    hp.writeComment(f, text= "Hotspot3")
-    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [12])
-    hp.writeComment(f, text= "Hotspot4")
-    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [16])
-    hp.writeComment(f, text= "Hotspot5")
-    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [20])
-    hp.writeComment(f, text= "Hotspot6")
-    hp.writeX2Connections(f, object_names = ["microCell"], quantities= [4], initial_values= [24])
+    for i in range(num_macros):
+      hp.writeComment(f, text= "Hotspot{}".format(i))
+      hp.writeX2Connections(f, object_names = ["microCell"], quantities= [micro_per_small], initial_values= [i*micro_per_small])
 
-
-    #TODO: Enable Handover
 
   #geo.plotMap(scen, False, 7)
 
 
-def startScenario(numUEs, center):
+def startScenario(numUEs, center, micro_per_small):
 
   scen = geo.MapHexagonal(center)
   scen.n_ues = numUEs
-  scen.n_antennas = 4
+  scen.n_antennas = micro_per_small
 
   for i in range(len(scen.macrocells)):
     # For each macrocell, it places the smallcells
@@ -116,7 +100,3 @@ def getMicroAntennasPositions(macrocells):
       positions[0] += tmp[0]
       positions[1] += tmp[1]
   return positions
-
-if __name__ == "__main__":
-  main()
-  print("Done")
