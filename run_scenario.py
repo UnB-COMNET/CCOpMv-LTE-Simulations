@@ -14,6 +14,7 @@ def main():
 
   # Scenario only changes with num_ues, center and micro_per_small
   hetb.hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed)
+  #hetb.hetnet_mov('Network_CCOpMv/simulations/hetnet_mov.ini', directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed)
 
 if __name__ == "__main__":
   main()

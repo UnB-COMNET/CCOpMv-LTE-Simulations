@@ -57,6 +57,11 @@ def writeComment(f, text):
 def writeMobilityType(f, type: str, object_name = "ue[*]"):
   f.write('*.{}.mobilityType = "{}"\n'.format(object_name, type))
 
+def writeMovMobility(f, type: str, speed, initial_heading, object_name = "ue[*]"):
+  writeMobilityType(f, type, object_name)
+  f.write('*.{}.mobility.speed = {}mps\n'.format(object_name, speed))
+  f.write('*.{}.mobility.initialMovementHeading = {}deg\n'.format(object_name, initial_heading))
+
 def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[str, float] = 0, display = False):
   f.write('''*.{name}.mobility.initialX = {iniX}m
 *.{name}.mobility.initialY = {iniY}m
@@ -248,7 +253,7 @@ def writeX2Configuration(f, object_name, quantity):
   f.write('*.{}.x2App[*].server.localPort = 5000 + ancestorIndex(1)\n'.format(object_name))
 
 #Connecting only between same object_name
-def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int], initial_values : ty.List[int] = None):
+def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int], initial_values : ty.List[int] = None, initial_app: int = 0):
   if initial_values is None:
     initial_values = np.zeros(len(quantities), dtype= int)
 
@@ -256,19 +261,26 @@ def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int]
     print("ERROR: Missing quantities for all objects.")
     return -1
 
+  ports = [None for i in range(len(object_names))]
+
   for i in range(len(object_names)):
-    ports = np.zeros(quantities[i], dtype= int)
 
     for number in range(initial_values[i], initial_values[i]+quantities[i]):
-      app = 0
-      for count in range(initial_values[i], initial_values[i]+quantities[i]):
-        if count == number:
-          continue
-        else:
-          f.write('*.{name}{number}.x2App[{app}].client.connectAddress = "{name}{count}%x2ppp{port}"\n'
-                  .format(name=object_names[i], number=number, app=app, count = count, port = ports[count-initial_values[i]]))
-          app += 1
-          ports[count-initial_values[i]] += 1
+      app = initial_app
+
+      for j in range(len(object_names)):
+        if ports[j] is None:
+          ports[j] = np.full(quantities[j], initial_app, dtype= int)
+
+        for count in range(initial_values[j], initial_values[j]+quantities[j]):
+          if count == number and i == j:
+            continue
+          else:
+            f.write('*.{name}{number}.x2App[{app}].client.connectAddress = "{name2}{count}%x2ppp{port}"\n'
+                    .format(name=object_names[i], number=number, app=app, name2=object_names[j],
+                            count = count, port = ports[j][count-initial_values[j]]))
+            app += 1
+            ports[j][count-initial_values[j]] += 1
 
 def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x, center_y, sites, micro_per_small, small_per_site, seed):
   f.write('''#Function: {}
