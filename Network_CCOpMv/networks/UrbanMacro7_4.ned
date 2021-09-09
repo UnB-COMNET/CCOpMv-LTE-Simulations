@@ -26,7 +26,7 @@ import lte.corenetwork.nodes.eNodeB;
 import lte.world.radio.LteChannelControl;
 import lte.epc.PgwStandardSimplified;
 import lte.common.LteNetworkConfigurator;
-import inet.common.scenario.ScenarioManager
+import inet.common.scenario.ScenarioManager;
 
 network UrbanMacro7_4
 {
