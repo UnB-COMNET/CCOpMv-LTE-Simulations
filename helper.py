@@ -296,6 +296,12 @@ def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x
 #  seed = {}\n'''.format(function_name, filename, directions, num_ues, center_x,
                         center_y, sites, micro_per_small, small_per_site, seed))
 
+def writeScenarioManager(f, xml, doc= True):
+  if doc:
+    f.write('*.scenarioManager.script = xmldoc("{}")\n'.format(xml))
+  else:
+    f.write('*.scenarioManager.script = xml("{}")\n'.format(xml))
+
 def defaultGeneral(f):
   # General
   f.write("[General]\n")

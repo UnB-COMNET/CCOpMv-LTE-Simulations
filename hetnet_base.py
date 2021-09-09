@@ -2,7 +2,7 @@ import helper as hp
 import random
 import geometry as geo
 
-def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed):
+def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed, with_stop = False):
 
   center = geo.Coordinate(center_x,center_y)
   random.seed(seed)
@@ -71,6 +71,10 @@ def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_
       hp.writeComment(f, text= "Hotspot{}".format(i))
       hp.writeX2Connections(f, object_names = ["microCell"], quantities= [micro_per_small], initial_values= [i*micro_per_small])
 
+    #With stop
+    if (with_stop):
+      hp.makeNewConfig(f, name= 'Config HetNet_Stop', extends= True, extend_name= 'eNB3_Base')
+      hp.writeScenarioManager(f, "hetnet_stop.xml", doc= True)
 
   #geo.plotMap(scen, False, 7)
 

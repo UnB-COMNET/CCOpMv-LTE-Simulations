@@ -26,6 +26,7 @@ import lte.corenetwork.nodes.eNodeB;
 import lte.world.radio.LteChannelControl;
 import lte.epc.PgwStandardSimplified;
 import lte.common.LteNetworkConfigurator;
+import inet.common.scenario.ScenarioManager
 
 network UrbanMacro7_4
 {
@@ -33,6 +34,9 @@ network UrbanMacro7_4
         int numUe = default(1);
         @display("bgb=822,681;bgi=background/streetmap");
     submodules:
+        scenarioManager: ScenarioManager{
+            @display("p=100;is=s");
+        }
         channelControl: LteChannelControl {
             @display("p=101,76;is=s");
         }
