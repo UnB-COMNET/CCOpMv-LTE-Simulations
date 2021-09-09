@@ -138,6 +138,7 @@ def hetnet_mov(filename, directions, center_x, center_y, num_ues, sites, micro_p
     hp.writePropagation(f, model= "LogNormalShadow")
     hp.writeSeparation(f, "Handover")
     hp.writeComment(f, text= "Enable handover")
+    hp.writeEnableHandover(f, object_name= "eNB*", enable= True)
     hp.writeEnableHandover(f, object_name= "microCell*", enable= True)
     hp.writeEnableHandoverMultiUE(f, macrocells= scen.macrocells, only_micro= True)
     hp.writeComment(f, text= "X2 configuration")
