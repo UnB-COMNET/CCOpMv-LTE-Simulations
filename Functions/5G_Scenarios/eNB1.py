@@ -8,7 +8,7 @@ import geometry as geo
 
 def main():
 
-  filename = 'Network_CCOpMv/simulations/Exp-xxxx.ini'
+  filename = '../Network_CCOpMv/simulations/Exp-xxxx.ini'
   directions = 2
   center = geo.Coordinate(500,500)
   numUEs = 30
