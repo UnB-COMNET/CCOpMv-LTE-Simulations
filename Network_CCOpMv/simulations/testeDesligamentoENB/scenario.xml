@@ -1,0 +1,13 @@
+<!-- NOT a mobility trace. This file is used by the ScenarioManager. -->
+<scenario>
+	<at t="5s">
+		<!--disconnect src-module="eNB.cellularNic" src-gate="radioIn"/>-->
+		<!--disconnect src-module="router" src-gate="pppg[0]"/>-->
+		<disconnect src-module="eNB" src-gate="ppp"/>
+		<!--disconnect src-module="microCell" src-gate="ppp"/>-->
+	</at>    
+	<!--set-param t="3s" module="eNB.mobility" par="speed" value="30mps"/>-->
+	<!--set-param t="5s" module="eNB.status" par="initialStatus" value="DOWN"/>-->
+	<!--delete-module t="5s" module="eNB.cellularNic"/>-->
+	<!--shutdown t="5s" module="eNB"/>-->
+</scenario>

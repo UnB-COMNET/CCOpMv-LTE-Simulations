@@ -15,35 +15,44 @@
 
 package networks;
 
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
+import inet.common.scenario.ScenarioManager;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.ethernet.Eth10M;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import lte.corenetwork.binder.LteBinder;
-import lte.corenetwork.nodes.Ue;
-import lte.corenetwork.nodes.eNodeB;
-import lte.world.radio.LteChannelControl;
-import lte.epc.PgwStandardSimplified;
-import lte.common.LteNetworkConfigurator;
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.Ue;
+import simu5g.nodes.eNodeB;
+import simu5g.world.radio.LteChannelControl;
+import simu5g.nodes.PgwStandard;
 
-network UrbanMacro
+network UrbanMacro5G
 {
     parameters:
         int numUe = default(1);
         @display("bgb=822,681;bgi=background/streetmap");
     submodules:
+        scenarioManager: ScenarioManager {
+            @display("p=49.32,209.61;is=s");
+        }
         channelControl: LteChannelControl {
             @display("p=101,76;is=s");
         }
         routingRecorder: RoutingTableRecorder {
             @display("p=102,31;is=s");
         }
-        configurator: LteNetworkConfigurator {
-            @display("p=29,76;is=s");
+        configurator: Ipv4NetworkConfigurator {
+            @display("p=50,125");
+            //config = xmldoc("config.xml");
         }
-        binder: LteBinder {
+        binder: Binder {
             @display("p=29,31;is=s");
+        }
+        carrierAggregation: CarrierAggregation {
+            @display("p=50.993748,258.7;is=s");
         }
         server: StandardHost {
             @display("p=243.96501,94.07125;is=l;i=device/server");
@@ -51,8 +60,7 @@ network UrbanMacro
         router: Router {
             @display("p=397.99374,86.835;i=device/smallrouter");
         }
-        pgw: PgwStandardSimplified { //TODO: entender o modulo
-            nodeType = "PGW";
+        pgw: PgwStandard { //TODO: entender o modulo           
             @display("p=529.28,130.2525;is=l");
         }
         eNB: eNodeB {

@@ -13,19 +13,20 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package LTE.networks;
+package networks;
 
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.ethernet.Eth10M;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import lte.corenetwork.binder.LteBinder;
-import lte.corenetwork.nodes.Ue;
-import lte.corenetwork.nodes.eNodeB;
-import lte.world.radio.LteChannelControl;
-import lte.epc.PgwStandardSimplified;
-import lte.common.LteNetworkConfigurator;
+import simu5g.common.binder.Binder;
+import simu5g.nodes.Ue;
+import simu5g.nodes.eNodeB;
+import simu5g.world.radio.LteChannelControl;
+import simu5g.nodes.PgwStandard;
+import simu5g.common.carrierAggregation.CarrierAggregation;
 
 network UrbanMacro7_4
 {
@@ -39,11 +40,15 @@ network UrbanMacro7_4
         routingRecorder: RoutingTableRecorder {
             @display("p=102,31;is=s");
         }
-        configurator: LteNetworkConfigurator {
+        configurator: Ipv4NetworkConfigurator {
             @display("p=29,76;is=s");
+            //config = xmldoc("config.xml");
         }
-        binder: LteBinder {
+        binder: Binder {
             @display("p=29,31;is=s");
+        }
+        carrierAggregation: CarrierAggregation {
+            @display("p=50.993748,258.7;is=s");
         }
         server: StandardHost {
             @display("p=243.96501,94.07125;is=l;i=device/server");
@@ -51,8 +56,7 @@ network UrbanMacro7_4
         router: Router {
             @display("p=397.99374,86.835;i=device/smallrouter");
         }
-        pgw: PgwStandardSimplified { //TODO: entender o modulo
-            nodeType = "PGW";
+        pgw: PgwStandard { //TODO: entender o modulo
             @display("p=529.28,130.2525;is=l");
         }
         eNB0: eNodeB {

@@ -15,23 +15,25 @@
 
 package networks;
 
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
+import inet.common.scenario.ScenarioManager;
 import inet.networklayer.ipv4.RoutingTableRecorder;
 import inet.node.ethernet.Eth10G;
 import inet.node.ethernet.Eth10M;
 import inet.node.inet.Router;
 import inet.node.inet.StandardHost;
-import lte.corenetwork.binder.LteBinder;
-import lte.corenetwork.nodes.Ue;
-import lte.corenetwork.nodes.eNodeB;
-import lte.world.radio.LteChannelControl;
-import lte.epc.PgwStandardSimplified;
-import lte.common.LteNetworkConfigurator;
+import simu5g.common.binder.Binder;
+import simu5g.common.carrierAggregation.CarrierAggregation;
+import simu5g.nodes.Ue;
+import simu5g.nodes.eNodeB;
+import simu5g.world.radio.LteChannelControl;
+import simu5g.nodes.PgwStandard;
 
 network UrbanMacro7
 {
     parameters:
         int numUe = default(1);
-        @display("bgb=822,681;bgi=background/streetmap");
+        @display("bgb=1390.55,1519.33;bgi=background/streetmap");
     submodules:
         channelControl: LteChannelControl {
             @display("p=101,76;is=s");
@@ -39,20 +41,40 @@ network UrbanMacro7
         routingRecorder: RoutingTableRecorder {
             @display("p=102,31;is=s");
         }
-        configurator: LteNetworkConfigurator {
+        configurator: Ipv4NetworkConfigurator {
             @display("p=29,76;is=s");
         }
-        binder: LteBinder {
+        binder: Binder {
             @display("p=29,31;is=s");
         }
         server: StandardHost {
             @display("p=243.96501,94.07125;is=l;i=device/server");
         }
         router: Router {
-            @display("p=397.99374,86.835;i=device/smallrouter");
+            @display("p=404.15,128.78;i=device/smallrouter");
         }
-        pgw: PgwStandardSimplified { //TODO: entender o modulo
-            nodeType = "PGW";
+        router0: Router {
+            @display("p=412.37,223.31;i=device/smallrouter");
+        }
+        router1: Router {
+            @display("p=667.19,342.5;i=device/smallrouter");
+        }
+        router2: Router {
+            @display("p=850.77,306.88;i=device/smallrouter");
+        }
+        router3: Router {
+            @display("p=180.84,331.54;i=device/smallrouter");
+        }
+        router4: Router {
+            @display("p=390.45,420.59;i=device/smallrouter");
+        }
+        router5: Router {
+            @display("p=305.51,157.55;i=device/smallrouter");
+        }
+        router6: Router {
+            @display("p=778.16003,31.51;i=device/smallrouter");
+        }
+        pgw: PgwStandard { //TODO: entender o modulo
             @display("p=529.28,130.2525;is=l");
         }
         eNB0: eNodeB {
@@ -65,7 +87,7 @@ network UrbanMacro7
             @display("p=500,1500;is=vl");
         }
         eNB3: eNodeB {
-            @display("p=704.18,587.73;is=vl");
+            @display("p=58.91,172.62;is=vl");
         }
         eNB4: eNodeB {
             @display("p=305.51,606.91;is=vl");
@@ -74,7 +96,7 @@ network UrbanMacro7
             @display("p=200.02,442.51;is=vl");
         }
         eNB6: eNodeB {
-            @display("p=745.28,349.35;is=vl");
+            @display("p=778.16003,158.92;is=vl");
         }
         ue0[numUe]: Ue {
             @display("p=757.61,469.91");
@@ -98,13 +120,13 @@ network UrbanMacro7
             @display("p=110.97,376.75");
         }
         microCell0: eNodeB {
-            @display("p=360.31,308.25");
+            @display("p=404.15,323.32");
         }
         microCell1: eNodeB {
             @display("p=658.97003,442.51");
         }
         microCell2: eNodeB {
-            @display("p=623.35,300.03");
+            @display("p=928.86,401.41");
         }
         microCell3: eNodeB {
             @display("p=268.52,376.75");
@@ -116,7 +138,7 @@ network UrbanMacro7
             @display("p=293.18,254.82");
         }
         microCell6: eNodeB {
-            @display("p=442.51,335.65");
+            @display("p=928.86,224.68001");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++; //TODO: entender Eth10G e as ligações
@@ -128,11 +150,27 @@ network UrbanMacro7
         pgw.pppg++ <--> Eth10G <--> eNB4.ppp;
         pgw.pppg++ <--> Eth10G <--> eNB5.ppp;
         pgw.pppg++ <--> Eth10G <--> eNB6.ppp;
-        pgw.pppg++ <--> Eth10G <--> microCell0.ppp;
-        pgw.pppg++ <--> Eth10G <--> microCell1.ppp;
-        pgw.pppg++ <--> Eth10G <--> microCell2.ppp;
-        pgw.pppg++ <--> Eth10G <--> microCell3.ppp;
-        pgw.pppg++ <--> Eth10G <--> microCell4.ppp;
-        pgw.pppg++ <--> Eth10G <--> microCell5.ppp;
-        pgw.pppg++ <--> Eth10G <--> microCell6.ppp;
+        eNB0.x2++ <--> Eth10G <--> microCell0.x2++;
+        eNB1.x2++ <--> Eth10G <--> microCell1.x2++;
+        eNB2.x2++ <--> Eth10G <--> microCell2.x2++;
+        eNB3.x2++ <--> Eth10G <--> microCell3.x2++;
+        eNB4.x2++ <--> Eth10G <--> microCell4.x2++;
+        eNB5.x2++ <--> Eth10G <--> microCell5.x2++;
+        eNB6.x2++ <--> Eth10G <--> microCell6.x2++;
+
+        router0.pppg++ <--> Eth10G <--> microCell0.ppp;
+        router1.pppg++ <--> Eth10G <--> microCell1.ppp;
+        router2.pppg++ <--> Eth10G <--> microCell2.ppp;
+        router3.pppg++ <--> Eth10G <--> microCell3.ppp;
+        router4.pppg++ <--> Eth10G <--> microCell4.ppp;
+        router5.pppg++ <--> Eth10G <--> microCell5.ppp;
+        router6.pppg++ <--> Eth10G <--> microCell6.ppp;
+        
+        pgw.pppg++ <--> Eth10G <--> router0.pppg++;
+        pgw.pppg++ <--> Eth10G <--> router1.pppg++;
+        pgw.pppg++ <--> Eth10G <--> router2.pppg++;
+        pgw.pppg++ <--> Eth10G <--> router3.pppg++;
+        pgw.pppg++ <--> Eth10G <--> router4.pppg++;
+        pgw.pppg++ <--> Eth10G <--> router5.pppg++;
+        pgw.pppg++ <--> Eth10G <--> router6.pppg++;
 }
