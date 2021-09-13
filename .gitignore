@@ -1,4 +1,4 @@
 /__pycache__/
-/Network_CCOpMv/simulations/results
-/Network_CCOpMv/simulations/.qtenvrc
+**/results
+**/.qtenvrc
 /**.cmdenv-log
