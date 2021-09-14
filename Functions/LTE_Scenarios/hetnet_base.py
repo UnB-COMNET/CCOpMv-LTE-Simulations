@@ -18,7 +18,7 @@ def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_
 
     hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config eNB3_Base')
-    hp.writeNetwork(f, network= 'networks.UrbanMacro7_4')
+    hp.writeNetwork(f, network= 'LTE.networks.UrbanMacro7_4')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
@@ -94,7 +94,7 @@ def hetnet_mov(filename, directions, center_x, center_y, num_ues, sites, micro_p
 
     hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config HetNet_Mov')
-    hp.writeNetwork(f, network= 'networks.Hetnet_mov')
+    hp.writeNetwork(f, network= 'LTE.networks.Hetnet_mov')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)

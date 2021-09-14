@@ -17,8 +17,8 @@ def main():
     # General
 
     hp.defaultGeneral(f)
-    hp.makeNewConfig(f, name= 'Config eNB2_Base')
-    hp.writeNetwork(f, network= 'networks.UrbanMacro7')
+    hp.makeNewConfig(f, name= 'Config eNB2_sBase')
+    hp.writeNetwork(f, network= 'LTE.networks.UrbanMacro7')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])
     hp.nl(f)
