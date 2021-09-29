@@ -1,10 +1,13 @@
+import sys
+sys.path.append("..")
+
 import helper as hp
 import random
 import geometry as geo
 
 def main():
 
-  filename = '../Network_CCOpMv/simulations/eNB2_1.ini'#'Network_CCOpMv/simulations/eNB2_60.ini'
+  filename = '../../Network_CCOpMv/LTE/simulations/eNB2_1.ini'#'Network_CCOpMv/simulations/eNB2_60.ini'
   directions = 2
   center = geo.Coordinate(425*7/2,425*7/2)
   numUEs = 1#60
@@ -17,7 +20,7 @@ def main():
     # General
 
     hp.defaultGeneral(f)
-    hp.makeNewConfig(f, name= 'Config eNB2_sBase')
+    hp.makeNewConfig(f, name= 'Config eNB2_Base')
     hp.writeNetwork(f, network= 'LTE.networks.UrbanMacro7')
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [123])

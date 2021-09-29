@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 import helper as hp
 import random
 import geometry as geo
