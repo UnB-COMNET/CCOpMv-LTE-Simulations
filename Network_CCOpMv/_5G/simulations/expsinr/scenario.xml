@@ -1,0 +1,10 @@
+<!-- NOT a mobility trace. This file is used by the ScenarioManager. -->
+<scenario>
+    <set-param t="10s" module="ue[1].mobility" par="speed" value="10mps"/>
+    <set-param t="20s" module="ue[1].mobility" par="speed" value="50mps"/>
+    <set-param t="30s" module="ue[1].mobility" par="speed" value="1mps"/>
+    <set-param t="40s" module="ue[1].mobility" par="speed" value="100mps"/>
+    <set-param t="50s" module="ue[1].mobility" par="speed" value="1mps"/>
+    <set-param t="60s" module="ue[1].mobility" par="speed" value="40mps"/>
+    <set-param t="70s" module="ue[1].mobility" par="speed" value="5mps"/>
+</scenario>
