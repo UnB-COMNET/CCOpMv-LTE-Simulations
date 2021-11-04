@@ -23,6 +23,8 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
+    hp.writeSeparation(f, "Resource Blocks")
+    hp.writeResourceBlocks(f, 6, is5G= True)
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, num_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
