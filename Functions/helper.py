@@ -296,6 +296,15 @@ def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x
 #  seed = {}\n'''.format(function_name, filename, directions, num_ues, center_x,
                         center_y, sites, micro_per_small, small_per_site, seed))
 
+def writeCommentConfigILP(f, function_name, filename, seed, d_height, d_width, d_region):
+  f.write('''#Function: {}
+#Parameters: 
+#  filename = '{}'
+#  seed = {}
+#  Map height distance = {}
+#  Map width distance = {}
+#  Region side distance = {}\n'''.format(function_name, filename, seed, d_height, d_width, d_region))
+
 def writeScenarioManager(f, xml, doc= True):
   if doc:
     f.write('*.scenarioManager.script = xmldoc("{}")\n'.format(xml))
