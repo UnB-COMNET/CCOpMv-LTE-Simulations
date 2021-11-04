@@ -4,7 +4,7 @@
 	<comment></comment>
 	<projects>
 		<project>inet4</project>
-		<project>simulte</project>
+		<project>Simu5G-1.1.0</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
