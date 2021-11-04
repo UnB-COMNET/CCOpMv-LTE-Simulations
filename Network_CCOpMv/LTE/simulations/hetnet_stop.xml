@@ -1,0 +1,8 @@
+<hetnet_stop>
+    <at t="1.5">
+        <set-param module="microCell0.lteNic.phy" par="microTxPower" value="0"/>
+    </at>
+    <at t="5.5">
+        <set-param module="microCell0.lteNic.phy" par="microTxPower" value="30"/>
+    </at>
+</hetnet_stop>
