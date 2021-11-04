@@ -1,6 +1,7 @@
 from geometry import MapHexagonal, Macrocell
 import typing as ty
 import numpy as np
+import geometry as geo
 
 separation = "###############"
 
@@ -41,6 +42,7 @@ def writeConnectUE(f, UEs: ty.List[int] = [1], ENBs: ty.List[int] = [1], object_
         else:
           break
 
+#TODo: change function name to indicate macrocell need
 def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
   last = len(macrocells)
   for i in range(len(macrocells)):
@@ -69,6 +71,12 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
 *.{name}.mobility.initFromDisplayString = {display}
 '''.format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
+def writeArrayIniMobility(f, object_array_name, coordenates: ty.List[ty.List[int]]):
+  count = 0
+  for x, y in zip(coordenates[0], coordenates[1]):
+    writeIniMobility(f, object_array_name+'['+str(count)+']', x, y)
+    count += 1
+
 def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
   num_coords = len(coordenates)
   count = 0
@@ -83,6 +91,7 @@ def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
       writeIniMobility(f, object_name+str(count), x, y, y)
       count += 1
 
+#TODo: Trocar nome para indicar que só funciona com o Hexagonal
 def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bool = False):
   count = 0
   for m in scen.macrocells:
@@ -216,11 +225,11 @@ def writeScenario(f, object_name, scenario: str = 'URBAN_MACROCELL', for5g: bool
   else:
     f.write('**.{}.lteNic.channelModel.scenario = "{}"\n'.format(object_name, scenario))
 
-def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL'):
+def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL', for5g: bool = False):
   for i in range(num):
-    writeScenario(f, object_name+str(i), scenario)
+    writeScenario(f, object_name+str(i), scenario, for5g)
 
-def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.List[int]] = [[1,1]], for5g: bool = False):
+def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.Tuple[int,str]] = [[1,1]], for5g: bool = False):
   count = 0
   for i in range(len(num_and_scen)):
     for l in range(num_and_scen[i][0]):
