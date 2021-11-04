@@ -14,10 +14,10 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed_info", filename, seed, d_height, d_width, d_region)
 
-    hp.defaultGeneral(f)
+    hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_info')
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
-    hp.writeTime(f, time= 10, repeat= 10)
+    hp.writeTime(f, time= 10, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")

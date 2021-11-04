@@ -337,7 +337,7 @@ def writeScenarioManager(f, xml, doc= True):
   else:
     f.write('*.scenarioManager.script = xml("{}")\n'.format(xml))
 
-def defaultGeneral(f):
+def defaultGeneral(f, is5g: bool = False):
   # General
   f.write("[General]\n")
   #Time
@@ -348,5 +348,8 @@ def defaultGeneral(f):
   f.write("seed-set = ${repetition}\n")
   #Resource blocks
   writeSeparation(f, "Resource Blocks")
-  f.write('''**.numRbDl = 6\n**.numRbUl = 6
+  if is5g:
+    f.write('''**.numBands = 6 # this is equal to the number of RBs\n''')
+  else:
+    f.write('''**.numRbDl = 6\n**.numRbUl = 6
 **.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')
