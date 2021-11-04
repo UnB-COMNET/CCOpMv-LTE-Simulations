@@ -20,7 +20,7 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeTime(f, time= 10, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
-    hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
+    hp.writeOutput(f, "${resultdir}/${configname}/${iniX}-${iniY}")
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "Resource Blocks")
