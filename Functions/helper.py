@@ -71,6 +71,23 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
 *.{name}.mobility.initFromDisplayString = {display}
 '''.format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
+def getOptionsString(ini: ty.List[float], name: str) -> str:
+  ini_str = '${'+name+'='
+  for f in np.unique(ini):
+    ini_str += ' ' + str(f) + 'm,'
+  ini_str = ini_str[:-1] + "}"
+
+  return ini_str
+
+def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display = False):
+
+  f.write('''*.{name}.mobility.initialX = {iniX}
+*.{name}.mobility.initialY = {iniY}
+*.{name}.mobility.initialZ = {iniZ}
+*.{name}.mobility.initFromDisplayString = {display}
+'''.format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
+          iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
+
 def writeArrayIniMobility(f, object_array_name, coordenates: ty.List[ty.List[int]]):
   count = 0
   for x, y in zip(coordenates[0], coordenates[1]):

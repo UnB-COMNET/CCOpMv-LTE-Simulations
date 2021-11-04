@@ -20,7 +20,7 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeTime(f, time= 10, repeat= 10)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
-    hp.writeOutput(f, "${resultdir}/${configname}/${enb_region}-${repetition}")
+    hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "UEs")
@@ -36,7 +36,7 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
-    #hp.writeIniMobility(f, 'eNB',)
+    hp.writeOptionsIniMobility(f, 'eNB', regions_x_y[0], regions_x_y[1])
     hp.writeConstraint(f, object_name= 'eNB*', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
@@ -44,8 +44,12 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordenates= ues_x_y)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeSeparation(f, "Apps")
-    hp.writeNumApps(f, numUEs= num_ues, directions= 1)
-    hp.writeComment(f, text= "N sei ainda")
+    hp.writeNumApps(f, numUEs= num_ues, directions= 2)
+    #TODo: Change app?
+    hp.writeComment(f, text= "VoIP UL")
+    hp.writeAppVoipUL(f, num_ues, n_app= 0)
+    hp.writeComment(f, text= "VoIP DL")
+    hp.writeAppVoipDL(f, num_ues, n_app= 1)
 
 
 def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =100):
@@ -54,12 +58,3 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
   scen.placeTestUEs()
 
   return scen
-
-def getMicroAntennasPositions(macrocells):
-  positions = [[],[]]
-  for m in macrocells:
-    for s in m.smallcells:
-      tmp = s.getAntennasPositionList()
-      positions[0] += tmp[0]
-      positions[1] += tmp[1]
-  return positions

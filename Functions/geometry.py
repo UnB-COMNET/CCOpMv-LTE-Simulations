@@ -309,7 +309,10 @@ class MapChess:
 
     def coord2Region(self, coord: Coordinate) -> int:
         line = int(coord.y/self.d_region)
+        line = line if line < self.n_width else self.n_width-1
         column = int(coord.x/self.d_region)
+        column = column if column < self.n_height else self.n_height-1
+
         region_id = line*self.n_width + column
         return region_id
 
