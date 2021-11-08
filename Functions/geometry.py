@@ -66,15 +66,13 @@ class Macrocell:
         '''Documentation...'''
         if not self.smallcells:
             print("There are no smallcell in the macrocell")
-            return [None,None]
+            return [None]
 
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.smallcells)):
-            list_coordinateX.append(self.smallcells[i].center.x)
-            list_coordinateY.append(self.smallcells[i].center.y)
+            list_coordinate.append(self.smallcells[i].center)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
     
     def getUEsPositionList(self) -> List[List[float]]:
         '''Documentation'''
@@ -96,8 +94,7 @@ class Macrocell:
     
         list_coordinate = []
         for i in range(len(self.antennas)):
-            list_coordinate.append(
-                Coordinate(self.antennas[i].x, self.antennas[i].y))
+            list_coordinate.append(self.antennas[i].position)
         
         return list_coordinate
 
@@ -259,11 +256,11 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
         plt.plot(macrocells_eixoX, macrocells_eixoY, linestyle='', marker='o', color='red')
     
     for i in range(n_macrocells):
-        [smallcells_eixoX, smallcells_eixoY] = map.macrocells[i].getSmallcellsPositionList()
+        smallcells = map.macrocells[i].getSmallcellsPositionList()
         if n_macrocells == 1:
-            plt.plot(smallcells_eixoX[0], smallcells_eixoY[0], linestyle='', marker='.', color='green')
+            plt.plot([coord.x for coord in smallcells][0], [coord.y for coord in smallcells][0], linestyle='', marker='.', color='green')
         else:
-            plt.plot(smallcells_eixoX, smallcells_eixoY, linestyle='', marker='.', color='green')
+            plt.plot([coord.x for coord in smallcells], [coord.y for coord in smallcells], linestyle='', marker='.', color='green')
         
         if plotUEs:            
             ues = map.macrocells[i].getUEsPositionList()
