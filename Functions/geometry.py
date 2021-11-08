@@ -318,15 +318,13 @@ class MapChess:
                 self.map_antennas[m] = Antenna(self.region2Coord(m), count)
                 count += 1
 
-    def getRegionsCentersList(self) -> List[List[float]]:
-        list_coordinateX = []
-        list_coordinateY = []
+    def getRegionsCentersList(self) -> List[Coordinate]:
+        list_coordinate = []
         for m in range(self.n_regions):
             coord = self.region2Coord(m)
-            list_coordinateX.append(coord.x)
-            list_coordinateY.append(coord.y)
+            list_coordinate.append(coord)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
     def getAntennasPositionList(self) -> List[Coordinate]:
 
