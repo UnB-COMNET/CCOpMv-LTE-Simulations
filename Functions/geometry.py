@@ -34,7 +34,7 @@ class Smallcell:
         '''Documentation...'''
         if not self.antennas:
             print("There are no antennas in the smallcell")
-            return [None]
+            return []
 
         list_coordinate = []
         for i in range(len(self.antennas)):
@@ -47,7 +47,7 @@ class Smallcell:
         '''Documentation'''
         if not self.ues:
             print("There are no UEs in the smallcell")
-            return [None,None]
+            return []
     
         list_coordinate = []
         for i in range(len(self.ues)):
@@ -62,11 +62,11 @@ class Macrocell:
         self.ues = []
         self.antennas = []
 
-    def getSmallcellsPositionList(self) -> List[List[float]]:
+    def getSmallcellsPositionList(self) -> List[Coordinate]:
         '''Documentation...'''
         if not self.smallcells:
             print("There are no smallcell in the macrocell")
-            return [None]
+            return []
 
         list_coordinate = []
         for i in range(len(self.smallcells)):
@@ -74,11 +74,11 @@ class Macrocell:
         
         return list_coordinate
     
-    def getUEsPositionList(self) -> List[List[float]]:
+    def getUEsPositionList(self) -> List[Coordinate]:
         '''Documentation'''
         if not self.ues:
             print("There are no UE in the macrocell")
-            return [None]
+            return []
     
         list_coordinate = []
         for i in range(len(self.ues)):
@@ -90,7 +90,7 @@ class Macrocell:
         '''Documentation'''
         if not self.antennas:
             print("There are no antenna in the macrocell")
-            return [None]
+            return []
     
         list_coordinate = []
         for i in range(len(self.antennas)):
@@ -131,19 +131,17 @@ class MapHexagonal:
             macrocell = Macrocell(position)
             self.macrocells.append(macrocell)
 
-    def getMacrocellsPositionList(self) -> List[List[float]]:
+    def getMacrocellsPositionList(self) -> List[Coordinate]:
         '''Documentation...'''
         if not self.macrocells:
             print("There are no macrocells in the hexagonal map")
-            return [None,None]
+            return []
 
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.macrocells)):
-            list_coordinateX.append(self.macrocells[i].center.x)
-            list_coordinateY.append(self.macrocells[i].center.y)
+            list_coordinate.append(self.macrocells[i].center)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
     def placeSmallCell(self, macrocell: Macrocell, radius, min_distance) :
         position = placeObject(macrocell,radius,min_distance)
@@ -249,11 +247,11 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
         print("Invalid number of macrocells. Insert 1 or 7.")        
         return
 
-    [macrocells_eixoX, macrocells_eixoY] = map.getMacrocellsPositionList() 
+    macrocells = map.getMacrocellsPositionList() 
     if n_macrocells == 1:
-        plt.plot(macrocells_eixoX[0], macrocells_eixoY[0], linestyle='', marker='o', color='red')
+        plt.plot([coord.x for coord in macrocells][0], [coord.y for coord in macrocells][0], linestyle='', marker='o', color='red')
     else:
-        plt.plot(macrocells_eixoX, macrocells_eixoY, linestyle='', marker='o', color='red')
+        plt.plot([coord.x for coord in macrocells], [coord.y for coord in macrocells], linestyle='', marker='o', color='red')
     
     for i in range(n_macrocells):
         smallcells = map.macrocells[i].getSmallcellsPositionList()
@@ -339,7 +337,7 @@ class MapChess:
         
         return [list_coordinate]
 
-    def getUEsPositionList(self) -> List[List[float]]:
+    def getUEsPositionList(self) -> List[Coordinate]:
         list_coordinate = []
         for coord in self.map_ues:
             if (coord != None):

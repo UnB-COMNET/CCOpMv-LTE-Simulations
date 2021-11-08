@@ -95,19 +95,11 @@ def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate]
     writeIniMobility(f, object_array_name+'['+str(count)+']', coord.x, coord.y)
     count += 1
 
-def writeMultiIniMobility(f, object_name, coordinates: ty.List[ty.List[int]]):
-  num_coords = len(coordinates)
+def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):
   count = 0
-  if num_coords < 2:
-    print("ERROR: necessary list with x coordinate list and y coordinate list")
-  elif num_coords == 2:
-    for x, y in zip(coordinates[0], coordinates[1]):
-      writeIniMobility(f, object_name+str(count), x, y)
-      count += 1
-  else:
-    for x, y, z in zip(coordinates[0], coordinates[1], coordinates[2]):
-      writeIniMobility(f, object_name+str(count), x, y, z)
-      count += 1
+  for coord in coordinates:
+    writeIniMobility(f, object_name+str(count), coord.x, coord.y)
+    count += 1
 
 #TODo: Trocar nome para indicar que só funciona com o Hexagonal
 def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bool = False):
@@ -117,10 +109,7 @@ def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bo
     iniZ=np.zeros(scen.n_ues)
     ini = m.getUEsPositionList()
     ini_smallcell = m.smallcells[0].getUEsPositionList()
-    if ini == [None]:
-      ini = []
-    if ini_smallcell == [None]:
-      ini_smallcell = []
+
     ini = ini + ini_smallcell
     for i in range(len(ini)):
       f.write('''*.ue{num}[{number}].mobility.initialX = {iniX}m
