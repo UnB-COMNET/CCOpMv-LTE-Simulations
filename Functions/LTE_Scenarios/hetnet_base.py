@@ -176,6 +176,6 @@ def getMicroAntennasPositions(macrocells):
   for m in macrocells:
     for s in m.smallcells:
       tmp = s.getAntennasPositionList()
-      positions[0] += tmp[0]
-      positions[1] += tmp[1]
+      positions[0] += [coord.x for coord in tmp]
+      positions[1] += [coord.y for coord in tmp]
   return positions
