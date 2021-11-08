@@ -39,23 +39,21 @@ class Smallcell:
         list_coordinate = []
         for i in range(len(self.antennas)):
             list_coordinate.append(
-                Coordinate(self.antennas[i].position.x, self.antennas[i].position.y))
+                self.antennas[i].position)
         
         return list_coordinate
 
-    def getUEsPositionList(self) -> List[List[float]]:
+    def getUEsPositionList(self) -> List[Coordinate]:
         '''Documentation'''
         if not self.ues:
             print("There are no UEs in the smallcell")
             return [None,None]
     
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.ues)):
-            list_coordinateX.append(self.ues[i].position.x)
-            list_coordinateY.append(self.ues[i].position.y)    
+            list_coordinate.append(self.ues[i].position)  
 
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
 class Macrocell:
     def __init__(self, center: Coordinate) :
@@ -82,15 +80,13 @@ class Macrocell:
         '''Documentation'''
         if not self.ues:
             print("There are no UE in the macrocell")
-            return [None,None]
+            return [None]
     
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.ues)):
-            list_coordinateX.append(self.ues[i].position.x)
-            list_coordinateY.append(self.ues[i].position.y)
+            list_coordinate.append(self.ues[i].position)
 
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
     def getAntennasPositionList(self) -> List[Coordinate]:
         '''Documentation'''
@@ -270,16 +266,16 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
             plt.plot(smallcells_eixoX, smallcells_eixoY, linestyle='', marker='.', color='green')
         
         if plotUEs:            
-            [ues_eixoX, ues_eixoY] = map.macrocells[i].getUEsPositionList()
-            plt.plot(ues_eixoX, ues_eixoY, linestyle='', marker='*', color='orange')
+            ues = map.macrocells[i].getUEsPositionList()
+            plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='*', color='orange')
 
         for j in range(len(map.macrocells[i].smallcells)):
             antennas = map.macrocells[i].smallcells[j].getAntennasPositionList()
             plt.plot([coord.x for coord in antennas], [coord.y for coord in antennas], linestyle='', marker='.', color='blue')
 
             if plotUEs:
-                [ues_eixoX, ues_eixoY] = map.macrocells[i].smallcells[j].getUEsPositionList()
-                plt.plot(ues_eixoX, ues_eixoY, linestyle='', marker='*', color='purple')
+                ues = map.macrocells[i].smallcells[j].getUEsPositionList()
+                plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='*', color='purple')
 
         if i == 0 and n_macrocells == 1:
             break
@@ -347,15 +343,13 @@ class MapChess:
         return [list_coordinate]
 
     def getUEsPositionList(self) -> List[List[float]]:
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for coord in self.map_ues:
             if (coord != None):
                 for ue in coord:
-                    list_coordinateX.append(ue.position.x)
-                    list_coordinateY.append(ue.position.y)
+                    list_coordinate.append(ue.position)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
     #def getSinrMap(self) -> List[List[float]]:
     #    regions_centers = self.getRegionsCentersList()
