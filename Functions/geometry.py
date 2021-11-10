@@ -5,6 +5,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import arctan, not_equal
+import sinr_comput as sc
 
 class Coordinate:
     def __init__(self, x, y):
@@ -344,13 +345,14 @@ class MapChess:
         
         return list_coordinate
 
-    #def getSinrMap(self) -> List[List[float]]:
-    #    regions_centers = self.getRegionsCentersList()
-    #    for enb in range(self.n_regions):
-    #        coord = self.region2Coord()
-    #        for ue in regions_centers:
-    #            pass
-
+    def getSinrMap(self) -> List[List[float]]:
+        regions_centers = self.getRegionsCentersList()
+        sinr_map = []
+        for enb_region in range(self.n_regions):
+            sinr_map.append([])
+            enb_coord = self.region2Coord(enb_region)
+            for ue in regions_centers:
+                sinr_map[enb_region].append(0)
 
 def exportMap():
     None
