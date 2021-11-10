@@ -92,13 +92,13 @@ def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[
 def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate]):
   count = 0
   for coord in coordinates:
-    writeIniMobility(f, object_array_name+'['+str(count)+']', coord.x, coord.y)
+    writeIniMobility(f, object_array_name+'['+str(count)+']', coord.x, coord.y, coord.z)
     count += 1
 
 def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):
   count = 0
   for coord in coordinates:
-    writeIniMobility(f, object_name+str(count), coord.x, coord.y)
+    writeIniMobility(f, object_name+str(count), coord.x, coord.y, coord.z)
     count += 1
 
 #TODo: Trocar nome para indicar que só funciona com o Hexagonal

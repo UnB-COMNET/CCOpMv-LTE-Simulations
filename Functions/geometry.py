@@ -4,19 +4,19 @@ from random import random
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import arctan, not_equal
-import sinr_comput as sc
+from numpy import arctan, dtype, not_equal
+#import sinr_comput as sc
 
 class Coordinate:
     def __init__(self, x, y, z = 0):
         self.x = x
         self.y = y
-        self.y = z
+        self.z = z
     
     def setCoordinate(self, x, y, z = 0):
         self.x = x
         self.y = y
-        self.y = z
+        self.z = z
 
 class PolarCoordinate:
     def __init__(self, r, phi):
@@ -316,7 +316,8 @@ class MapChess:
         #self.map_ues = np.array(
         #                [[Ue(self.region2Coord(m), m)] 
         #                for m in range(self.n_regions)])
-        self.map_ues = np.empty(self.n_regions)
+        self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
+        self.map_ues.fill([])
         for m in range(self.n_regions):
             coord = self.region2Coord(m)
             coord.z = self.h_ues
@@ -326,7 +327,8 @@ class MapChess:
 
     def placeAntennas(self, list_regions) :
         count = 0
-        self.map_antennas = np.empty(self.n_regions).fill(None)
+        self.map_antennas = np.empty(self.n_regions, dtype= np.dtype(object))
+        self.map_antennas.fill(None)
         for m in list_regions:
             if m < self.map_antennas.size:
                 coord = self.region2Coord(m)
