@@ -3,6 +3,7 @@ from typing import List, Mapping, Union, Tuple
 from random import random
 import matplotlib
 import matplotlib.pyplot as plt
+import numpy as np
 from numpy import arctan, not_equal
 
 class Coordinate:
@@ -287,6 +288,78 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
     
     plt.show()
     print("Plot")
+
+class MapChess:
+    def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100) :
+        self.d_region = d_region
+        self.d_width = d_width
+        self.d_height = d_height
+        self.n_width = int(d_width/d_region)
+        self.n_height = int(d_height/d_region)
+        self.n_regions = self.n_height*self.n_width
+        
+        self.map_antennas = np.empty(self.n_regions).fill(None)
+        self.map_ues = np.empty(self.n_regions).fill(None)
+
+    def region2Coord(self, region_id: int) -> Coordinate:
+        coord = Coordinate(
+            self.d_region*(region_id%self.n_width)+self.d_region/2,
+            self.d_region*int(region_id/self.n_height)+self.d_region/2)
+        return coord
+
+    def coord2Region(self, coord: Coordinate) -> int:
+        line = int(coord.y/self.d_region)
+        line = line if line < self.n_width else self.n_width-1
+        column = int(coord.x/self.d_region)
+        column = column if column < self.n_height else self.n_height-1
+
+        region_id = line*self.n_width + column
+        return region_id
+
+    def placeTestUEs(self):
+        self.map_ues = np.array(
+                        [[Ue(self.region2Coord(m), m)] 
+                        for m in range(self.n_regions)])
+
+    def placeAntennas(self, list_regions) :
+        count = 0
+        self.map_antennas = np.empty(self.n_regions).fill(None)
+        for m in list_regions:
+            if m < self.map_antennas.size:
+                self.map_antennas[m] = Antenna(self.region2Coord(m), count)
+                count += 1
+
+    def getRegionsCentersList(self) -> List[List[float]]:
+        list_coordinateX = []
+        list_coordinateY = []
+        for m in range(self.n_regions):
+            coord = self.region2Coord(m)
+            list_coordinateX.append(coord.x)
+            list_coordinateY.append(coord.y)
+        
+        return [list_coordinateX,list_coordinateY]
+
+    def getAntennasPositionList(self) -> List[List[float]]:
+
+        list_coordinateX = []
+        list_coordinateY = []
+        for ant in self.map_antennas:
+            if (ant != None):
+                list_coordinateX.append(ant.position.x)
+                list_coordinateY.append(ant.position.y)
+        
+        return [list_coordinateX,list_coordinateY]
+
+    def getUEsPositionList(self) -> List[List[float]]:
+        list_coordinateX = []
+        list_coordinateY = []
+        for coord in self.map_ues:
+            if (coord != None):
+                for ue in coord:
+                    list_coordinateX.append(ue.position.x)
+                    list_coordinateY.append(ue.position.y)
+        
+        return [list_coordinateX,list_coordinateY]                                         
 
 def exportMap():
     None

@@ -1,6 +1,7 @@
 from geometry import MapHexagonal, Macrocell
 import typing as ty
 import numpy as np
+import geometry as geo
 
 separation = "###############"
 
@@ -41,6 +42,7 @@ def writeConnectUE(f, UEs: ty.List[int] = [1], ENBs: ty.List[int] = [1], object_
         else:
           break
 
+#TODo: change function name to indicate macrocell need
 def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
   last = len(macrocells)
   for i in range(len(macrocells)):
@@ -69,6 +71,29 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
 *.{name}.mobility.initFromDisplayString = {display}
 '''.format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
+def getOptionsString(ini: ty.List[float], name: str) -> str:
+  ini_str = '${'+name+'='
+  for f in np.unique(ini):
+    ini_str += ' ' + str(f) + 'm,'
+  ini_str = ini_str[:-1] + "}"
+
+  return ini_str
+
+def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display = False):
+
+  f.write('''*.{name}.mobility.initialX = {iniX}
+*.{name}.mobility.initialY = {iniY}
+*.{name}.mobility.initialZ = {iniZ}
+*.{name}.mobility.initFromDisplayString = {display}
+'''.format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
+          iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
+
+def writeArrayIniMobility(f, object_array_name, coordenates: ty.List[ty.List[int]]):
+  count = 0
+  for x, y in zip(coordenates[0], coordenates[1]):
+    writeIniMobility(f, object_array_name+'['+str(count)+']', x, y)
+    count += 1
+
 def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
   num_coords = len(coordenates)
   count = 0
@@ -83,6 +108,7 @@ def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
       writeIniMobility(f, object_name+str(count), x, y, y)
       count += 1
 
+#TODo: Trocar nome para indicar que só funciona com o Hexagonal
 def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bool = False):
   count = 0
   for m in scen.macrocells:
@@ -281,11 +307,11 @@ def writeScenario(f, object_name, scenario: str = 'URBAN_MACROCELL', for5g: bool
   else:
     f.write('**.{}.lteNic.channelModel.scenario = "{}"\n'.format(object_name, scenario))
 
-def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL'):
+def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL', for5g: bool = False):
   for i in range(num):
-    writeScenario(f, object_name+str(i), scenario)
+    writeScenario(f, object_name+str(i), scenario, for5g)
 
-def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.List[int]] = [[1,1]], for5g: bool = False):
+def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.Tuple[int,str]] = [[1,1]], for5g: bool = False):
   count = 0
   for i in range(len(num_and_scen)):
     for l in range(num_and_scen[i][0]):
@@ -361,13 +387,29 @@ def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x
 #  seed = {}\n'''.format(function_name, filename, directions, num_ues, center_x,
                         center_y, sites, micro_per_small, small_per_site, seed))
 
+def writeCommentConfigILP(f, function_name, filename, seed, d_height, d_width, d_region):
+  f.write('''#Function: {}
+#Parameters: 
+#  filename = '{}'
+#  seed = {}
+#  Map height distance = {}
+#  Map width distance = {}
+#  Region side distance = {}\n'''.format(function_name, filename, seed, d_height, d_width, d_region))
+
 def writeScenarioManager(f, xml, doc= True):
   if doc:
     f.write('*.scenarioManager.script = xmldoc("{}")\n'.format(xml))
   else:
     f.write('*.scenarioManager.script = xml("{}")\n'.format(xml))
 
-def defaultGeneral(f):
+def writeResourceBlocks(f, num: int, is5G: bool= False):
+  if is5G:
+    f.write("**.numBands = {}\n".format(num))
+  else:
+    f.write('''**.numRbDl = {}\n**.numRbUl = {}
+**.binder.numBands = {} # this value should be kept equal to the number of RBs\n'''.format(num))
+
+def defaultGeneral(f, is5g: bool = False):
   # General
   f.write("[General]\n")
   #Time
@@ -377,6 +419,7 @@ def defaultGeneral(f):
   writeOutput(f, "${resultdir}/${configname}/${repetition}")
   f.write("seed-set = ${repetition}\n")
   #Resource blocks
-  writeSeparation(f, "Resource Blocks")
-  f.write('''**.numRbDl = 6\n**.numRbUl = 6
+  if not is5g:
+    writeSeparation(f, "Resource Blocks")
+    f.write('''**.numRbDl = 6\n**.numRbUl = 6
 **.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')
