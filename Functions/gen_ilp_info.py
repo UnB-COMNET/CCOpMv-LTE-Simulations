@@ -10,12 +10,22 @@ def main():
   #print(sc.linear_to_db(100))
 
   #Teste jakes fadding
-  fading1 = sc.jakes_fadding(6, 0, 363**-9, 0.7, 1)
-  print(fading1)
-  fading2 = sc.jakes_fadding(6, 0, 363**-9, 2, 1)
-  print(fading2)
-  fading3 = sc.jakes_fadding(6, 0, 363**-9, 0.1, 1)
-  print(fading3)
+  #fading1 = sc.jakes_fadding(6, 0, 363**-9, 0.7, 1)
+  #print(fading1)
+  #fading2 = sc.jakes_fadding(6, 0, 363**-9, 2, 1)
+  #print(fading2)
+  #fading3 = sc.jakes_fadding(6, 0, 363**-9, 0.1, 1)
+  #print(fading3)
+
+  #Teste urban_macro pathloss
+  urban1 = sc.compute_urban_macro(distance = 1000, los = False, carrier_frequency= 0.7)
+  print(urban1)
+  urban2 = sc.compute_urban_macro(distance = 5000, los = False, carrier_frequency= 0.7)
+  print(urban2)
+  urban3 = sc.compute_urban_macro(distance = 1000, los = True, carrier_frequency= 0.7)
+  print(urban3)
+  urban4 = sc.compute_urban_macro(distance = 4999, los = False, carrier_frequency= 0.7)
+  print(urban4)
 
 if __name__ == "__main__":
   main()

@@ -1,15 +1,16 @@
+from math import log, log10
 import numpy as np
 import typing as ty
 import random
-from Functions.geometry import Coordinate
-import geometry as geo
+from geometry import Coordinate
 
 #speed m/s
 def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
                  carrier_frequency: float, seed: int,
                  cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
                  fading_paths: int = 6, delay_rms: float = 363**-9, los: bool = False,
-                 scenario: str = "URBAN_MACROCELL"):
+                 scenario: str = "URBAN_MACROCELL", h_antennas: float = 25, h_ues: float = 1.5,
+                 h_building: float = 20, w_street: float = 20):
 
   fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency, seed)
 
@@ -74,27 +75,58 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
 
 # PATHLOSS + SHADOWING
 def compute_attenuation(ue_coord: Coordinate, tx_coord: Coordinate, speed: int, los: bool,
-                        scenario: str):
-  pass
-  #distance = np.sqrt((ue_coord.x - tx_coord.x)**2 + (ue_coord.y - tx_coord.y)**2 + (ue_coord.z - tx_coord.z)**2)
+                        scenario: str, h_antennas: float, h_ues: float, carrier_frequency: float,
+                        h_building: float, w_street: float):
 
-  #attenuation = compute_path_loss(distance, los)
-  #print(attenuation)
+  distance = np.sqrt((ue_coord.x - tx_coord.x)**2 + (ue_coord.y - tx_coord.y)**2 + (ue_coord.z - tx_coord.z)**2)
+  
+  attenuation = compute_path_loss(distance, los, scenario, h_antennas, h_ues, carrier_frequency,
+                                  h_building, w_street)
+  print(attenuation)
 
   #attenuation += compute_shadowing(distance, speed)
 
-#def compute_path_loss(distance: float, los: bool, scenario: str):
-#  if scenario == "URBAN_MACROCELL":
-#    compute_urban_macro(distance, los)
-#  else:
-#    print("ERROR computing pathloss: invalid scenario")
-#    return 0
+def compute_path_loss(distance: float, los: bool, scenario: str, h_antennas: float, h_ues: float,
+                      carrier_frequency: float, h_building: float, w_street: float ):
+  if scenario == "URBAN_MACROCELL":
+    compute_urban_macro(distance, los, h_antennas, h_ues, carrier_frequency, h_building, w_street)
+  else:
+    print("ERROR computing pathloss: invalid scenario")
+    return 0
 
-#def compute_urban_macro(distance: float, los: bool):
-#  if distance < 10:
-#    distance = 10
+def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_antennas: float = 25,
+                        h_ues: float = 1.5, h_building: float = 20, w_street: float = 20):
 
-  
+  speed_of_light = 299792458.0
+
+  if distance < 10:
+    distance = 10
+
+  dbp = 4 * (h_antennas - 1) * (h_ues - 1) * ((carrier_frequency * 1000000000) / speed_of_light)
+
+  #Considering tolerateMaxDistViolation = true in the simulation
+  if (distance >= 5000):
+    return 1000
+
+  else:
+    #LOS
+    if los:
+      if distance < dbp: 
+        return 22 * log10(distance) + 28 + 20 * log10(carrier_frequency)
+
+      else: 
+        att = 40 * log10(distance) + 7.8 - 18 * log10(h_antennas - 1) \
+             -18 * log10(h_ues - 1) + 2 * log10(carrier_frequency)
+
+        return att
+
+    #NLOS
+    else:
+      att = 161.04 - 7.1 * log10(w_street) + 7.5 * log10(h_building) - (24.37 - 3.7 * pow(h_building/h_antennas, 2))\
+          * log10(h_antennas) + (43.42 - 3.1 * log10(h_antennas)) * (log10(distance) - 3) + 20 * log10(carrier_frequency)\
+          - (3.2 * (pow(log10(11.75 * h_ues), 2)) - 4.97)
+
+      return att
 
 
 def linear_to_db(linear: float):

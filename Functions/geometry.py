@@ -320,7 +320,6 @@ class MapChess:
         self.map_ues.fill([])
         for m in range(self.n_regions):
             coord = self.region2Coord(m)
-            coord.z = self.h_ues
             self.map_ues[m] = [Ue(coord, m)]
 
 
@@ -332,7 +331,6 @@ class MapChess:
         for m in list_regions:
             if m < self.map_antennas.size:
                 coord = self.region2Coord(m)
-                coord.z = self.h_antennas
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
