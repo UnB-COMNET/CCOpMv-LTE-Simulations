@@ -24,7 +24,7 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
     hp.writeSeparation(f, "Channel Control")
-    hp.writeChannelControl(f,alpha = 2,carrierFrequency = "700MHz",numChannels = 1)
+    hp.writeCarrierAggregation(f,carrierFrequency = "0.7GHz")
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel(f)
     hp.writeSeparation(f, "Resource Blocks")

@@ -229,11 +229,9 @@ def writePropagation(f, model: str):
 def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30, txDirection: str="\"OMNI\""):
   f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n*.eNB.cellularNic.phy.txDirection = {}".format(ue_power, enb_power, micro_power,txDirection))
 
-def writeChannelControl(f, alpha: int = 2, carrierFrequency: str = "2.4GHz", numChannels: int = 1):
-  f.write('''*.channelControl.alpha = {}
-*.channelControl.carrierFrequency = {}
-*.channelControl.numChannels = {}
-'''.format(alpha,carrierFrequency,numChannels))
+def writeCarrierAggregation(f, carrierFrequency: str = "2GHz"):
+  f.write('''*.carrierAggregation.componentCarrier[*].carrierFrequency = {}
+'''.format(carrierFrequency))
 
 def writeChannelModel(f, building_height: float = 20, nodeb_height: float = 25,
 ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
