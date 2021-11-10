@@ -1,12 +1,15 @@
 import numpy as np
 import typing as ty
-from random import random
+import random
 import geometry as geo
 
-def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float,
-                 cable_loss: float = 2, thermal_noise: float = -104.5):
+#speed m/s
+def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
+                 carrier_frequency: float, seed: int,
+                 cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
+                 fading_paths: int = 6, delay_rms: float = 363**-9):
 
-  fading = jakes_fadding()
+  fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency, seed)
 
   attenuation = get_attenuation()
 
@@ -20,8 +23,46 @@ def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float,
 
   return snr
 
-def jakes_fadding():
-  pass
+def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_frequency: float, seed: int, sim_time: float = 0.001):
+  #jakes_map = None
+ 
+  random.seed(seed)
+
+  speed_of_light = 299792458.0
+
+  #convert carrier frequency from GHz to Hz
+  f = carrier_frequency * 1000000000
+
+  t = sim_time - 0.001
+
+  angle_arrival = []
+  delay_spread = []
+
+  re_h = 0
+  im_h = 0
+
+  doppler_shift = (speed * f) / speed_of_light
+
+  for i in range(fading_paths):
+    # get angle of arrivals
+    angle_arrival.append(np.cos(random.random()*np.pi))
+
+    #get delay spread
+    delay_spread.append(random.expovariate(1/delay_rms))
+
+    phi_d = angle_arrival[i]*doppler_shift
+
+    phi_i = delay_spread[i] * f
+
+    phi = 2 * np.pi * (phi_d * t - phi_i)
+
+    attenuation = 1.0/np.sqrt(fading_paths)
+
+    re_h += attenuation * np.cos(phi)
+    im_h -= attenuation * np.sin(phi)
+
+  return linear_to_db(re_h * re_h + im_h * im_h)
+
 
 # PATHLOSS + SHADOWING
 def get_attenuation():
@@ -29,3 +70,6 @@ def get_attenuation():
 
 def linear_to_db(linear: float):
   return 10 * np.log10(linear)
+
+#def db_to_linear(db: float):
+#  return 10**(db/10)
