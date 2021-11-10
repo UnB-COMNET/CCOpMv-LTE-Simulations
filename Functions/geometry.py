@@ -8,13 +8,15 @@ from numpy import arctan, not_equal
 import sinr_comput as sc
 
 class Coordinate:
-    def __init__(self, x, y):
+    def __init__(self, x, y, z = 0):
         self.x = x
         self.y = y
+        self.y = z
     
-    def setCoordinate(self, x, y):
+    def setCoordinate(self, x, y, z = 0):
         self.x = x
         self.y = y
+        self.y = z
 
 class PolarCoordinate:
     def __init__(self, r, phi):
@@ -280,7 +282,8 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
     print("Plot")
 
 class MapChess:
-    def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100) :
+    def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100,
+                 h_antennas: float = 25, h_ues: float = 1.5) :
         self.d_region = d_region
         self.d_width = d_width
         self.d_height = d_height
@@ -290,6 +293,9 @@ class MapChess:
         
         self.map_antennas = np.empty(self.n_regions).fill(None)
         self.map_ues = np.empty(self.n_regions).fill(None)
+
+        self.h_antennas = h_antennas
+        self.h_ues = h_ues
 
     def region2Coord(self, region_id: int) -> Coordinate:
         coord = Coordinate(
@@ -307,16 +313,25 @@ class MapChess:
         return region_id
 
     def placeTestUEs(self):
-        self.map_ues = np.array(
-                        [[Ue(self.region2Coord(m), m)] 
-                        for m in range(self.n_regions)])
+        #self.map_ues = np.array(
+        #                [[Ue(self.region2Coord(m), m)] 
+        #                for m in range(self.n_regions)])
+        self.map_ues = np.empty(self.n_regions)
+        for m in range(self.n_regions):
+            coord = self.region2Coord(m)
+            coord.z = self.h_ues
+            self.map_ues[m] = [Ue(coord, m)]
+
+
 
     def placeAntennas(self, list_regions) :
         count = 0
         self.map_antennas = np.empty(self.n_regions).fill(None)
         for m in list_regions:
             if m < self.map_antennas.size:
-                self.map_antennas[m] = Antenna(self.region2Coord(m), count)
+                coord = self.region2Coord(m)
+                coord.z = self.h_antennas
+                self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
     def getRegionsCentersList(self) -> List[Coordinate]:
@@ -332,15 +347,15 @@ class MapChess:
         list_coordinate = []
         for ant in self.map_antennas:
             if (ant != None):
-                list_coordinate.append(ant.position.x, ant.position.y)
+                list_coordinate.append(ant.position)
         
         return [list_coordinate]
 
     def getUEsPositionList(self) -> List[Coordinate]:
         list_coordinate = []
-        for coord in self.map_ues:
-            if (coord != None):
-                for ue in coord:
+        for region in self.map_ues:
+            if (region != None):
+                for ue in region:
                     list_coordinate.append(ue.position)
         
         return list_coordinate
