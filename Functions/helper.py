@@ -2,6 +2,7 @@ from coordinates import Coordinate
 from geometry import MapHexagonal, Macrocell
 import typing as ty
 import numpy as np
+import geometry as geo
 
 separation = "###############"
 
@@ -212,8 +213,71 @@ def writeNumUEs(f, numUEs: int):
 def writePropagation(f, model: str):
   f.write('**.propagationModel = "{}"\n'.format(model))
 
-def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30):
-  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))
+def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30, txDirection: str="\"OMNI\""):
+  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n*.eNB.cellularNic.phy.txDirection = {}".format(ue_power, enb_power, micro_power,txDirection))
+
+def writeCarrierAggregation(f, carrierFrequency: str = "2GHz"):
+  f.write('''*.carrierAggregation.componentCarrier[*].carrierFrequency = {}
+'''.format(carrierFrequency))
+
+def writeChannelModel(f, building_height: float = 20, nodeb_height: float = 25,
+ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
+extCell_interference: bool = True, antennGainEnB: int = 18, antennGainMicro: int = 5,
+antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
+componentCarrierIndex: int = 0, correlation_distance: int = 50, d2d_interference: bool = True,
+delay_rms: str = "363e-9", downlink_interference: bool = False, dynamic_los: bool = False,
+enable_extCell_los: bool = True, fading: bool = True, fading_paths: int = 6,
+fixed_los: bool = False, harqReduction: float = 0.2, inside_building: bool = False,
+lambdaMaxTh: float = 0.2, lambdaMinTh: float = 0.02, lambdaRatioTh: float = 20,
+rsrqScale: float = 1.0, rsrqShift: float = 22, shadowing: bool = True, targetBler: float = 0.01,
+thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
+uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
+  f.write('''**.cellularNic.channelModel[*].building_height = {}
+**.cellularNic.channelModel[*].nodeb_height = {}
+**.cellularNic.channelModel[*].ue_height = {}
+**.cellularNic.channelModel[*].street_wide = {}
+**.cellularNic.channelModel[*].fading_type = {}
+**.cellularNic.channelModel[*].extCell_interference = {}
+**.cellularNic.channelModel[*].antennGainEnB = {}
+**.cellularNic.channelModel[*].antennGainMicro = {}
+**.cellularNic.channelModel[*].antennaGainUe = {}
+**.cellularNic.channelModel[*].bs_noise_figure = {}
+**.cellularNic.channelModel[*].cable_loss = {}
+**.cellularNic.channelModel[*].componentCarrierIndex = {}
+**.cellularNic.channelModel[*].correlation_distance = {}
+**.cellularNic.channelModel[*].d2d_interference = {}
+**.cellularNic.channelModel[*].delay_rms = {}
+**.cellularNic.channelModel[*].downlink_interference = {} 
+**.cellularNic.channelModel[*].dynamic_los = {}
+**.cellularNic.channelModel[*].enable_extCell_los = {}
+**.cellularNic.channelModel[*].fading = {}
+**.cellularNic.channelModel[*].fading_paths = {}
+**.cellularNic.channelModel[*].fixed_los = {}
+**.cellularNic.channelModel[*].harqReduction = {}
+**.cellularNic.channelModel[*].inside_building = {}
+**.cellularNic.channelModel[*].lambdaMaxTh = {}
+**.cellularNic.channelModel[*].lambdaMinTh = {}
+**.cellularNic.channelModel[*].lambdaRatioTh = {}
+**.cellularNic.channelModel[*].rsrqScale = {}
+**.cellularNic.channelModel[*].rsrqShift = {}
+**.cellularNic.channelModel[*].shadowing = {}
+**.cellularNic.channelModel[*].targetBler = {}
+**.cellularNic.channelModel[*].thermalNoise = {}
+**.cellularNic.channelModel[*].tolerateMaxDistViolation = {}
+**.cellularNic.channelModel[*].ue_noise_figure = {}
+**.cellularNic.channelModel[*].uplink_interference = {}
+**.cellularNic.channelModel[*].useRsrqFromLog = {}
+**.cellularNic.channelModel[*].useTorus = false
+'''.format(building_height, nodeb_height, ue_height, street_wide, fading_type,
+"true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
+bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
+delay_rms, "false" if not downlink_interference else "true", "false" if not dynamic_los else "true",
+"true" if enable_extCell_los else "false", "true" if fading else "false", fading_paths,
+"false" if not fixed_los else "true", harqReduction, "false" if not inside_building else "true",
+lambdaMaxTh, lambdaMinTh, lambdaRatioTh, rsrqScale, rsrqShift, "true" if shadowing else "false",
+targetBler, thermalNoise, "false" if not tolerateMaxDistViolation else "true", ue_noise_figure,
+"false" if not uplink_interference else "true", "false" if not useRsrqFromLog else "true",
+"false" if not useTorus else "true"))
 
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   f.write('**.{}.cellInfo.microCell = {}\n'.format(node_name, "true" if micro else "false"))

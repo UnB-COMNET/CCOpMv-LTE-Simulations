@@ -1,10 +1,10 @@
 from math import cos, pi, sqrt, sin
-from typing import List, Mapping, Union, Tuple
+from typing import List, Union, Tuple
 from random import random
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import arctan, dtype, not_equal
+from numpy import arctan
 from sinr_comput import compute_sinr
 from coordinates import Coordinate, PolarCoordinate
 
