@@ -18,14 +18,25 @@ def main():
   #print(fading3)
 
   #Teste urban_macro pathloss
-  urban1 = sc.compute_urban_macro(distance = 1000, los = False, carrier_frequency= 0.7)
-  print(urban1)
-  urban2 = sc.compute_urban_macro(distance = 5000, los = False, carrier_frequency= 0.7)
-  print(urban2)
-  urban3 = sc.compute_urban_macro(distance = 1000, los = True, carrier_frequency= 0.7)
-  print(urban3)
-  urban4 = sc.compute_urban_macro(distance = 4999, los = False, carrier_frequency= 0.7)
-  print(urban4)
+  #urban1 = sc.compute_urban_macro(distance = 1000, los = False, carrier_frequency= 0.7)
+  #print(urban1)
+  #urban2 = sc.compute_urban_macro(distance = 5000, los = False, carrier_frequency= 0.7)
+  #print(urban2)
+  #urban3 = sc.compute_urban_macro(distance = 1000, los = True, carrier_frequency= 0.7)
+  #print(urban3)
+  #urban4 = sc.compute_urban_macro(distance = 4999, los = False, carrier_frequency= 0.7)
+  #print(urban4)
+
+  #Teste log shadowing urban_macro
+  shad1 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 1)
+  print(shad1)
+  shad2 = sc.compute_shadowing(distance= 1000, speed= 0, los= True, scenario= "URBAN_MACROCELL", seed= 2)
+  print(shad2)
+  shad3 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 3)
+  print(shad3)
+  shad4 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 4)
+  print(shad4)
+
 
 if __name__ == "__main__":
   main()

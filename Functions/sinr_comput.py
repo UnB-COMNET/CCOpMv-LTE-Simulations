@@ -6,7 +6,7 @@ from geometry import Coordinate
 
 #speed m/s
 def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
-                 carrier_frequency: float, seed: int,
+                 carrier_frequency: float, seed: int, ue_coord: Coordinate, tx_coord: Coordinate,
                  cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
                  fading_paths: int = 6, delay_rms: float = 363**-9, los: bool = False,
                  scenario: str = "URBAN_MACROCELL", h_antennas: float = 25, h_ues: float = 1.5,
@@ -14,7 +14,8 @@ def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float, speed: flo
 
   fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency, seed)
 
-  attenuation = compute_attenuation()
+  attenuation = compute_attenuation(ue_coord, tx_coord, speed, los, scenario, h_antennas, h_ues,
+                                    carrier_frequency, h_building, w_street, seed)
 
   recv_power = tx_gain + rx_gain - cable_loss - attenuation
 
@@ -26,7 +27,8 @@ def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float, speed: flo
 
   return snr
 
-def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_frequency: float, seed: int, sim_time: float = 0.001):
+def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_frequency: float,
+                  seed: int, sim_time: float = 0.001):
   #jakes_map = None
  
   random.seed(seed)
@@ -76,24 +78,26 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
 # PATHLOSS + SHADOWING
 def compute_attenuation(ue_coord: Coordinate, tx_coord: Coordinate, speed: int, los: bool,
                         scenario: str, h_antennas: float, h_ues: float, carrier_frequency: float,
-                        h_building: float, w_street: float):
+                        h_building: float, w_street: float, seed: int):
 
   distance = np.sqrt((ue_coord.x - tx_coord.x)**2 + (ue_coord.y - tx_coord.y)**2 + (ue_coord.z - tx_coord.z)**2)
   
-  attenuation = compute_path_loss(distance, los, scenario, h_antennas, h_ues, carrier_frequency,
-                                  h_building, w_street)
+  attenuation = compute_path_loss(distance, los, scenario, h_antennas, h_ues, carrier_frequency, h_building, w_street)
   print(attenuation)
 
-  #attenuation += compute_shadowing(distance, speed)
+  attenuation += compute_shadowing(distance, speed, los, scenario, seed)
 
 def compute_path_loss(distance: float, los: bool, scenario: str, h_antennas: float, h_ues: float,
                       carrier_frequency: float, h_building: float, w_street: float ):
+  
   if scenario == "URBAN_MACROCELL":
-    compute_urban_macro(distance, los, h_antennas, h_ues, carrier_frequency, h_building, w_street)
+    path_loss = compute_urban_macro(distance, los, h_antennas, h_ues, carrier_frequency, h_building, w_street)
+
   else:
     print("ERROR computing pathloss: invalid scenario")
-    return 0
+    path_loss = 1000
 
+  return path_loss
 def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_antennas: float = 25,
                         h_ues: float = 1.5, h_building: float = 20, w_street: float = 20):
 
@@ -128,6 +132,20 @@ def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_
 
       return att
 
+def compute_shadowing(distance: float, speed: float, los: bool, scenario: str, seed: int):
+
+  std_dev = 0
+  random.seed(seed)
+
+  if scenario == "URBAN_MACROCELL":
+    if los: std_dev = 4
+    else: std_dev = 6
+
+  #Get the log normal shadowing with std deviation stdDev
+  att = random.normalvariate(0, std_dev)
+
+  #Not computing case considering ue moviment
+  return att
 
 def linear_to_db(linear: float):
   return 10 * np.log10(linear)
