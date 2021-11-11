@@ -1,30 +1,29 @@
 from math import log, log10
 import numpy as np
-import typing as ty
 import random
 from coordinates import Coordinate
 
 #speed m/s
-def compute_sinr(tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
+def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
                  carrier_frequency: float, ue_coord: Coordinate, tx_coord: Coordinate,
                  cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
                  fading_paths: int = 6, delay_rms: float = 363**-9, los: bool = False,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20):
 
-
-  fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency)
+  fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency, sim_time= 0.001)
 
   attenuation = compute_attenuation(ue_coord, tx_coord, speed, los, scenario, h_enbs, h_ues,
                                     carrier_frequency, h_building, w_street)
 
-  recv_power = tx_gain + rx_gain - cable_loss - attenuation
+  recv_power = tx_power
+  recv_power += tx_gain + rx_gain - cable_loss - attenuation
 
   final_recv_power = recv_power + fading
 
-  den = thermal_noise + noise_figure
+  den = dbm_to_linear(thermal_noise + noise_figure)
 
-  snr = final_recv_power - den
+  snr = final_recv_power - linear_to_dbm(den)
 
   return snr
 
@@ -48,6 +47,7 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
   doppler_shift = (speed * f) / speed_of_light
 
   for i in range(fading_paths):
+    
     # get angle of arrivals
     angle_arrival.append(np.cos(random.random()*np.pi))
 
@@ -142,7 +142,6 @@ def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
 
   #Get the log normal shadowing with std deviation stdDev
   att = random.normalvariate(0, std_dev)
-  print(att)
 
   #Not computing case considering ue moviment
   return att
@@ -150,5 +149,8 @@ def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
 def linear_to_db(linear: float):
   return 10 * np.log10(linear)
 
-#def db_to_linear(db: float):
-#  return 10**(db/10)
+def linear_to_dbm(linear: float):
+  return 10 * log10(1000 * linear)
+
+def dbm_to_linear(db: float):
+  return pow(10, (db - 30) / 10)

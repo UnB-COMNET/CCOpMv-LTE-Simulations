@@ -268,7 +268,8 @@ class MapChess:
                  h_building: float = 20, w_street: float = 20, los: bool = False,
                  carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363**-9,
                  thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
-                 gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5) :
+                 gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
+                 enb_tx_power: float = 46, ue_tx_power: float = 26) :
         self.d_region = d_region
         self.d_width = d_width
         self.d_height = d_height
@@ -294,6 +295,8 @@ class MapChess:
         self.gain_ue = gain_ue
         self.ue_noise_figure = ue_noise_figure
         self.enb_noise_figure = enb_noise_figure
+        self.enb_tx_power = enb_tx_power
+        self.ue_tx_power = ue_tx_power
 
     def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         coord = Coordinate(
@@ -375,7 +378,7 @@ class MapChess:
                 noise_figure = self.ue_noise_figure
 
                 sinr = compute_sinr(
-                    tx_gain= tx_gain, rx_gain= rx_gain, noise_figure= noise_figure, speed= 0,
+                    tx_power = self.enb_tx_power, tx_gain= tx_gain, rx_gain= rx_gain, noise_figure= noise_figure, speed= 0,
                     carrier_frequency= self.carrier_frequency, ue_coord= ue_coord,
                     tx_coord= enb_coord, cable_loss= self.cable_loss, thermal_noise= self.thermal_noise,
                     fading_paths= self.fading_paths, delay_rms= self.delay_rms, los= self.los,

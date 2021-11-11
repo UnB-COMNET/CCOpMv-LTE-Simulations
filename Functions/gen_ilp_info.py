@@ -39,9 +39,7 @@ def main():
   count = 0
   count2 = 0
   scen = geo.MapChess(1000, 1000, 100)
-  scen.placeTestUEs()
-  scen.placeAntennas([0,1])
-  sinr_map = scen.getSinrMap(seed = 1)
+  sinr_map = scen.getSinrMap(seed = 5)
   with open("sinr.txt", 'w') as f:
     for enb in sinr_map:
       count = 0
