@@ -1,31 +1,12 @@
 from math import cos, pi, sqrt, sin
 from typing import List, Mapping, Union, Tuple
 from random import random
-import matplotlib
+import random
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import arctan, dtype, not_equal
-#import sinr_comput as sc
-
-class Coordinate:
-    def __init__(self, x, y, z = 0):
-        self.x = x
-        self.y = y
-        self.z = z
-    
-    def setCoordinate(self, x, y, z = 0):
-        self.x = x
-        self.y = y
-        self.z = z
-
-class PolarCoordinate:
-    def __init__(self, r, phi):
-        self.r = r
-        self.phi = phi
-    
-    def setCoordinate(self, r, phi):
-        self.r = r
-        self.phi = phi
+from sinr_comput import compute_sinr
+from coordinates import Coordinate, PolarCoordinate
 
 class Smallcell:
     def __init__(self, center: Coordinate):
@@ -283,7 +264,11 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
 
 class MapChess:
     def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100,
-                 h_antennas: float = 25, h_ues: float = 1.5) :
+                 scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
+                 h_building: float = 20, w_street: float = 20, los: bool = False,
+                 carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363**-9,
+                 thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
+                 gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5) :
         self.d_region = d_region
         self.d_width = d_width
         self.d_height = d_height
@@ -294,13 +279,27 @@ class MapChess:
         self.map_antennas = np.empty(self.n_regions).fill(None)
         self.map_ues = np.empty(self.n_regions).fill(None)
 
-        self.h_antennas = h_antennas
+        self.scenario = scenario
+        self.h_enbs = h_enbs
         self.h_ues = h_ues
+        self.h_building = h_building
+        self.w_street = w_street
+        self.los = los
+        self.carrier_frequency = carrier_frequency
+        self.fading_paths = fading_paths
+        self.delay_rms = delay_rms
+        self.thermal_noise = thermal_noise
+        self.cable_loss = cable_loss
+        self.gain_enb = gain_enb
+        self.gain_ue = gain_ue
+        self.ue_noise_figure = ue_noise_figure
+        self.enb_noise_figure = enb_noise_figure
 
-    def region2Coord(self, region_id: int) -> Coordinate:
+    def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         coord = Coordinate(
             self.d_region*(region_id%self.n_width)+self.d_region/2,
-            self.d_region*int(region_id/self.n_height)+self.d_region/2)
+            self.d_region*int(region_id/self.n_height)+self.d_region/2,
+            z)
         return coord
 
     def coord2Region(self, coord: Coordinate) -> int:
@@ -360,14 +359,32 @@ class MapChess:
         
         return list_coordinate
 
-    def getSinrMap(self) -> List[List[float]]:
+    def getSinrMap(self, seed: int = 1) -> List[List[float]]:
         regions_centers = self.getRegionsCentersList()
         sinr_map = []
+        random.seed(seed)
         for enb_region in range(self.n_regions):
             sinr_map.append([])
             enb_coord = self.region2Coord(enb_region)
-            for ue in regions_centers:
-                sinr_map[enb_region].append(0)
+            for ue_coord in regions_centers:
+
+                #Considerando DL
+                tx_gain = self.gain_enb
+                rx_gain = self.gain_ue
+
+                noise_figure = self.ue_noise_figure
+
+                sinr = compute_sinr(
+                    tx_gain= tx_gain, rx_gain= rx_gain, noise_figure= noise_figure, speed= 0,
+                    carrier_frequency= self.carrier_frequency, ue_coord= ue_coord,
+                    tx_coord= enb_coord, cable_loss= self.cable_loss, thermal_noise= self.thermal_noise,
+                    fading_paths= self.fading_paths, delay_rms= self.delay_rms, los= self.los,
+                    scenario= self.scenario, h_enbs= self.h_enbs, h_ues= self.h_enbs,
+                    h_building= self.h_building, w_street= self.w_street
+                )
+                sinr_map[enb_region].append(sinr)
+
+        return sinr_map
 
 def exportMap():
     None

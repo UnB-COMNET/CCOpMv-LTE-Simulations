@@ -1,8 +1,7 @@
-from Functions.geometry import Coordinate
+from coordinates import Coordinate
 from geometry import MapHexagonal, Macrocell
 import typing as ty
 import numpy as np
-import geometry as geo
 
 separation = "###############"
 

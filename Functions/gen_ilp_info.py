@@ -28,14 +28,29 @@ def main():
   #print(urban4)
 
   #Teste log shadowing urban_macro
-  shad1 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 1)
-  print(shad1)
-  shad2 = sc.compute_shadowing(distance= 1000, speed= 0, los= True, scenario= "URBAN_MACROCELL", seed= 2)
-  print(shad2)
-  shad3 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 3)
-  print(shad3)
-  shad4 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 4)
-  print(shad4)
+  #shad1 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 1)
+  #print(shad1)
+  #shad2 = sc.compute_shadowing(distance= 1000, speed= 0, los= True, scenario= "URBAN_MACROCELL", seed= 2)
+  #print(shad2)
+  #shad3 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 3)
+  #print(shad3)
+  #shad4 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 4)
+  #print(shad4)
+  count = 0
+  count2 = 0
+  scen = geo.MapChess(1000, 1000, 100)
+  scen.placeTestUEs()
+  scen.placeAntennas([0,1])
+  sinr_map = scen.getSinrMap(seed = 1)
+  with open("sinr.txt", 'w') as f:
+    for enb in sinr_map:
+      count = 0
+      f.write("{}:".format(count2))
+      for snr in enb:
+        f.write("\t{}- {}\n".format(count, snr))
+        count += 1
+      count2 += 1
+
 
 
 if __name__ == "__main__":
