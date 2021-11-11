@@ -141,7 +141,7 @@ def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
     else: std_dev = 6
 
   #Get the log normal shadowing with std deviation stdDev
-  att = random.normalvariate(0, std_dev)
+  att = random.lognormvariate(0, std_dev)
 
   #Not computing case considering ue moviment
   return att
