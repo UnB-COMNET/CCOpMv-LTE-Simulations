@@ -1,7 +1,6 @@
 from math import cos, pi, sqrt, sin
 from typing import List, Union, Tuple
-from random import random
-import random
+from random import random, seed, normalvariate
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import arctan
@@ -324,14 +323,20 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
-    def placeUEs(self):
+    def placeUEs(self, type:str = "Full"):
         count = 0
         self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
         self.map_ues.fill([])
-        for m in []:
-            if m < self.map_antennas.size:
-                coord = self.region2Coord(m)
-                self.map_antennas[m] = Antenna(coord, count)
+
+        if (type == "Full"):
+            ues = self.uesFullMapHexa_()
+        else: 
+            ues = []
+
+        for ue in ues:
+            region = self.coord2Region(ue.position)
+            if region < self.n_regions:
+                self.map_ues[region].append(ue)
                 count += 1
 
     def placeAntennas(self, list_regions) :
@@ -344,20 +349,75 @@ class MapChess:
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
-    def startMapHexagonal(self) -> MapHexagonal:
-        center = Coordinate(self.d_width/2, self.d_height/2)
-        scen = MapHexagonal(center, n_site= 10, n_antennas= 4, n_ues= 30)
+    def uesFullMapHexa_(self) -> List[Ue]:
 
-        for i in range(len(scen.macrocells)):
-            # For each macrocell, it places the smallcells
-            scen.placeSmallCell(scen.macrocells[i], scen.d_macromacro*0.425, scen.d_macrocluster)
-            # For each smallcell in a given macrocell, it places the antennas
-            for j in range(len(scen.macrocells[i].smallcells)):
-                scen.placeAntennas(scen.macrocells[i].smallcells[j],scen.dropradius_sc_cluster,0,scen.n_antennas)           
+        d_macromacro = 1000
+        d_macrocluster = 105
+        d_macroue = 35
+        dropradius_ue_cluster = 70
+        n_ues = 60
 
-        scen.placeUEs()
-        plotMap(map, plotUEs=True, n_macrocells=10)
-        return scen
+        tmp_smc: List[Smallcell] = []
+        tmp_mcs: List[Macrocell] = []
+
+        d_x = d_macromacro*cos(1*pi/6)
+        d_y = d_macromacro*sin(1*pi/6)
+        
+        coord_x = self.d_region/2
+        while(coord_x < self.n_width):
+            coord_y = self.d_region/2
+            while(coord_y < self.n_height):
+                tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
+                pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                tmp_smc.append(Smallcell(pos_small))
+                coord_y += d_macromacro
+            coord_x += 2*d_x
+
+        coord_x = self.d_region/2+d_x
+        while(coord_x < self.n_width):
+            coord_y = self.d_region/2+d_y
+            while(coord_y < self.n_height):
+                tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
+                pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                tmp_smc.append(Smallcell(pos_small))
+                coord_y += d_macromacro
+            coord_x += 2*d_x
+
+        ues = self.placeHexaUes_(tmp_mcs, tmp_smc, n_ues, dropradius_ue_cluster, d_macromacro, d_macroue)
+
+        return ues
+
+    def placeHexaUes_(self, tmp_mcs: List[Macrocell], tmp_smc: List[Smallcell], n_ues:int, dropradius_ue_cluster: int, d_macromacro: int, d_macroue: int):
+        count = 0
+        ues: List[Ue] = []
+        for i in range(len(tmp_mcs)):
+            macrocell = tmp_mcs[i]
+            smallcell = tmp_smc[i]
+            for n in range(n_ues):
+                if random() < 0.6666:
+                    # Place into smallcells
+                    position = placeObject(smallcell, dropradius_ue_cluster, 0)
+                    ue = Ue(position, count)
+                    ues.append(ue)
+                    count += 1
+                    smallcell.ues.append(ue)
+                else:
+                    # Place into macrocell
+                    position = placeObject(macrocell, d_macromacro*0.425, d_macroue)
+                    ue = Ue(position, count)
+                    ues.append(ue)
+                    count += 1
+                    macrocell.ues.append(ue)
+
+        return ues
+    
+    def plotUes(self):
+        ues = self.getUEsPositionList()
+        plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='.', color='orange', markersize= 2)
+
+        plt.show()
+        print("Plot")
+
 
     def getRegionsCentersList(self) -> List[Coordinate]:
         list_coordinate = []
@@ -385,10 +445,10 @@ class MapChess:
         
         return list_coordinate
 
-    def getSinrMap(self, seed: int = 1) -> List[List[float]]:
+    def getSinrMap(self, use_seed: int = 1) -> List[List[float]]:
         regions_centers = self.getRegionsCentersList()
         sinr_map = []
-        random.seed(seed)
+        seed(use_seed)
         for enb_region in range(self.n_regions):
             sinr_map.append([])
             enb_coord = self.region2Coord(enb_region)
