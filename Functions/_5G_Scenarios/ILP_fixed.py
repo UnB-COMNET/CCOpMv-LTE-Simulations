@@ -2,7 +2,7 @@ import helper as hp
 import random
 import geometry as geo
 
-def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_region:int =100):
+def ilp_fixed_info(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800):
   random.seed(seed)
   scen = start_scenario_chess(d_height, d_width, d_region)
 

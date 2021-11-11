@@ -83,7 +83,7 @@ class Macrocell:
         return list_coordinate
 
 class MapHexagonal:
-    def __init__(self, center: Coordinate) :
+    def __init__(self, center: Coordinate, n_site: int = 7, n_antennas: int = 10, n_ues: int = 30) :
         self.d_macromacro = 1000
         self.d_macrocluster = 105
         self.d_macroue = 35
@@ -93,10 +93,10 @@ class MapHexagonal:
         self.dropradius_sc_cluster = 50
         self.dropradius_ue_cluster = 70
 
-        self.n_site = 7
+        self.n_site = n_site
         self.n_cluster = 1
-        self.n_antennas = 10
-        self.n_ues = 30
+        self.n_antennas = n_antennas
+        self.n_ues = n_ues
         
         self.center = center
         self.macrocells = []     
@@ -324,7 +324,15 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
-
+    def placeUEs(self):
+        count = 0
+        self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
+        self.map_ues.fill([])
+        for m in []:
+            if m < self.map_antennas.size:
+                coord = self.region2Coord(m)
+                self.map_antennas[m] = Antenna(coord, count)
+                count += 1
 
     def placeAntennas(self, list_regions) :
         count = 0
@@ -335,6 +343,21 @@ class MapChess:
                 coord = self.region2Coord(m)
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
+
+    def startMapHexagonal(self) -> MapHexagonal:
+        center = Coordinate(self.d_width/2, self.d_height/2)
+        scen = MapHexagonal(center, n_site= 10, n_antennas= 4, n_ues= 30)
+
+        for i in range(len(scen.macrocells)):
+            # For each macrocell, it places the smallcells
+            scen.placeSmallCell(scen.macrocells[i], scen.d_macromacro*0.425, scen.d_macrocluster)
+            # For each smallcell in a given macrocell, it places the antennas
+            for j in range(len(scen.macrocells[i].smallcells)):
+                scen.placeAntennas(scen.macrocells[i].smallcells[j],scen.dropradius_sc_cluster,0,scen.n_antennas)           
+
+        scen.placeUEs()
+        plotMap(map, plotUEs=True, n_macrocells=10)
+        return scen
 
     def getRegionsCentersList(self) -> List[Coordinate]:
         list_coordinate = []
