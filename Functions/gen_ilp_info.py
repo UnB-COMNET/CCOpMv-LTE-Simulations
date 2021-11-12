@@ -52,7 +52,7 @@ def main():
   seed(123)
   scen = geo.MapChess(8000, 8000, 800)
   #scen.placeAntennas()
-  scen.placeUEs()
+  scen.placeUEs(type= "Random")
   scen.plotUes()
 
 

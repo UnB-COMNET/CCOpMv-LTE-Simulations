@@ -323,13 +323,15 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
-    def placeUEs(self, type:str = "Full"):
+    def placeUEs(self, type:str = "Full", small_per_macro:int = 1):
         count = 0
         self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
         self.map_ues.fill([])
 
-        if (type == "Full"):
-            ues = self.uesFullMapHexa_()
+        if type == "Full":
+            ues = self.uesFullMapHexa_(small_per_macro= small_per_macro)
+        elif type == "Random":
+            ues = self.uesRandomMapHexa_(small_per_macro= small_per_macro)
         else: 
             ues = []
 
@@ -349,8 +351,7 @@ class MapChess:
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
-    def uesFullMapHexa_(self) -> List[Ue]:
-
+    def uesRandomMapHexa_(self, small_per_macro = 1, n_macros = 20)->List[Ue]:
         d_macromacro = 1000
         d_macrocluster = 105
         d_macroue = 35
@@ -360,47 +361,72 @@ class MapChess:
         tmp_smc: List[Smallcell] = []
         tmp_mcs: List[Macrocell] = []
 
+        for i in range(n_macros):
+            tmp_mcs.append(Macrocell(Coordinate(random()*8000, random()*8000)))
+            for i in range (small_per_macro):
+                    pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    tmp_smc.append(Smallcell(pos_small))
+
+        ues = self.placeHexaUes_(tmp_mcs, tmp_smc, n_ues, dropradius_ue_cluster, d_macromacro, d_macroue, small_per_macro)
+
+        return ues
+
+    def uesFullMapHexa_(self, small_per_macro = 1) -> List[Ue]:
+
+        d_macromacro = 1000
+        d_macrocluster = 105
+        d_macroue = 35
+        dropradius_ue_cluster = 70
+        n_ues = 60
+
+
+        tmp_smc: List[Smallcell] = []
+        tmp_mcs: List[Macrocell] = []
+
         d_x = d_macromacro*cos(1*pi/6)
         d_y = d_macromacro*sin(1*pi/6)
         
         coord_x = self.d_region/2
-        while(coord_x < self.n_width):
+        while(coord_x < self.d_width):
             coord_y = self.d_region/2
-            while(coord_y < self.n_height):
+            while(coord_y < self.d_height):
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
-                pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
-                tmp_smc.append(Smallcell(pos_small))
+                for i in range (small_per_macro):
+                    pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    tmp_smc.append(Smallcell(pos_small))
                 coord_y += d_macromacro
             coord_x += 2*d_x
 
         coord_x = self.d_region/2+d_x
-        while(coord_x < self.n_width):
+        while(coord_x < self.d_width):
             coord_y = self.d_region/2+d_y
-            while(coord_y < self.n_height):
+            while(coord_y < self.d_height):
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
-                pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
-                tmp_smc.append(Smallcell(pos_small))
+                for i in range (small_per_macro):
+                    pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    tmp_smc.append(Smallcell(pos_small))
                 coord_y += d_macromacro
             coord_x += 2*d_x
 
-        ues = self.placeHexaUes_(tmp_mcs, tmp_smc, n_ues, dropradius_ue_cluster, d_macromacro, d_macroue)
+        ues = self.placeHexaUes_(tmp_mcs, tmp_smc, n_ues, dropradius_ue_cluster, d_macromacro, d_macroue, small_per_macro)
 
         return ues
 
-    def placeHexaUes_(self, tmp_mcs: List[Macrocell], tmp_smc: List[Smallcell], n_ues:int, dropradius_ue_cluster: int, d_macromacro: int, d_macroue: int):
+    def placeHexaUes_(self, tmp_mcs: List[Macrocell], tmp_smc: List[Smallcell], n_ues:int, dropradius_ue_cluster: int,
+                      d_macromacro: int, d_macroue: int, small_per_macro: int):
         count = 0
         ues: List[Ue] = []
         for i in range(len(tmp_mcs)):
             macrocell = tmp_mcs[i]
-            smallcell = tmp_smc[i]
+            smallcells = tmp_smc[i*small_per_macro: i*small_per_macro+small_per_macro]
             for n in range(n_ues):
                 if random() < 0.6666:
                     # Place into smallcells
-                    position = placeObject(smallcell, dropradius_ue_cluster, 0)
+                    position = placeObject(smallcells[int(random()*small_per_macro)], dropradius_ue_cluster, 0)
                     ue = Ue(position, count)
                     ues.append(ue)
                     count += 1
-                    smallcell.ues.append(ue)
+                    smallcells[int(random()*small_per_macro)].ues.append(ue)
                 else:
                     # Place into macrocell
                     position = placeObject(macrocell, d_macromacro*0.425, d_macroue)
@@ -434,7 +460,7 @@ class MapChess:
             if (ant != None):
                 list_coordinate.append(ant.position)
         
-        return [list_coordinate]
+        return list_coordinate
 
     def getUEsPositionList(self) -> List[Coordinate]:
         list_coordinate = []
