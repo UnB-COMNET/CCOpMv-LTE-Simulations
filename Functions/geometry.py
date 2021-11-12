@@ -1,28 +1,12 @@
 from math import cos, pi, sqrt, sin
 from typing import List, Mapping, Union, Tuple
 from random import random
-import matplotlib
+import random
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import arctan, not_equal
-
-class Coordinate:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-    
-    def setCoordinate(self, x, y):
-        self.x = x
-        self.y = y
-
-class PolarCoordinate:
-    def __init__(self, r, phi):
-        self.r = r
-        self.phi = phi
-    
-    def setCoordinate(self, r, phi):
-        self.r = r
-        self.phi = phi
+from numpy import arctan, dtype, not_equal
+from sinr_comput import compute_sinr
+from coordinates import Coordinate, PolarCoordinate
 
 class Smallcell:
     def __init__(self, center: Coordinate):
@@ -30,33 +14,30 @@ class Smallcell:
         self.antennas = []
         self.ues = []
 
-    def getAntennasPositionList(self) -> List[List[float]]:
+    def getAntennasPositionList(self) -> List[Coordinate]:
         '''Documentation...'''
         if not self.antennas:
             print("There are no antennas in the smallcell")
-            return [None,None]
+            return []
 
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.antennas)):
-            list_coordinateX.append(self.antennas[i].position.x)
-            list_coordinateY.append(self.antennas[i].position.y)
+            list_coordinate.append(
+                self.antennas[i].position)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
-    def getUEsPositionList(self) -> List[List[float]]:
+    def getUEsPositionList(self) -> List[Coordinate]:
         '''Documentation'''
         if not self.ues:
             print("There are no UEs in the smallcell")
-            return [None,None]
+            return []
     
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.ues)):
-            list_coordinateX.append(self.ues[i].position.x)
-            list_coordinateY.append(self.ues[i].position.y)    
+            list_coordinate.append(self.ues[i].position)  
 
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
 class Macrocell:
     def __init__(self, center: Coordinate) :
@@ -65,47 +46,41 @@ class Macrocell:
         self.ues = []
         self.antennas = []
 
-    def getSmallcellsPositionList(self) -> List[List[float]]:
+    def getSmallcellsPositionList(self) -> List[Coordinate]:
         '''Documentation...'''
         if not self.smallcells:
             print("There are no smallcell in the macrocell")
-            return [None,None]
+            return []
 
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.smallcells)):
-            list_coordinateX.append(self.smallcells[i].center.x)
-            list_coordinateY.append(self.smallcells[i].center.y)
+            list_coordinate.append(self.smallcells[i].center)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
     
-    def getUEsPositionList(self) -> List[List[float]]:
+    def getUEsPositionList(self) -> List[Coordinate]:
         '''Documentation'''
         if not self.ues:
             print("There are no UE in the macrocell")
-            return [None,None]
+            return []
     
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.ues)):
-            list_coordinateX.append(self.ues[i].position.x)
-            list_coordinateY.append(self.ues[i].position.y)
+            list_coordinate.append(self.ues[i].position)
 
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
-    def getAntennasPositionList(self) -> List[List[float]]:
+    def getAntennasPositionList(self) -> List[Coordinate]:
         '''Documentation'''
         if not self.antennas:
             print("There are no antenna in the macrocell")
-            return [None,None]
+            return []
     
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.antennas)):
-            list_coordinateX.append(self.antennas[i].x)
-            list_coordinateY.append(self.antennas[i].y)
+            list_coordinate.append(self.antennas[i].position)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
 class MapHexagonal:
     def __init__(self, center: Coordinate) :
@@ -140,19 +115,17 @@ class MapHexagonal:
             macrocell = Macrocell(position)
             self.macrocells.append(macrocell)
 
-    def getMacrocellsPositionList(self) -> List[List[float]]:
+    def getMacrocellsPositionList(self) -> List[Coordinate]:
         '''Documentation...'''
         if not self.macrocells:
             print("There are no macrocells in the hexagonal map")
-            return [None,None]
+            return []
 
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for i in range(len(self.macrocells)):
-            list_coordinateX.append(self.macrocells[i].center.x)
-            list_coordinateY.append(self.macrocells[i].center.y)
+            list_coordinate.append(self.macrocells[i].center)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
     def placeSmallCell(self, macrocell: Macrocell, radius, min_distance) :
         position = placeObject(macrocell,radius,min_distance)
@@ -258,30 +231,30 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
         print("Invalid number of macrocells. Insert 1 or 7.")        
         return
 
-    [macrocells_eixoX, macrocells_eixoY] = map.getMacrocellsPositionList() 
+    macrocells = map.getMacrocellsPositionList() 
     if n_macrocells == 1:
-        plt.plot(macrocells_eixoX[0], macrocells_eixoY[0], linestyle='', marker='o', color='red')
+        plt.plot([coord.x for coord in macrocells][0], [coord.y for coord in macrocells][0], linestyle='', marker='o', color='red')
     else:
-        plt.plot(macrocells_eixoX, macrocells_eixoY, linestyle='', marker='o', color='red')
+        plt.plot([coord.x for coord in macrocells], [coord.y for coord in macrocells], linestyle='', marker='o', color='red')
     
     for i in range(n_macrocells):
-        [smallcells_eixoX, smallcells_eixoY] = map.macrocells[i].getSmallcellsPositionList()
+        smallcells = map.macrocells[i].getSmallcellsPositionList()
         if n_macrocells == 1:
-            plt.plot(smallcells_eixoX[0], smallcells_eixoY[0], linestyle='', marker='.', color='green')
+            plt.plot([coord.x for coord in smallcells][0], [coord.y for coord in smallcells][0], linestyle='', marker='.', color='green')
         else:
-            plt.plot(smallcells_eixoX, smallcells_eixoY, linestyle='', marker='.', color='green')
+            plt.plot([coord.x for coord in smallcells], [coord.y for coord in smallcells], linestyle='', marker='.', color='green')
         
         if plotUEs:            
-            [ues_eixoX, ues_eixoY] = map.macrocells[i].getUEsPositionList()
-            plt.plot(ues_eixoX, ues_eixoY, linestyle='', marker='*', color='orange')
+            ues = map.macrocells[i].getUEsPositionList()
+            plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='*', color='orange')
 
         for j in range(len(map.macrocells[i].smallcells)):
-            [antennas_eixoX, antennas_eixoY] = map.macrocells[i].smallcells[j].getAntennasPositionList()
-            plt.plot(antennas_eixoX, antennas_eixoY, linestyle='', marker='.', color='blue')
+            antennas = map.macrocells[i].smallcells[j].getAntennasPositionList()
+            plt.plot([coord.x for coord in antennas], [coord.y for coord in antennas], linestyle='', marker='.', color='blue')
 
             if plotUEs:
-                [ues_eixoX, ues_eixoY] = map.macrocells[i].smallcells[j].getUEsPositionList()
-                plt.plot(ues_eixoX, ues_eixoY, linestyle='', marker='*', color='purple')
+                ues = map.macrocells[i].smallcells[j].getUEsPositionList()
+                plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='*', color='purple')
 
         if i == 0 and n_macrocells == 1:
             break
@@ -290,7 +263,13 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
     print("Plot")
 
 class MapChess:
-    def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100) :
+    def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100,
+                 scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
+                 h_building: float = 20, w_street: float = 20, los: bool = False,
+                 carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363**-9,
+                 thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
+                 gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
+                 enb_tx_power: float = 46, ue_tx_power: float = 26) :
         self.d_region = d_region
         self.d_width = d_width
         self.d_height = d_height
@@ -301,10 +280,29 @@ class MapChess:
         self.map_antennas = np.empty(self.n_regions).fill(None)
         self.map_ues = np.empty(self.n_regions).fill(None)
 
-    def region2Coord(self, region_id: int) -> Coordinate:
+        self.scenario = scenario
+        self.h_enbs = h_enbs
+        self.h_ues = h_ues
+        self.h_building = h_building
+        self.w_street = w_street
+        self.los = los
+        self.carrier_frequency = carrier_frequency
+        self.fading_paths = fading_paths
+        self.delay_rms = delay_rms
+        self.thermal_noise = thermal_noise
+        self.cable_loss = cable_loss
+        self.gain_enb = gain_enb
+        self.gain_ue = gain_ue
+        self.ue_noise_figure = ue_noise_figure
+        self.enb_noise_figure = enb_noise_figure
+        self.enb_tx_power = enb_tx_power
+        self.ue_tx_power = ue_tx_power
+
+    def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         coord = Coordinate(
             self.d_region*(region_id%self.n_width)+self.d_region/2,
-            self.d_region*int(region_id/self.n_height)+self.d_region/2)
+            self.d_region*int(region_id/self.n_height)+self.d_region/2,
+            z)
         return coord
 
     def coord2Region(self, coord: Coordinate) -> int:
@@ -317,49 +315,79 @@ class MapChess:
         return region_id
 
     def placeTestUEs(self):
-        self.map_ues = np.array(
-                        [[Ue(self.region2Coord(m), m)] 
-                        for m in range(self.n_regions)])
+        #self.map_ues = np.array(
+        #                [[Ue(self.region2Coord(m), m)] 
+        #                for m in range(self.n_regions)])
+        self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
+        self.map_ues.fill([])
+        for m in range(self.n_regions):
+            coord = self.region2Coord(m)
+            self.map_ues[m] = [Ue(coord, m)]
+
+
 
     def placeAntennas(self, list_regions) :
         count = 0
-        self.map_antennas = np.empty(self.n_regions).fill(None)
+        self.map_antennas = np.empty(self.n_regions, dtype= np.dtype(object))
+        self.map_antennas.fill(None)
         for m in list_regions:
             if m < self.map_antennas.size:
-                self.map_antennas[m] = Antenna(self.region2Coord(m), count)
+                coord = self.region2Coord(m)
+                self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
-    def getRegionsCentersList(self) -> List[List[float]]:
-        list_coordinateX = []
-        list_coordinateY = []
+    def getRegionsCentersList(self) -> List[Coordinate]:
+        list_coordinate = []
         for m in range(self.n_regions):
             coord = self.region2Coord(m)
-            list_coordinateX.append(coord.x)
-            list_coordinateY.append(coord.y)
+            list_coordinate.append(coord)
         
-        return [list_coordinateX,list_coordinateY]
+        return list_coordinate
 
-    def getAntennasPositionList(self) -> List[List[float]]:
+    def getAntennasPositionList(self) -> List[Coordinate]:
 
-        list_coordinateX = []
-        list_coordinateY = []
+        list_coordinate = []
         for ant in self.map_antennas:
             if (ant != None):
-                list_coordinateX.append(ant.position.x)
-                list_coordinateY.append(ant.position.y)
+                list_coordinate.append(ant.position)
         
-        return [list_coordinateX,list_coordinateY]
+        return [list_coordinate]
 
-    def getUEsPositionList(self) -> List[List[float]]:
-        list_coordinateX = []
-        list_coordinateY = []
-        for coord in self.map_ues:
-            if (coord != None):
-                for ue in coord:
-                    list_coordinateX.append(ue.position.x)
-                    list_coordinateY.append(ue.position.y)
+    def getUEsPositionList(self) -> List[Coordinate]:
+        list_coordinate = []
+        for region in self.map_ues:
+            if (region != None):
+                for ue in region:
+                    list_coordinate.append(ue.position)
         
-        return [list_coordinateX,list_coordinateY]                                         
+        return list_coordinate
+
+    def getSinrMap(self, seed: int = 1) -> List[List[float]]:
+        regions_centers = self.getRegionsCentersList()
+        sinr_map = []
+        random.seed(seed)
+        for enb_region in range(self.n_regions):
+            sinr_map.append([])
+            enb_coord = self.region2Coord(enb_region)
+            for ue_coord in regions_centers:
+
+                #Considerando DL
+                tx_gain = self.gain_enb
+                rx_gain = self.gain_ue
+
+                noise_figure = self.ue_noise_figure
+
+                sinr = compute_sinr(
+                    tx_power = self.enb_tx_power, tx_gain= tx_gain, rx_gain= rx_gain, noise_figure= noise_figure, speed= 0,
+                    carrier_frequency= self.carrier_frequency, ue_coord= ue_coord,
+                    tx_coord= enb_coord, cable_loss= self.cable_loss, thermal_noise= self.thermal_noise,
+                    fading_paths= self.fading_paths, delay_rms= self.delay_rms, los= self.los,
+                    scenario= self.scenario, h_enbs= self.h_enbs, h_ues= self.h_enbs,
+                    h_building= self.h_building, w_street= self.w_street
+                )
+                sinr_map[enb_region].append(sinr)
+
+        return sinr_map
 
 def exportMap():
     None

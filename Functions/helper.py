@@ -1,3 +1,4 @@
+from coordinates import Coordinate
 from geometry import MapHexagonal, Macrocell
 import typing as ty
 import numpy as np
@@ -88,25 +89,17 @@ def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[
 '''.format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
           iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
 
-def writeArrayIniMobility(f, object_array_name, coordenates: ty.List[ty.List[int]]):
+def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate]):
   count = 0
-  for x, y in zip(coordenates[0], coordenates[1]):
-    writeIniMobility(f, object_array_name+'['+str(count)+']', x, y)
+  for coord in coordinates:
+    writeIniMobility(f, object_array_name+'['+str(count)+']', coord.x, coord.y, coord.z)
     count += 1
 
-def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
-  num_coords = len(coordenates)
+def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):
   count = 0
-  if num_coords < 2:
-    print("ERROR: necessary list with x coordinate list and y coordinate list")
-  elif num_coords == 2:
-    for x, y in zip(coordenates[0], coordenates[1]):
-      writeIniMobility(f, object_name+str(count), x, y)
-      count += 1
-  else:
-    for x, y in zip(coordenates[0], coordenates[1], coordenates[2]):
-      writeIniMobility(f, object_name+str(count), x, y, y)
-      count += 1
+  for coord in coordinates:
+    writeIniMobility(f, object_name+str(count), coord.x, coord.y, coord.z)
+    count += 1
 
 #TODo: Trocar nome para indicar que só funciona com o Hexagonal
 def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bool = False):
@@ -114,21 +107,15 @@ def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bo
   for m in scen.macrocells:
     if not multi: count = ''
     iniZ=np.zeros(scen.n_ues)
-    [iniX, iniY] = m.getUEsPositionList()
-    [iniX_smallcell, iniY_smallcell] = m.smallcells[0].getUEsPositionList()
-    if iniX is None:
-      iniX = []
-      iniY = []
-    if iniX_smallcell is None:
-      iniX_smallcell = []
-      iniY_smallcell = []
-    iniX = iniX + iniX_smallcell
-    iniY = iniY + iniY_smallcell
-    for i in range(len(iniX)):
+    ini = m.getUEsPositionList()
+    ini_smallcell = m.smallcells[0].getUEsPositionList()
+
+    ini = ini + ini_smallcell
+    for i in range(len(ini)):
       f.write('''*.ue{num}[{number}].mobility.initialX = {iniX}m
 *.ue{num}[{number}].mobility.initialY = {iniY}m
 *.ue{num}[{number}].mobility.initialZ = {iniZ}m
-'''.format(number = i, num = count, iniX = iniX[i], iniY = iniY[i], iniZ = iniZ[i]))
+'''.format(number = i, num = count, iniX = ini[i].x, iniY = ini[i].y, iniZ = iniZ[i]))
 
     f.write("*.ue{num}[*].mobility.initFromDisplayString = {display}\n".format(display = 'true' if display else 'false', num = count,))
     if not multi: break

@@ -23,10 +23,6 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeOutput(f, "${resultdir}/${configname}/${iniX}-${iniY}")
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f)
-    hp.writeSeparation(f, "Channel Control")
-    hp.writeCarrierAggregation(f,carrierFrequency = "0.7GHz")
-    hp.writeSeparation(f, "Channel Model")
-    hp.writeChannelModel(f)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocks(f, 6, is5G= True)
     hp.writeSeparation(f, "UEs")
@@ -42,12 +38,12 @@ def ilp_fixed_info(filename, seed, d_height:int =1000, d_width:int =1000, d_regi
     hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
-    hp.writeOptionsIniMobility(f, 'eNB', regions_x_y[0], regions_x_y[1])
+    hp.writeOptionsIniMobility(f, 'eNB', [coord.x for coord in regions_x_y], [coord.y for coord in regions_x_y], [scen.h_antennas])
     hp.writeConstraint(f, object_name= 'eNB*', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "StationaryMobility", object_name= "ue[*]")
-    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordenates= ues_x_y)
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_x_y)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= num_ues, directions= 2)
@@ -62,5 +58,6 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
 
   scen = geo.MapChess(d_height, d_width, d_region)
   scen.placeTestUEs()
+  scen.placeAntennas([0,1])
 
   return scen

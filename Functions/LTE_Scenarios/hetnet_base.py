@@ -172,10 +172,8 @@ def startScenario(numUEs, center, micro_per_small):
   return scen
 
 def getMicroAntennasPositions(macrocells):
-  positions = [[],[]]
+  positions = []
   for m in macrocells:
     for s in m.smallcells:
-      tmp = s.getAntennasPositionList()
-      positions[0] += tmp[0]
-      positions[1] += tmp[1]
+      positions += s.getAntennasPositionList()
   return positions
