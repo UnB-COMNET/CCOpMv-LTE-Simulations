@@ -222,7 +222,7 @@ def writeCarrierAggregation(f, carrierFrequency: str = "2GHz"):
 
 def writeChannelModel(f, building_height: float = 20, nodeb_height: float = 25,
 ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
-extCell_interference: bool = True, antennGainEnB: int = 18, antennGainMicro: int = 5,
+extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
 antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
 componentCarrierIndex: int = 0, correlation_distance: int = 50, d2d_interference: bool = True,
 delay_rms: str = "363e-9", downlink_interference: bool = False, dynamic_los: bool = False,
