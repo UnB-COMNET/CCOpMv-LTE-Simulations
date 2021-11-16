@@ -66,12 +66,12 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
 
 def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800):
   random.seed(seed)
-  scen = geo.MapChess(d_height, d_width, d_region)
+  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7)
   scen.placeUEs(type= "Random", n_macros= 5)#Full = 4320 UEs
 
   ues_coords = scen.getUEsPositionList()
   ues_mov = scen.getUEsMovimentList()
-  #scen.plotUes()
+  scen.plotUes()
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:
@@ -86,9 +86,9 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
-    hp.writeCarrierAggregation5G(f,carrierFrequency = "0.7GHz")
+    hp.writeCarrierAggregation5G(f,carrierFrequency = "{}GHz".format(scen.carrier_frequency))
     hp.writeSeparation(f, "Channel Model")
-    hp.writeChannelModel5G(f)
+    hp.writeChannelModel5G(f, tolerateMaxDistViolation= True, extCell_interference= False)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocks(f, 6, is5G= True)
     hp.writeSeparation(f, "UEs")

@@ -271,7 +271,7 @@ class MapChess:
     def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20, los: bool = False,
-                 carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363**-9,
+                 carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363*10**-9,
                  thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
                  gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
                  enb_tx_power: float = 46, ue_tx_power: float = 26) :
