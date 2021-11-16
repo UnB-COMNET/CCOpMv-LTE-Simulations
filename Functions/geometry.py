@@ -282,8 +282,8 @@ class MapChess:
         self.n_height = int(d_height/d_region)
         self.n_regions = self.n_height*self.n_width
         
-        self.map_antennas = np.empty(self.n_regions).fill(None)
-        self.map_ues = np.empty(self.n_regions).fill(None)
+        self.map_antennas = []
+        self.map_ues = []
 
         self.scenario = scenario
         self.h_enbs = h_enbs
@@ -329,17 +329,17 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
-    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False):
+    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5):
         count = 0
         mean_speed = 3/3.6
         var_speed = 1/3.6
-        self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
-        self.map_ues.fill([])
+        for r in range(self.n_regions):
+            self.map_ues.append([])
 
         if type == "Full":
             ues = self.uesFullMapHexa_(small_per_macro= small_per_macro)
         elif type == "Random":
-            ues = self.uesRandomMapHexa_(small_per_macro= small_per_macro)
+            ues = self.uesRandomMapHexa_(small_per_macro= small_per_macro, n_macros = n_macros)
         else: 
             ues = []
 
@@ -450,6 +450,7 @@ class MapChess:
     
     def plotUes(self):
         ues = self.getUEsPositionList()
+
         plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='.', color='orange', markersize= 2)
 
         plt.show()
@@ -476,16 +477,15 @@ class MapChess:
     def getUEsPositionList(self) -> List[Coordinate]:
         list_coordinate = []
         for region in self.map_ues:
-            if (region != None):
-                for ue in region:
-                    list_coordinate.append(ue.position)
+            for ue in region:
+                list_coordinate.append(ue.position)
         
         return list_coordinate
 
     def getUEsMovimentList(self) -> List[Moviment]:
         list_moviment = []
         for region in self.map_ues:
-            if (region != None):
+            if (region != []):
                 for ue in region:
                     list_moviment.append(ue.moviment)
         
