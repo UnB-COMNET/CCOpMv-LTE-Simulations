@@ -368,12 +368,13 @@ class MapChess:
         d_macroue = 35
         dropradius_ue_cluster = 70
         n_ues = 60
+        margin = 500
 
         tmp_smc: List[Smallcell] = []
         tmp_mcs: List[Macrocell] = []
 
         for i in range(n_macros):
-            tmp_mcs.append(Macrocell(Coordinate(random()*8000, random()*8000)))
+            tmp_mcs.append(Macrocell(Coordinate(random()*(self.d_width - 2*margin)+margin, random()*(self.d_height - 2*margin)+margin)))
             for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
                     tmp_smc.append(Smallcell(pos_small))
@@ -404,6 +405,7 @@ class MapChess:
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
                 for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    pos_small = self.verifyCoord_(pos_small)
                     tmp_smc.append(Smallcell(pos_small))
                 coord_y += d_macromacro
             coord_x += 2*d_x
@@ -415,6 +417,7 @@ class MapChess:
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
                 for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    pos_small = self.verifyCoord_(pos_small)
                     tmp_smc.append(Smallcell(pos_small))
                 coord_y += d_macromacro
             coord_x += 2*d_x
@@ -434,6 +437,7 @@ class MapChess:
                 if random() < 0.6666:
                     # Place into smallcells
                     position = placeObject(smallcells[int(random()*small_per_macro)], dropradius_ue_cluster, 0)
+                    position = self.verifyCoord_(position)
                     ue = Ue(position, count)
                     ues.append(ue)
                     count += 1
@@ -441,6 +445,7 @@ class MapChess:
                 else:
                     # Place into macrocell
                     position = placeObject(macrocell, d_macromacro*0.425, d_macroue)
+                    position = self.verifyCoord_(position)
                     ue = Ue(position, count)
                     ues.append(ue)
                     count += 1
@@ -448,6 +453,17 @@ class MapChess:
 
         return ues
     
+    def verifyCoord_(self, coord: Coordinate):
+        if (coord.x < 0):
+            coord.x = 0
+        if (coord.x > self.d_width):
+            coord.x = self.d_width
+        if (coord.y < 0):
+            coord.y = 0
+        if (coord.y > self.d_height):
+            coord.y = self.d_height
+        return coord
+
     def plotUes(self):
         ues = self.getUEsPositionList()
 
