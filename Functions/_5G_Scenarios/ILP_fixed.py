@@ -23,9 +23,9 @@ def ilp_fixed_info(filename, seed, d_height:int =8000, d_width:int =8000, d_regi
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
-    hp.writeCarrierAggregation(f,carrierFrequency = "0.7GHz")
+    hp.writeCarrierAggregation5G(f,carrierFrequency = "0.7GHz")
     hp.writeSeparation(f, "Channel Model")
-    hp.writeChannelModel(f)
+    hp.writeChannelModel5G(f)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocks(f, 6, is5G= True)
     hp.writeSeparation(f, "UEs")
@@ -46,7 +46,7 @@ def ilp_fixed_info(filename, seed, d_height:int =8000, d_width:int =8000, d_regi
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "StationaryMobility", object_name= "ue[*]")
-    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordenates= ues_x_y)
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_x_y)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= num_ues, directions= 2)
@@ -67,7 +67,7 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
 def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800):
   random.seed(seed)
   scen = geo.MapChess(d_height, d_width, d_region)
-  scen.placeUEs(type= "Random", n_macros= 20)#Full = 4320 UEs
+  scen.placeUEs(type= "Random", n_macros= 5)#Full = 4320 UEs
 
   ues_coords = scen.getUEsPositionList()
   ues_mov = scen.getUEsMovimentList()
@@ -93,6 +93,8 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.writeResourceBlocks(f, 6, is5G= True)
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, num_ues)
+    hp.writeComment(f, text= "Conecting UEs to eNodeB")
+    hp.writeConnectUE(f, UEs= [num_ues], ENBs= [1])
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI'])
     hp.writeSeparation(f, "Scenario")
@@ -101,5 +103,6 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue[*]")
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
     hp.writeArrayMovMobility(f, object_array_name= 'ue', moviments= ues_mov)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)#todo
