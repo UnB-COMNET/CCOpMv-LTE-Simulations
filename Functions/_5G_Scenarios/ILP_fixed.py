@@ -63,3 +63,15 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
   scen.placeTestUEs()
 
   return scen
+
+#def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800):
+#  random.seed(seed)
+#  scen = geo.MapChess(d_height, d_width, d_region)
+#  scen.placeUEs(type= "Full")
+
+#  ues_coords = scen.getUEsPositionList()
+
+#  num_ues = len(ues_coords)
+
+#  with open(filename, 'wt') as f:
+#    hp.writeCommentConfigILP(f, "ilp_fixed_info", filename, seed, d_height, d_width, d_region)

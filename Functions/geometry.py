@@ -159,9 +159,11 @@ class Antenna:
         self.index = index
 
 class Ue:
-    def __init__(self, position: Coordinate, index):
+    def __init__(self, position: Coordinate, index, speed = 0, dir = 0):
         self.position = position
         self.index = index
+        self.speed = speed
+        self.dir = dir
 
 def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordinate:
     not_Done = True
@@ -323,8 +325,10 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
-    def placeUEs(self, type:str = "Full", small_per_macro:int = 1):
+    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False):
         count = 0
+        mean_speed = 3/3.6
+        var_speed = 1/3.6
         self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
         self.map_ues.fill([])
 
@@ -338,6 +342,9 @@ class MapChess:
         for ue in ues:
             region = self.coord2Region(ue.position)
             if region < self.n_regions:
+                if not fixed:
+                    ue.speed = normalvariate(mu= mean_speed, sigma= var_speed)
+                    ue.dir = random() * 360
                 self.map_ues[region].append(ue)
                 count += 1
 
