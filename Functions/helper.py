@@ -276,7 +276,7 @@ uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool 
 **.cellularNic.channelModel[*].ue_noise_figure = {}
 **.cellularNic.channelModel[*].uplink_interference = {}
 **.cellularNic.channelModel[*].useRsrqFromLog = {}
-**.cellularNic.channelModel[*].useTorus = false
+**.cellularNic.channelModel[*].useTorus = {}
 '''.format(building_height, nodeb_height, ue_height, street_wide, fading_type,
 "true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
 bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
