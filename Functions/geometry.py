@@ -162,8 +162,12 @@ class Ue:
     def __init__(self, position: Coordinate, index, speed = 0, dir = 0):
         self.position = position
         self.index = index
+        self.moviment = Moviment(speed, dir)
+
+class Moviment:
+    def __init__(self, speed, dir):
         self.speed = speed
-        self.dir = dir
+        self.direction = dir
 
 def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordinate:
     not_Done = True
@@ -343,8 +347,8 @@ class MapChess:
             region = self.coord2Region(ue.position)
             if region < self.n_regions:
                 if not fixed:
-                    ue.speed = normalvariate(mu= mean_speed, sigma= var_speed)
-                    ue.dir = random() * 360
+                    ue.moviment.speed = normalvariate(mu= mean_speed, sigma= var_speed)
+                    ue.moviment.direction = random() * 360
                 self.map_ues[region].append(ue)
                 count += 1
 
@@ -477,6 +481,15 @@ class MapChess:
                     list_coordinate.append(ue.position)
         
         return list_coordinate
+
+    def getUEsMovimentList(self) -> List[Moviment]:
+        list_moviment = []
+        for region in self.map_ues:
+            if (region != None):
+                for ue in region:
+                    list_moviment.append(ue.moviment)
+        
+        return list_moviment
 
     def getSinrMap(self, use_seed: int = 1) -> List[List[float]]:
         regions_centers = self.getRegionsCentersList()

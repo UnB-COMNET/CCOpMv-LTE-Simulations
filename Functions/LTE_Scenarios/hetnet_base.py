@@ -16,8 +16,8 @@ def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_
   with open(filename, 'wt') as f:
     # General
 
-    hp.writeCommentConfig(f, "hetnet_base", filename, directions, center_x, center_y,
-                          num_ues, sites, micro_per_small, small_per_site, seed)
+    hp.writeCommentConfig(f, "hetnet_base", filename, directions, num_ues, center_x, center_y,
+                          sites, micro_per_small, small_per_site, seed)
 
     hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config eNB3_Base')
@@ -45,7 +45,7 @@ def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_
     hp.writeMultiScenariosPerso(f, macrocells= scen.macrocells)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
-    hp.writeMultiIniMobility(f,object_name= 'eNB', coordenates= scen.getMacrocellsPositionList())
+    hp.writeMultiIniMobility(f,object_name= 'eNB', coordinates= scen.getMacrocellsPositionList())
     hp.writeConstraint(f, object_name= 'eNB*')
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
@@ -53,7 +53,7 @@ def hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_
     hp.writeUeMobilityPerso(f, scen= scen, multi= True)
     hp.writeConstraint(f, object_name= 'ue*[*]')
     hp.writeComment(f, text= "Microcell")
-    hp.writeMultiIniMobility(f,object_name= 'microCell', coordenates= antennasPositions)
+    hp.writeMultiIniMobility(f,object_name= 'microCell', coordinates= antennasPositions)
     hp.writeConstraint(f, object_name= 'microCell*')
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= scen.n_ues, directions= directions, num_macros= num_macros, multi= True)
@@ -92,8 +92,8 @@ def hetnet_mov(filename, directions, center_x, center_y, num_ues, sites, micro_p
   with open(filename, 'wt') as f:
     # General
 
-    hp.writeCommentConfig(f, "hetnet_mov", filename, directions, center_x, center_y,
-                          num_ues, sites, micro_per_small, small_per_site, seed)
+    hp.writeCommentConfig(f, "hetnet_mov", filename, directions, num_ues, center_x, center_y,
+                          sites, micro_per_small, small_per_site, seed)
 
     hp.defaultGeneral(f)
     hp.makeNewConfig(f, name= 'Config HetNet_Mov')
@@ -125,7 +125,8 @@ def hetnet_mov(filename, directions, center_x, center_y, num_ues, sites, micro_p
     hp.writeConstraint(f, object_name= 'eNB*')
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
-    hp.writeMovMobility(f, type= "LinearMobility", speed= 100, initial_heading= 0, object_name= "ue*[*]")
+    hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue*[*]")
+    hp.writeMovMobility(f, speed= 100, initial_heading= 0, object_name= "ue*[*]")
     hp.writeUeMobilityPerso(f, scen= scen, multi= True)
     hp.writeConstraint(f, object_name= 'ue*[*]')
     hp.writeComment(f, text= "Microcell")
