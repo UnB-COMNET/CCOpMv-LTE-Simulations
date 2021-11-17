@@ -75,9 +75,9 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed_info", filename, seed, d_height, d_width, d_region)
+    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, d_height, d_width, d_region)
     hp.defaultGeneral(f, is5g= True)
-    hp.makeNewConfig(f, name= 'Config ilp_fixed_info')
+    hp.makeNewConfig(f, name= 'Config ilp_fixed_users')
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
     hp.writeTime(f, time= 10, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
