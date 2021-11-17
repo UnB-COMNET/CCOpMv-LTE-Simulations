@@ -14,7 +14,7 @@ def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: f
   fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency, sim_time= 0.001)
 
   attenuation = compute_attenuation(ue_coord, tx_coord, speed, los, scenario, h_enbs, h_ues,
-                                    carrier_frequency, h_building, w_street)
+                                    carrier_frequency, h_building, w_street,True)
 
   recv_power = tx_power
   recv_power += tx_gain + rx_gain - cable_loss - attenuation
@@ -68,8 +68,8 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
   result = linear_to_db(re_h * re_h + im_h * im_h)
   #this may be >1 due to constructive interference
   if (result <= 1):
-    #print("ERROR: invalid result computing jakes fading")
-    return result
+    print("ERROR: invalid result computing jakes fading")
+    return 0
 
   return result
 
@@ -77,21 +77,21 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
 # PATHLOSS + SHADOWING
 def compute_attenuation(ue_coord: Coordinate, tx_coord: Coordinate, speed: int, los: bool,
                         scenario: str, h_enbs: float, h_ues: float, carrier_frequency: float,
-                        h_building: float, w_street: float):
+                        h_building: float, w_street: float, tolerateMaxDistViolation: bool = False):
 
   distance = np.sqrt((ue_coord.x - tx_coord.x)**2 + (ue_coord.y - tx_coord.y)**2 + (ue_coord.z - tx_coord.z)**2)
   
-  attenuation = compute_path_loss(distance, los, scenario, h_enbs, h_ues, carrier_frequency, h_building, w_street)
+  attenuation = compute_path_loss(distance, los, scenario, h_enbs, h_ues, carrier_frequency, h_building, w_street,tolerateMaxDistViolation)
 
   attenuation += compute_shadowing(distance, speed, los, scenario)
 
   return attenuation
 
 def compute_path_loss(distance: float, los: bool, scenario: str, h_enbs: float, h_ues: float,
-                      carrier_frequency: float, h_building: float, w_street: float ):
+                      carrier_frequency: float, h_building: float, w_street: float, tolerateMaxDistViolation: bool = False):
   
   if scenario == "URBAN_MACROCELL":
-    path_loss = compute_urban_macro(distance, los, carrier_frequency, h_enbs, h_ues, h_building, w_street)
+    path_loss = compute_urban_macro(distance, los, carrier_frequency, h_enbs, h_ues, h_building, w_street,tolerateMaxDistViolation)
 
   else:
     print("ERROR computing pathloss: invalid scenario")
@@ -99,7 +99,7 @@ def compute_path_loss(distance: float, los: bool, scenario: str, h_enbs: float, 
 
   return path_loss
 def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_enbs: float = 25,
-                        h_ues: float = 1.5, h_building: float = 20, w_street: float = 20):
+                        h_ues: float = 1.5, h_building: float = 20, w_street: float = 20, tolerateMaxDistViolation: bool = False):
 
   speed_of_light = 299792458.0
 
@@ -109,8 +109,12 @@ def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_
   dbp = 4 * (h_enbs - 1) * (h_ues - 1) * ((carrier_frequency * 1000000000) / speed_of_light)
 
   #Considering tolerateMaxDistViolation = true in the simulation
-  if (distance >= 5000):
-    return 1000
+  if distance >= 5000:
+        if tolerateMaxDistViolation:
+          return 1000
+        else:
+          print("ERROR: Urban Macrocell Model is valid for distance < 5000m")
+          return
 
   else:
     #LOS
@@ -125,7 +129,7 @@ def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_
         return att
 
     #NLOS
-    else:
+    else:      
       att = 161.04 - 7.1 * log10(w_street) + 7.5 * log10(h_building) - (24.37 - 3.7 * pow(h_building/h_enbs, 2))\
           * log10(h_enbs) + (43.42 - 3.1 * log10(h_enbs)) * (log10(distance) - 3) + 20 * log10(carrier_frequency)\
           - (3.2 * (pow(log10(11.75 * h_ues), 2)) - 4.97)
@@ -140,7 +144,7 @@ def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
     if los: std_dev = 4
     else: std_dev = 6
 
-  #Get the normal shadowing with std deviation stdDev
+  #Get the log normal shadowing with std deviation stdDev
   att = random.normalvariate(0, std_dev)
 
   #Not computing case considering ue moviment
