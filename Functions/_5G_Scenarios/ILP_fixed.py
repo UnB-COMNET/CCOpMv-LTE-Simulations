@@ -19,7 +19,7 @@ def ilp_fixed_info(filename, seed, d_height:int =8000, d_width:int =8000, d_regi
     hp.writeTime(f, time= 10, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
-    hp.writeOutput(f, "${resultdir}/${configname}/${iniX}-${iniY}")
+    hp.writeOutput(f, "${resultdir}/${configname}/${iniX}-${iniY}-${reptition}")
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -28,6 +28,10 @@ def ilp_fixed_info(filename, seed, d_height:int =8000, d_width:int =8000, d_regi
     hp.writeChannelModel5G(f)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocks(f, 6, is5G= True)
+    hp.writeSeparation(f, "Carrier Aggregation")
+    hp.writeCarrierAggregation(f, "0.7GHz")    
+    hp.writeSeparation(f, "Channel Model")
+    hp.writeChannelModel(f)
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, num_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
@@ -41,7 +45,7 @@ def ilp_fixed_info(filename, seed, d_height:int =8000, d_width:int =8000, d_regi
     hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
-    hp.writeOptionsIniMobility(f, 'eNB', regions_x_y[0], regions_x_y[1])
+    hp.writeOptionsIniMobility(f, 'eNB', [coord.x for coord in regions_x_y], [coord.y for coord in regions_x_y], [scen.h_enbs])
     hp.writeConstraint(f, object_name= 'eNB*', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
@@ -61,6 +65,7 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
 
   scen = geo.MapChess(d_height, d_width, d_region)
   scen.placeTestUEs()
+  scen.placeAntennas([0,1])
 
   return scen
 
