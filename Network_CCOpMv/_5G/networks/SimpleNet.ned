@@ -46,6 +46,9 @@ network SimpleNet
         binder: Binder {
             @display("p=29,31;is=s");
         }
+        carrierAggregation: CarrierAggregation {
+            @display("p=50.993748,258.7;is=s");
+        }
         server: StandardHost {
             @display("p=243.96501,94.07125;is=l;i=device/server");
         }

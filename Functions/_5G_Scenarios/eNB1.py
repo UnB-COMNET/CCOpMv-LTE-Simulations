@@ -79,7 +79,7 @@ def startSimpleScenario(numUEs, center):
     scen.placeSmallCell(scen.macrocells[i], scen.d_macromacro*0.425, scen.d_macrocluster)
     # For each smallcell in a given macrocell, it places the antennas
     position = scen.macrocells[i].getSmallcellsPositionList()
-    antenna = geo.Antenna(geo.Coordinate(position[0][0], position[1][0]), None)
+    antenna = geo.Antenna(position[0], None)
     scen.macrocells[i].smallcells[0].antennas.append(antenna)          
 
   scen.placeUEs()

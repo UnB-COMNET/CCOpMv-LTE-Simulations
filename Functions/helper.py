@@ -1,6 +1,8 @@
+from coordinates import Coordinate
 from geometry import MapHexagonal, Macrocell
 import typing as ty
 import numpy as np
+import geometry as geo
 
 separation = "###############"
 
@@ -41,6 +43,7 @@ def writeConnectUE(f, UEs: ty.List[int] = [1], ENBs: ty.List[int] = [1], object_
         else:
           break
 
+#TODo: change function name to indicate macrocell need
 def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
   last = len(macrocells)
   for i in range(len(macrocells)):
@@ -69,40 +72,50 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
 *.{name}.mobility.initFromDisplayString = {display}
 '''.format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
-def writeMultiIniMobility(f, object_name, coordenates: ty.List[ty.List[int]]):
-  num_coords = len(coordenates)
-  count = 0
-  if num_coords < 2:
-    print("ERROR: necessary list with x coordinate list and y coordinate list")
-  elif num_coords == 2:
-    for x, y in zip(coordenates[0], coordenates[1]):
-      writeIniMobility(f, object_name+str(count), x, y)
-      count += 1
-  else:
-    for x, y in zip(coordenates[0], coordenates[1], coordenates[2]):
-      writeIniMobility(f, object_name+str(count), x, y, y)
-      count += 1
+def getOptionsString(ini: ty.List[float], name: str) -> str:
+  ini_str = '${'+name+'='
+  for f in np.unique(ini):
+    ini_str += ' ' + str(f) + 'm,'
+  ini_str = ini_str[:-1] + "}"
 
+  return ini_str
+
+def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display = False):
+
+  f.write('''*.{name}.mobility.initialX = {iniX}
+*.{name}.mobility.initialY = {iniY}
+*.{name}.mobility.initialZ = {iniZ}
+*.{name}.mobility.initFromDisplayString = {display}
+'''.format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
+          iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
+
+def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate]):
+  count = 0
+  for coord in coordinates:
+    writeIniMobility(f, object_array_name+'['+str(count)+']', coord.x, coord.y, coord.z)
+    count += 1
+
+def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):
+  count = 0
+  for coord in coordinates:
+    writeIniMobility(f, object_name+str(count), coord.x, coord.y, coord.z)
+    count += 1
+
+#TODo: Trocar nome para indicar que só funciona com o Hexagonal
 def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bool = False):
   count = 0
   for m in scen.macrocells:
     if not multi: count = ''
     iniZ=np.zeros(scen.n_ues)
-    [iniX, iniY] = m.getUEsPositionList()
-    [iniX_smallcell, iniY_smallcell] = m.smallcells[0].getUEsPositionList()
-    if iniX is None:
-      iniX = []
-      iniY = []
-    if iniX_smallcell is None:
-      iniX_smallcell = []
-      iniY_smallcell = []
-    iniX = iniX + iniX_smallcell
-    iniY = iniY + iniY_smallcell
-    for i in range(len(iniX)):
+    ini = m.getUEsPositionList()
+    ini_smallcell = m.smallcells[0].getUEsPositionList()
+
+    ini = ini + ini_smallcell
+    for i in range(len(ini)):
       f.write('''*.ue{num}[{number}].mobility.initialX = {iniX}m
 *.ue{num}[{number}].mobility.initialY = {iniY}m
 *.ue{num}[{number}].mobility.initialZ = {iniZ}m
-'''.format(number = i, num = count, iniX = iniX[i], iniY = iniY[i], iniZ = iniZ[i]))
+'''.format(number = i, num = count, iniX = ini[i].x, iniY = ini[i].y, iniZ = iniZ[i]))
 
     f.write("*.ue{num}[*].mobility.initFromDisplayString = {display}\n".format(display = 'true' if display else 'false', num = count,))
     if not multi: break
@@ -200,8 +213,71 @@ def writeNumUEs(f, numUEs: int):
 def writePropagation(f, model: str):
   f.write('**.propagationModel = "{}"\n'.format(model))
 
-def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30):
-  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))
+def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30, txDirection: str="\"OMNI\""):
+  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n*.eNB.cellularNic.phy.txDirection = {}".format(ue_power, enb_power, micro_power,txDirection))
+
+def writeCarrierAggregation(f, carrierFrequency: str = "2GHz"):
+  f.write('''*.carrierAggregation.componentCarrier[*].carrierFrequency = {}
+'''.format(carrierFrequency))
+
+def writeChannelModel(f, building_height: float = 20, nodeb_height: float = 25,
+ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
+extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
+antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
+componentCarrierIndex: int = 0, correlation_distance: int = 50, d2d_interference: bool = True,
+delay_rms: str = "363e-9", downlink_interference: bool = False, dynamic_los: bool = False,
+enable_extCell_los: bool = True, fading: bool = True, fading_paths: int = 6,
+fixed_los: bool = False, harqReduction: float = 0.2, inside_building: bool = False,
+lambdaMaxTh: float = 0.2, lambdaMinTh: float = 0.02, lambdaRatioTh: float = 20,
+rsrqScale: float = 1.0, rsrqShift: float = 22, shadowing: bool = True, targetBler: float = 0.01,
+thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
+uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
+  f.write('''**.cellularNic.channelModel[*].building_height = {}
+**.cellularNic.channelModel[*].nodeb_height = {}
+**.cellularNic.channelModel[*].ue_height = {}
+**.cellularNic.channelModel[*].street_wide = {}
+**.cellularNic.channelModel[*].fading_type = {}
+**.cellularNic.channelModel[*].extCell_interference = {}
+**.cellularNic.channelModel[*].antennGainEnB = {}
+**.cellularNic.channelModel[*].antennGainMicro = {}
+**.cellularNic.channelModel[*].antennaGainUe = {}
+**.cellularNic.channelModel[*].bs_noise_figure = {}
+**.cellularNic.channelModel[*].cable_loss = {}
+**.cellularNic.channelModel[*].componentCarrierIndex = {}
+**.cellularNic.channelModel[*].correlation_distance = {}
+**.cellularNic.channelModel[*].d2d_interference = {}
+**.cellularNic.channelModel[*].delay_rms = {}
+**.cellularNic.channelModel[*].downlink_interference = {} 
+**.cellularNic.channelModel[*].dynamic_los = {}
+**.cellularNic.channelModel[*].enable_extCell_los = {}
+**.cellularNic.channelModel[*].fading = {}
+**.cellularNic.channelModel[*].fading_paths = {}
+**.cellularNic.channelModel[*].fixed_los = {}
+**.cellularNic.channelModel[*].harqReduction = {}
+**.cellularNic.channelModel[*].inside_building = {}
+**.cellularNic.channelModel[*].lambdaMaxTh = {}
+**.cellularNic.channelModel[*].lambdaMinTh = {}
+**.cellularNic.channelModel[*].lambdaRatioTh = {}
+**.cellularNic.channelModel[*].rsrqScale = {}
+**.cellularNic.channelModel[*].rsrqShift = {}
+**.cellularNic.channelModel[*].shadowing = {}
+**.cellularNic.channelModel[*].targetBler = {}
+**.cellularNic.channelModel[*].thermalNoise = {}
+**.cellularNic.channelModel[*].tolerateMaxDistViolation = {}
+**.cellularNic.channelModel[*].ue_noise_figure = {}
+**.cellularNic.channelModel[*].uplink_interference = {}
+**.cellularNic.channelModel[*].useRsrqFromLog = {}
+**.cellularNic.channelModel[*].useTorus = false
+'''.format(building_height, nodeb_height, ue_height, street_wide, fading_type,
+"true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
+bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
+delay_rms, "false" if not downlink_interference else "true", "false" if not dynamic_los else "true",
+"true" if enable_extCell_los else "false", "true" if fading else "false", fading_paths,
+"false" if not fixed_los else "true", harqReduction, "false" if not inside_building else "true",
+lambdaMaxTh, lambdaMinTh, lambdaRatioTh, rsrqScale, rsrqShift, "true" if shadowing else "false",
+targetBler, thermalNoise, "false" if not tolerateMaxDistViolation else "true", ue_noise_figure,
+"false" if not uplink_interference else "true", "false" if not useRsrqFromLog else "true",
+"false" if not useTorus else "true"))
 
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   f.write('**.{}.cellInfo.microCell = {}\n'.format(node_name, "true" if micro else "false"))
@@ -216,11 +292,11 @@ def writeScenario(f, object_name, scenario: str = 'URBAN_MACROCELL', for5g: bool
   else:
     f.write('**.{}.lteNic.channelModel.scenario = "{}"\n'.format(object_name, scenario))
 
-def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL'):
+def writeMultiScenarios(f, object_name, num, scenario: str = 'URBAN_MACROCELL', for5g: bool = False):
   for i in range(num):
-    writeScenario(f, object_name+str(i), scenario)
+    writeScenario(f, object_name+str(i), scenario, for5g)
 
-def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.List[int]] = [[1,1]], for5g: bool = False):
+def writeScenarioPerso(f, object_name: str = 'ue', num_and_scen: ty.List[ty.Tuple[int,str]] = [[1,1]], for5g: bool = False):
   count = 0
   for i in range(len(num_and_scen)):
     for l in range(num_and_scen[i][0]):
@@ -296,13 +372,29 @@ def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x
 #  seed = {}\n'''.format(function_name, filename, directions, num_ues, center_x,
                         center_y, sites, micro_per_small, small_per_site, seed))
 
+def writeCommentConfigILP(f, function_name, filename, seed, d_height, d_width, d_region):
+  f.write('''#Function: {}
+#Parameters: 
+#  filename = '{}'
+#  seed = {}
+#  Map height distance = {}
+#  Map width distance = {}
+#  Region side distance = {}\n'''.format(function_name, filename, seed, d_height, d_width, d_region))
+
 def writeScenarioManager(f, xml, doc= True):
   if doc:
     f.write('*.scenarioManager.script = xmldoc("{}")\n'.format(xml))
   else:
     f.write('*.scenarioManager.script = xml("{}")\n'.format(xml))
 
-def defaultGeneral(f):
+def writeResourceBlocks(f, num: int, is5G: bool= False):
+  if is5G:
+    f.write("**.numBands = {}\n".format(num))
+  else:
+    f.write('''**.numRbDl = {}\n**.numRbUl = {}
+**.binder.numBands = {} # this value should be kept equal to the number of RBs\n'''.format(num))
+
+def defaultGeneral(f, is5g: bool = False):
   # General
   f.write("[General]\n")
   #Time
@@ -312,6 +404,7 @@ def defaultGeneral(f):
   writeOutput(f, "${resultdir}/${configname}/${repetition}")
   f.write("seed-set = ${repetition}\n")
   #Resource blocks
-  writeSeparation(f, "Resource Blocks")
-  f.write('''**.numRbDl = 6\n**.numRbUl = 6
+  if not is5g:
+    writeSeparation(f, "Resource Blocks")
+    f.write('''**.numRbDl = 6\n**.numRbUl = 6
 **.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')
