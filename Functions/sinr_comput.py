@@ -7,7 +7,7 @@ from coordinates import Coordinate
 def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
                  carrier_frequency: float, ue_coord: Coordinate, tx_coord: Coordinate,
                  cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
-                 fading_paths: int = 6, delay_rms: float = 363**-9, los: bool = False,
+                 fading_paths: int = 6, delay_rms: float = 363*10**-9, los: bool = False,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20):
 
@@ -68,8 +68,8 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
   result = linear_to_db(re_h * re_h + im_h * im_h)
   #this may be >1 due to constructive interference
   if (result <= 1):
-    print("ERROR: invalid result computing jakes fading")
-    return 0
+    #print("ERROR: invalid result computing jakes fading")
+    return result
 
   return result
 
