@@ -1,5 +1,5 @@
 from coordinates import Coordinate
-from geometry import MapHexagonal, Macrocell
+from geometry import MapHexagonal, Macrocell, Moviment
 import typing as ty
 import numpy as np
 import geometry as geo
@@ -60,8 +60,13 @@ def writeComment(f, text):
 def writeMobilityType(f, type: str, object_name = "ue[*]"):
   f.write('*.{}.mobilityType = "{}"\n'.format(object_name, type))
 
-def writeMovMobility(f, type: str, speed, initial_heading, object_name = "ue[*]"):
-  writeMobilityType(f, type, object_name)
+def writeArrayMovMobility(f, object_array_name, moviments: ty.List[Moviment]):
+  count = 0
+  for mov in moviments:
+    writeMovMobility(f, speed =mov.speed, initial_heading=mov.direction, object_name= object_array_name+'['+str(count)+']')
+    count += 1
+
+def writeMovMobility(f, speed, initial_heading, object_name = "ue[*]"):
   f.write('*.{}.mobility.speed = {}mps\n'.format(object_name, speed))
   f.write('*.{}.mobility.initialMovementHeading = {}deg\n'.format(object_name, initial_heading))
 
@@ -213,14 +218,18 @@ def writeNumUEs(f, numUEs: int):
 def writePropagation(f, model: str):
   f.write('**.propagationModel = "{}"\n'.format(model))
 
-def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30, txDirection: str="\"OMNI\""):
-  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n*.eNB.cellularNic.phy.txDirection = {}".format(ue_power, enb_power, micro_power,txDirection))
+def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30, txDirection: str="\"OMNI\"", is5G= False):
+  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))
+  if is5G:
+    f.write("*.eNB.cellularNic.phy.txDirection = {}\n".format(txDirection))
+  else:
+    f.write("*.eNB.lteNic.phy.txDirection = {}\n".format(txDirection))
 
-def writeCarrierAggregation(f, carrierFrequency: str = "2GHz"):
+def writeCarrierAggregation5G(f, carrierFrequency: str = "2GHz"):
   f.write('''*.carrierAggregation.componentCarrier[*].carrierFrequency = {}
 '''.format(carrierFrequency))
 
-def writeChannelModel(f, building_height: float = 20, nodeb_height: float = 25,
+def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25,
 ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
 extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
 antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
@@ -267,7 +276,7 @@ uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool 
 **.cellularNic.channelModel[*].ue_noise_figure = {}
 **.cellularNic.channelModel[*].uplink_interference = {}
 **.cellularNic.channelModel[*].useRsrqFromLog = {}
-**.cellularNic.channelModel[*].useTorus = false
+**.cellularNic.channelModel[*].useTorus = {}
 '''.format(building_height, nodeb_height, ue_height, street_wide, fading_type,
 "true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
 bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
@@ -393,6 +402,12 @@ def writeResourceBlocks(f, num: int, is5G: bool= False):
   else:
     f.write('''**.numRbDl = {}\n**.numRbUl = {}
 **.binder.numBands = {} # this value should be kept equal to the number of RBs\n'''.format(num))
+
+def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterationvarsf}-${repetition}.sna",
+  snapshot: bool = True, delay: float = 1.0):
+  f.write('snapshot-file = {}\n'.format(filename))
+  f.write('**.snapshoter.snapshot = {}\n'.format("true" if snapshot else "false"))
+  f.write('**.snapshoter.delay = {}\n'.format(delay))
 
 def defaultGeneral(f, is5g: bool = False):
   # General

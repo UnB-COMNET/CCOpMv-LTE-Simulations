@@ -1,6 +1,7 @@
 import geometry as geo
 import sinr_comput as sc
-from random import random
+from random import random, seed
+from helper_xml import get_map_ues_time
 
 def main():
   #Teste linear_to_db
@@ -36,19 +37,29 @@ def main():
   #print(shad3)
   #shad4 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 4)
   #print(shad4)
-  count = 0
-  count2 = 0
-  scen = geo.MapChess(1000, 1000, 100)
-  sinr_map = scen.getSinrMap(seed = 5)
-  with open("sinr.txt", 'w') as f:
-    for enb in sinr_map:
-      count = 0
-      f.write("{}:".format(count2))
-      for snr in enb:
-        f.write("\t{}- {}\n".format(count, snr))
-        count += 1
-      count2 += 1
+  
+  #count = 0
+  #count2 = 0
+  #scen = geo.MapChess(1000, 1000, 100)
+  #sinr_map = scen.getSinrMap(seed = 5)
+  #with open("sinr.txt", 'w') as f:
+  #  for enb in sinr_map:
+  #    count = 0
+  #    f.write("{}:".format(count2))
+  #    for snr in enb:
+  #      f.write("\t{}- {}\n".format(count, snr))
+  #      count += 1
+  #    count2 += 1
+  #
+  #seed(123)
+  scen = geo.MapChess(8000, 8000, 800)
+  #scen.placeAntennas()
+  scen.placeUEs(type= "Random")
+  #scen.plotUes()
 
+  map_ues_time = get_map_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+
+  #print(map_ues_time)
 
 
 if __name__ == "__main__":

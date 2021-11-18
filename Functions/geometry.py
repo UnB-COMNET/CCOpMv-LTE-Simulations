@@ -1,10 +1,9 @@
 from math import cos, pi, sqrt, sin
-from typing import List, Mapping, Union, Tuple
-from random import random
-import random
+from typing import List, Union, Tuple
+from random import random, seed, normalvariate
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import arctan, dtype, not_equal
+from numpy import arctan
 from sinr_comput import compute_sinr
 from coordinates import Coordinate, PolarCoordinate
 
@@ -83,7 +82,7 @@ class Macrocell:
         return list_coordinate
 
 class MapHexagonal:
-    def __init__(self, center: Coordinate) :
+    def __init__(self, center: Coordinate, n_site: int = 7, n_antennas: int = 10, n_ues: int = 30) :
         self.d_macromacro = 1000
         self.d_macrocluster = 105
         self.d_macroue = 35
@@ -93,10 +92,10 @@ class MapHexagonal:
         self.dropradius_sc_cluster = 50
         self.dropradius_ue_cluster = 70
 
-        self.n_site = 7
+        self.n_site = n_site
         self.n_cluster = 1
-        self.n_antennas = 10
-        self.n_ues = 30
+        self.n_antennas = n_antennas
+        self.n_ues = n_ues
         
         self.center = center
         self.macrocells = []     
@@ -160,9 +159,15 @@ class Antenna:
         self.index = index
 
 class Ue:
-    def __init__(self, position: Coordinate, index):
+    def __init__(self, position: Coordinate, index, speed = 0, dir = 0):
         self.position = position
         self.index = index
+        self.moviment = Moviment(speed, dir)
+
+class Moviment:
+    def __init__(self, speed, dir):
+        self.speed = speed
+        self.direction = dir
 
 def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordinate:
     not_Done = True
@@ -266,7 +271,7 @@ class MapChess:
     def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20, los: bool = False,
-                 carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363**-9,
+                 carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363*10**-9,
                  thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
                  gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
                  enb_tx_power: float = 46, ue_tx_power: float = 26) :
@@ -277,8 +282,8 @@ class MapChess:
         self.n_height = int(d_height/d_region)
         self.n_regions = self.n_height*self.n_width
         
-        self.map_antennas = np.empty(self.n_regions).fill(None)
-        self.map_ues = np.empty(self.n_regions).fill(None)
+        self.map_antennas = []
+        self.map_ues = []
 
         self.scenario = scenario
         self.h_enbs = h_enbs
@@ -324,7 +329,28 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
+    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5):
+        count = 0
+        mean_speed = 3000#3/3.6
+        var_speed = 1000#1/3.6
+        for r in range(self.n_regions):
+            self.map_ues.append([])
 
+        if type == "Full":
+            ues = self.uesFullMapHexa_(small_per_macro= small_per_macro)
+        elif type == "Random":
+            ues = self.uesRandomMapHexa_(small_per_macro= small_per_macro, n_macros = n_macros)
+        else: 
+            ues = []
+
+        for ue in ues:
+            region = self.coord2Region(ue.position)
+            if region < self.n_regions:
+                if not fixed:
+                    ue.moviment.speed = normalvariate(mu= mean_speed, sigma= var_speed)
+                    ue.moviment.direction = random() * 360
+                self.map_ues[region].append(ue)
+                count += 1
 
     def placeAntennas(self, list_regions) :
         count = 0
@@ -335,6 +361,117 @@ class MapChess:
                 coord = self.region2Coord(m)
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
+
+    def uesRandomMapHexa_(self, small_per_macro = 1, n_macros = 20)->List[Ue]:
+        d_macromacro = 1000
+        d_macrocluster = 105
+        d_macroue = 35
+        dropradius_ue_cluster = 70
+        n_ues = 60
+        margin = 500
+
+        tmp_smc: List[Smallcell] = []
+        tmp_mcs: List[Macrocell] = []
+
+        for i in range(n_macros):
+            tmp_mcs.append(Macrocell(Coordinate(random()*(self.d_width - 2*margin)+margin, random()*(self.d_height - 2*margin)+margin)))
+            for i in range (small_per_macro):
+                    pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    tmp_smc.append(Smallcell(pos_small))
+
+        ues = self.placeHexaUes_(tmp_mcs, tmp_smc, n_ues, dropradius_ue_cluster, d_macromacro, d_macroue, small_per_macro)
+
+        return ues
+
+    def uesFullMapHexa_(self, small_per_macro = 1) -> List[Ue]:
+
+        d_macromacro = 1000
+        d_macrocluster = 105
+        d_macroue = 35
+        dropradius_ue_cluster = 70
+        n_ues = 60
+
+
+        tmp_smc: List[Smallcell] = []
+        tmp_mcs: List[Macrocell] = []
+
+        d_x = d_macromacro*cos(1*pi/6)
+        d_y = d_macromacro*sin(1*pi/6)
+        
+        coord_x = self.d_region/2
+        while(coord_x < self.d_width):
+            coord_y = self.d_region/2
+            while(coord_y < self.d_height):
+                tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
+                for i in range (small_per_macro):
+                    pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    pos_small = self.verifyCoord_(pos_small)
+                    tmp_smc.append(Smallcell(pos_small))
+                coord_y += d_macromacro
+            coord_x += 2*d_x
+
+        coord_x = self.d_region/2+d_x
+        while(coord_x < self.d_width):
+            coord_y = self.d_region/2+d_y
+            while(coord_y < self.d_height):
+                tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
+                for i in range (small_per_macro):
+                    pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
+                    pos_small = self.verifyCoord_(pos_small)
+                    tmp_smc.append(Smallcell(pos_small))
+                coord_y += d_macromacro
+            coord_x += 2*d_x
+
+        ues = self.placeHexaUes_(tmp_mcs, tmp_smc, n_ues, dropradius_ue_cluster, d_macromacro, d_macroue, small_per_macro)
+
+        return ues
+
+    def placeHexaUes_(self, tmp_mcs: List[Macrocell], tmp_smc: List[Smallcell], n_ues:int, dropradius_ue_cluster: int,
+                      d_macromacro: int, d_macroue: int, small_per_macro: int):
+        count = 0
+        ues: List[Ue] = []
+        for i in range(len(tmp_mcs)):
+            macrocell = tmp_mcs[i]
+            smallcells = tmp_smc[i*small_per_macro: i*small_per_macro+small_per_macro]
+            for n in range(n_ues):
+                if random() < 0.6666:
+                    # Place into smallcells
+                    position = placeObject(smallcells[int(random()*small_per_macro)], dropradius_ue_cluster, 0)
+                    position = self.verifyCoord_(position)
+                    ue = Ue(position, count)
+                    ues.append(ue)
+                    count += 1
+                    smallcells[int(random()*small_per_macro)].ues.append(ue)
+                else:
+                    # Place into macrocell
+                    position = placeObject(macrocell, d_macromacro*0.425, d_macroue)
+                    position = self.verifyCoord_(position)
+                    ue = Ue(position, count)
+                    ues.append(ue)
+                    count += 1
+                    macrocell.ues.append(ue)
+
+        return ues
+    
+    def verifyCoord_(self, coord: Coordinate):
+        if (coord.x < 0):
+            coord.x = 0
+        if (coord.x > self.d_width):
+            coord.x = self.d_width
+        if (coord.y < 0):
+            coord.y = 0
+        if (coord.y > self.d_height):
+            coord.y = self.d_height
+        return coord
+
+    def plotUes(self):
+        ues = self.getUEsPositionList()
+
+        plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='.', color='orange', markersize= 2)
+
+        plt.show()
+        print("Plot")
+
 
     def getRegionsCentersList(self) -> List[Coordinate]:
         list_coordinate = []
@@ -351,21 +488,29 @@ class MapChess:
             if (ant != None):
                 list_coordinate.append(ant.position)
         
-        return [list_coordinate]
+        return list_coordinate
 
     def getUEsPositionList(self) -> List[Coordinate]:
         list_coordinate = []
         for region in self.map_ues:
-            if (region != None):
-                for ue in region:
-                    list_coordinate.append(ue.position)
+            for ue in region:
+                list_coordinate.append(ue.position)
         
         return list_coordinate
 
-    def getSinrMap(self, seed: int = 1) -> List[List[float]]:
+    def getUEsMovimentList(self) -> List[Moviment]:
+        list_moviment = []
+        for region in self.map_ues:
+            if (region != []):
+                for ue in region:
+                    list_moviment.append(ue.moviment)
+        
+        return list_moviment
+
+    def getSinrMap(self, use_seed: int = 1) -> List[List[float]]:
         regions_centers = self.getRegionsCentersList()
         sinr_map = []
-        random.seed(seed)
+        seed(use_seed)
         for enb_region in range(self.n_regions):
             sinr_map.append([])
             enb_coord = self.region2Coord(enb_region)
