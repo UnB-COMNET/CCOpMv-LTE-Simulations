@@ -27,6 +27,7 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 import simu5g.nodes.PgwStandard;
 import simu5g.common.carrierAggregation.CarrierAggregation;
+import _5G.models.Snapshoter;
 
 network SimpleNet
 {
@@ -62,7 +63,12 @@ network SimpleNet
             @display("p=500,500;is=vl");
         }
         ue[numUe]: Ue {
-            @display("p=301.855,236.72876");
+            @display("p=301.855,236.72876;is=s");
+        }
+        snapshoter: Snapshoter {
+            parameters:
+            	numUE = numUe;
+            	@display("p=50.69,182.21;is=s");
         }
     connections:
         server.pppg++ <--> Eth10G <--> router.pppg++; //TODO: entender Eth10G e as ligações
