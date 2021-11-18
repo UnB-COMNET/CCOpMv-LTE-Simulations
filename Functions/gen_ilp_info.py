@@ -1,7 +1,7 @@
 import geometry as geo
 import sinr_comput as sc
 from random import random, seed
-import xml.etree.ElementTree as ET
+from helper_xml import get_map_ues_time
 
 def main():
   #Teste linear_to_db
@@ -52,16 +52,14 @@ def main():
   #    count2 += 1
   #
   #seed(123)
-  #scen = geo.MapChess(8000, 8000, 800)
+  scen = geo.MapChess(8000, 8000, 800)
   #scen.placeAntennas()
-  #scen.placeUEs(type= "Random")
+  scen.placeUEs(type= "Random")
   #scen.plotUes()
-  #
-  #tree = ET.parse('ilp_fixed_users-sched=MAXCI-#0.sna')
-  #root = tree.getroot()
 
-  #print(root.tag)
-  pass
+  map_ues_time = get_map_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+
+  #print(map_ues_time)
 
 
 if __name__ == "__main__":
