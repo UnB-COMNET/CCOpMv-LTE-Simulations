@@ -39,3 +39,40 @@ def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
         break
 
   return map_ues_time
+
+def get_coord_ues_time(scen: MapChess, xml_filename: str) -> List[List[Coordinate]]:
+  accumulated_xml = ''
+  coord_ues_time = [scen.getUEsPositionList()]
+
+  with open(xml_filename) as temp:
+    while True:
+      line = temp.readline()
+      if line:
+        if line.startswith('<?xml'):
+            if accumulated_xml != '':
+                root = ET.XML(accumulated_xml)
+                while(int(root.get('simtime')) >= len(coord_ues_time)):
+                  coord_ues_time.append([])
+                coords_obj = root.findall(".//*[@class='inet::Coord']")
+                #Supoe que a "lastPosition" seja o ultimo objeto com essa classe
+                coords_text = coords_obj[-1].find("./info").text
+                coords_numbers = [float(s) for s in coords_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit()]
+                coord = Coordinate(x= coords_numbers[0], y= coords_numbers[1], z= coords_numbers[2])
+                coord_ues_time[int(root.get('simtime'))].append(coord)
+                accumulated_xml = ''
+        else:
+            accumulated_xml += line
+      else:
+        root = ET.XML(accumulated_xml)
+        while(int(root.get('simtime')) >= len(coord_ues_time)):
+          coord_ues_time.append([])
+        coords_obj = root.findall(".//*[@class='inet::Coord']")
+        coords_text = coords_obj[-1].find("./info").text
+        coords_numbers = [float(s) for s in coords_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit()]
+        coord = Coordinate(x= coords_numbers[0], y= coords_numbers[1], z= coords_numbers[2])
+        coord_ues_time[int(root.get('simtime'))].append(coord)
+        accumulated_xml = ''
+        
+        break
+
+  return coord_ues_time

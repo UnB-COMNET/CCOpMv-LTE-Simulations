@@ -1,7 +1,7 @@
 import geometry as geo
 import sinr_comput as sc
 from random import random, seed
-from helper_xml import get_map_ues_time
+from helper_xml import get_map_ues_time, get_coord_ues_time
 from Solutions.ILP_fixed_in_time import ccop_mv_MILP
 
 def main():
@@ -38,40 +38,57 @@ def main():
   #print(shad3)
   #shad4 = sc.compute_shadowing(distance= 1000, speed= 0, los= False, scenario= "URBAN_MACROCELL", seed= 4)
   #print(shad4)
-  
-  #count = 0
-  #count2 = 0
-  #scen = geo.MapChess(1000, 1000, 100)
-  #with open("sinr.txt", 'w') as f:
-  #  for enb in sinr_map:
-  #    count = 0
-  #    f.write("{}:".format(count2))
-  #    for snr in enb:
-  #      f.write("\t{}- {}\n".format(count, snr))
-  #      count += 1
-  #    count2 += 1
-  # 
-  show_runnig = False
 
-  scen = geo.MapChess(8000, 8000, 800, chosen_seed= 123)
-  #scen.placeAntennas()
-  scen.placeUEs(type= "Random")
+  show = 2
+
+  #Initiating scenario
+  scen = geo.MapChess(8000, 8000, 800, chosen_seed= 123) #100 setores
+
+  if(show == 0):
+    #Placing UEs: Full
+    scen.placeUEs(type= "Full", n_ues_macro= 60) #72 macros? -> 4320 ues
+    scen.plotUes()
+
+  #Placing UEs
+  scen.placeUEs(type= "Random", n_macros= 5, n_ues_macro= 60)
   scen.plotUes()
 
-  if (show_runnig):
-    print("-------------Generating sinr map")
-    sinr_map = scen.getSinrMap()
+  #Generating sinr map
+  print("-------------Generating sinr map")
+  sinr_map = scen.getSinrMap()
 
+  #Showing sinr in file
+  count = 0
+  count2 = 0
+  with open("sinr.txt", 'w') as f:
+    for enb in sinr_map:
+      count = 0
+      f.write("{}:".format(count2))
+      for snr in enb:
+        f.write("\t{}- {}\n".format(count, snr))
+        count += 1
+      count2 += 1
+
+  if (show == 2):
+
+    #Generating default parameters
     max_user_antenna_m = [60 for i in range(scen.n_regions)]
     antennas_map_m = [1 for i in range(scen.n_regions)]
-    min_snr_m = [20 for i in range(scen.n_regions)]
+    min_snr_m = [10 for i in range(scen.n_regions)]
+
+    #Generating ues time map
     print("-------------Generating ues map")
     users_t_m = get_map_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+
+    #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
     ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
 
-  else:
-    scen.plotUes()
+  elif (show == 1):
+    #Plotting ues configuration over time
+    ues_coords = get_coord_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+    for t_ues in ues_coords:
+      scen.plotUes(external= True, ues_positions= t_ues)
   #print(map_ues_time)
 
 

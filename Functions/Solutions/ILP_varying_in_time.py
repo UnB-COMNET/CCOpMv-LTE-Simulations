@@ -33,7 +33,7 @@ def ccop_mv_MILP(
         for m in range(0, M):
             for n in range(0,M):
                 ct = solver.Constraint(-solver.infinity(), snr_map_mn[m][n])
-                ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[m])
+                ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[n])
     # Antenas m support a max number of users connected
     for t in range(0,T):
         for m in range(0,M):
@@ -43,9 +43,10 @@ def ccop_mv_MILP(
     # A sector n will be only connected to a single antenna in sector m
     for t in range(0,T):
         for n in range(0,M):
-            ct = solver.Constraint(1,1)
-            for m in range(0,M):
-                ct.SetCoefficient(ytmn[t][m][n], 1)
+            if (users_t_m[t][n] > 0):
+                ct = solver.Constraint(1,1)
+                for m in range(0,M):
+                    ct.SetCoefficient(ytmn[t][m][n], 1)
 
     # Create near past variable
     for t in range(delta+1, T):
