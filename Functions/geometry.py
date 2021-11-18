@@ -274,7 +274,7 @@ class MapChess:
                  carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363*10**-9,
                  thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
                  gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
-                 enb_tx_power: float = 46, ue_tx_power: float = 26) :
+                 enb_tx_power: float = 46, ue_tx_power: float = 26, chosen_seed: int = 123) :
         self.d_region = d_region
         self.d_width = d_width
         self.d_height = d_height
@@ -302,6 +302,8 @@ class MapChess:
         self.enb_noise_figure = enb_noise_figure
         self.enb_tx_power = enb_tx_power
         self.ue_tx_power = ue_tx_power
+
+        seed(chosen_seed)
 
     def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         coord = Coordinate(
@@ -464,8 +466,9 @@ class MapChess:
             coord.y = self.d_height
         return coord
 
-    def plotUes(self):
-        ues = self.getUEsPositionList()
+    def plotUes(self, external: bool = False, ues_positions: List[Coordinate] = None):
+        if not external: ues = self.getUEsPositionList()
+        else: ues = ues_positions
 
         plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='.', color='orange', markersize= 2)
 
@@ -507,10 +510,10 @@ class MapChess:
         
         return list_moviment
 
-    def getSinrMap(self, use_seed: int = 1) -> List[List[float]]:
+    def getSinrMap(self) -> List[List[float]]:
         regions_centers = self.getRegionsCentersList()
         sinr_map = []
-        seed(use_seed)
+        #seed(use_seed)
         for enb_region in range(self.n_regions):
             sinr_map.append([])
             enb_coord = self.region2Coord(enb_region)

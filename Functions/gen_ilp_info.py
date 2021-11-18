@@ -2,6 +2,7 @@ import geometry as geo
 import sinr_comput as sc
 from random import random, seed
 from helper_xml import get_map_ues_time
+from Solutions.ILP_fixed_in_time import ccop_mv_MILP
 
 def main():
   #Teste linear_to_db
@@ -41,7 +42,6 @@ def main():
   #count = 0
   #count2 = 0
   #scen = geo.MapChess(1000, 1000, 100)
-  #sinr_map = scen.getSinrMap(seed = 5)
   #with open("sinr.txt", 'w') as f:
   #  for enb in sinr_map:
   #    count = 0
@@ -50,15 +50,28 @@ def main():
   #      f.write("\t{}- {}\n".format(count, snr))
   #      count += 1
   #    count2 += 1
-  #
-  #seed(123)
-  scen = geo.MapChess(8000, 8000, 800)
+  # 
+  show_runnig = False
+
+  scen = geo.MapChess(8000, 8000, 800, chosen_seed= 123)
   #scen.placeAntennas()
   scen.placeUEs(type= "Random")
-  #scen.plotUes()
+  scen.plotUes()
 
-  map_ues_time = get_map_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+  if (show_runnig):
+    print("-------------Generating sinr map")
+    sinr_map = scen.getSinrMap()
 
+    max_user_antenna_m = [60 for i in range(scen.n_regions)]
+    antennas_map_m = [1 for i in range(scen.n_regions)]
+    min_snr_m = [20 for i in range(scen.n_regions)]
+    print("-------------Generating ues map")
+    users_t_m = get_map_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+    print("-------------Calculating Solution (this may take a while)")
+    ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
+
+  else:
+    scen.plotUes()
   #print(map_ues_time)
 
 
