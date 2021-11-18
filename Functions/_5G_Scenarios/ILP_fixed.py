@@ -76,7 +76,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
 
   ues_coords = scen.getUEsPositionList()
   ues_mov = scen.getUEsMovimentList()
-  scen.plotUes()
+  #scen.plotUes()
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:

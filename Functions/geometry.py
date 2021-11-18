@@ -331,8 +331,8 @@ class MapChess:
 
     def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5):
         count = 0
-        mean_speed = 3/3.6
-        var_speed = 1/3.6
+        mean_speed = 3000#3/3.6
+        var_speed = 1000#1/3.6
         for r in range(self.n_regions):
             self.map_ues.append([])
 
