@@ -1,6 +1,7 @@
 import geometry as geo
 import sinr_comput as sc
 from random import random, seed
+import xml.etree.ElementTree as ET
 
 def main():
   #Teste linear_to_db
@@ -49,12 +50,18 @@ def main():
   #      f.write("\t{}- {}\n".format(count, snr))
   #      count += 1
   #    count2 += 1
-  seed(123)
-  scen = geo.MapChess(8000, 8000, 800)
+  #
+  #seed(123)
+  #scen = geo.MapChess(8000, 8000, 800)
   #scen.placeAntennas()
-  scen.placeUEs(type= "Random")
-  scen.plotUes()
+  #scen.placeUEs(type= "Random")
+  #scen.plotUes()
+  #
+  #tree = ET.parse('ilp_fixed_users-sched=MAXCI-#0.sna')
+  #root = tree.getroot()
 
+  #print(root.tag)
+  pass
 
 
 if __name__ == "__main__":
