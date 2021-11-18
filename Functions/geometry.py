@@ -1,7 +1,6 @@
 from math import cos, pi, sqrt, sin
 from typing import List, Mapping, Union, Tuple
 from random import random
-import random
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import arctan, dtype, not_equal
@@ -388,6 +387,33 @@ class MapChess:
                 sinr_map[enb_region].append(sinr)
 
         return sinr_map
+
+class Centroid:
+    def __init__(self, center: Coordinate):
+        self.center = center
+        self.ues = []
+
+    def placeUEs(self,numUE, radius, radius_ues):
+        for n in range(numUE):
+            macrocell = Macrocell(self.center)
+            coord_macrocell = placeObject(macrocell,radius,0)
+            macrocell = Macrocell(coord_macrocell)
+
+            position = placeObject(macrocell,radius_ues,0)
+            ue = Ue(position,n)
+            self.ues.append(ue)
+    
+    def getUEsPositionList(self) -> List[Coordinate]:
+        '''Documentation'''
+        if not self.ues:
+            print("There are no UEs in the smallcell")
+            return []
+    
+        list_coordinate = []
+        for i in range(len(self.ues)):
+            list_coordinate.append(self.ues[i].position)  
+
+        return list_coordinate
 
 def exportMap():
     None

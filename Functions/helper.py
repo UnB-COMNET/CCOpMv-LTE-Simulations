@@ -89,11 +89,10 @@ def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[
 '''.format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
           iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
 
-def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate]):
-  count = 0
+def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate], count_init: int = 0):
   for coord in coordinates:
-    writeIniMobility(f, object_array_name+'['+str(count)+']', coord.x, coord.y, coord.z)
-    count += 1
+    writeIniMobility(f, object_array_name+'['+str(count_init)+']', coord.x, coord.y, coord.z)
+    count_init += 1
 
 def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):
   count = 0

@@ -1,5 +1,5 @@
 import LTE_Scenarios.hetnet_base as hetb
-import _5G_Scenarios.ILP_fixed as ilpf
+import _5G_Scenarios.test_ILP as ilpf
 
 def main():
 
@@ -16,7 +16,7 @@ def main():
   # Scenario only changes with num_ues, center and micro_per_small
   #hetb.hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed, with_stop= True)
   #hetb.hetnet_mov('../Network_CCOpMv/LTE/simulations/hetnet_mov.ini', directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed)
-  ilpf.ilp_fixed_info('../Network_CCOpMv/_5G/simulations/ilp_fixed_info.ini', seed)
+  ilpf.test_ILP('../Network_CCOpMv/_5G/simulations/test_ILP.ini', seed, 1000,1000,500)
 if __name__ == "__main__":
   main()
   print("Done")
