@@ -403,6 +403,12 @@ def writeResourceBlocks(f, num: int, is5G: bool= False):
     f.write('''**.numRbDl = {}\n**.numRbUl = {}
 **.binder.numBands = {} # this value should be kept equal to the number of RBs\n'''.format(num))
 
+def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterationvarsf}-${repetition}.sna",
+  snapshot: bool = True, delay: float = 1.0):
+  f.write('snapshot-file = {}\n'.format(filename))
+  f.write('**.snapshoter.snapshot = {}\n'.format("true" if snapshot else "false"))
+  f.write('**.snapshoter.delay = {}\n'.format(delay))
+
 def defaultGeneral(f, is5g: bool = False):
   # General
   f.write("[General]\n")
