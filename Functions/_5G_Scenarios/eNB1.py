@@ -32,7 +32,7 @@ def main():
     hp.writeSeparation(f, "Micro Cell")
     hp.writeNodeIsMicro(f, "microCell")
     hp.writeSeparation(f, "Transmission Power")
-    hp.writeTransmissionPower(f)
+    hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, scen.n_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
