@@ -4,6 +4,7 @@ from random import random, seed
 from helper_xml import get_map_ues_time, get_coord_ues_time
 from Solutions.ILP_fixed_in_time import ccop_mv_MILP
 import _5G_Scenarios.ILP_fixed as ilpf
+import os
 
 def main():
   #Main parameters
@@ -13,9 +14,19 @@ def main():
   d_region = 800
   n_macros = 2
   ini_path = '../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini'
+  xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna'
 
-  #Genereting .ini file
-  ilpf.ilp_fixed_users(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
+  if False:
+    #Genereting .ini file
+    ilpf.ilp_fixed_users(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
+
+    input("Waiting.")
+
+    #Running Omnet++
+    os.system("cd ../Network_CCopMV")
+    os.system("opp_makemake")
+    os.system("make")
+    os.system('./Network_CCOpMv ' + ini_path + ' -u Cmdenv -c ilp_fixed_user')
 
   #Determines what the program will show to the user
   show = 2
@@ -30,7 +41,7 @@ def main():
 
   #Placing UEs
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
-  #scen.plotUes()
+  scen.plotUes()
 
   #Generating sinr map
   print("-------------Generating sinr map")
@@ -57,7 +68,7 @@ def main():
 
     #Generating ues time map
     print("-------------Generating ues map")
-    users_t_m = get_map_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+    users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename)
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
@@ -65,7 +76,7 @@ def main():
 
   elif (show == 1):
     #Plotting ues configuration over time
-    ues_coords = get_coord_ues_time(scen= scen, xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna')
+    ues_coords = get_coord_ues_time(scen= scen, xml_filename= xml_filename)
     for t_ues in ues_coords:
       scen.plotUes(external= True, ues_positions= t_ues)
   #print(map_ues_time)

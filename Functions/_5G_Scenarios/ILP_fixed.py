@@ -70,7 +70,7 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
   return scen
 
 def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2):
-  random.seed(seed)
+  #random.seed(seed)
   scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
   scen.placeUEs(type= "Random", n_macros= n_macros)#Full = 4320 UEs
 
