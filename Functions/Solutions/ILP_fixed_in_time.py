@@ -24,11 +24,11 @@ def ccop_mv_MILP(
     ytmn = [[[solver.BoolVar("$y_{%d,%d,%d}$"%(t,m,n)) for n in range(0,M)] for m in range(0,M)] for t in range(0, T)]
     ## Constraints
     # Antennas must serve n areas only if the signal meet a minimum SNR omega
-    for t in range(0,T):
-        for m in range(0, M):
-            for n in range(0,M):
-                ct = solver.Constraint(-solver.infinity(), snr_map_mn[m][n])
-                ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[n])
+    #for t in range(0,T):
+    #    for m in range(0, M):
+    #        for n in range(0,M):
+    #            ct = solver.Constraint(-solver.infinity(), snr_map_mn[m][n])
+    #            ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[n])
     # Antenas m support a max number of users connected
     for t in range(0,T):
         for m in range(0,M):
