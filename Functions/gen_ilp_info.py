@@ -20,6 +20,8 @@ def main():
     #Genereting .ini file
     ilpf.ilp_fixed_users(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
 
+    open(xml_filename, 'w').close()
+
     input("Waiting.")
 
     #Running Omnet++
