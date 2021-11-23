@@ -16,7 +16,7 @@ package _5G.models;
 //
 // TODO auto-generated module
 //
-simple Snapshoter
+simple Snapshotter
 {
     parameters:
         bool snapshot = default(false);
