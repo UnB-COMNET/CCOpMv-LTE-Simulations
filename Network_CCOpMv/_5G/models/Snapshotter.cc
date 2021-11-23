@@ -13,9 +13,9 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-#include "Snapshoter.h"
+#include "Snapshotter.h"
 
-Snapshoter::Snapshoter()
+Snapshotter::Snapshotter()
 {
     //Constructor.
     //Set pointer to nullptr so the destructor won't crash
@@ -23,13 +23,13 @@ Snapshoter::Snapshoter()
     event = nullptr;
 }
 
-Snapshoter::~Snapshoter()
+Snapshotter::~Snapshotter()
 {
     //Dispose of dynamically allocated objects
     cancelAndDelete(event);
 }
 
-void Snapshoter::initialize()
+void Snapshotter::initialize()
 {
     numUE_ = par("numUE");
     snapshot_ = par("snapshot");
@@ -44,7 +44,7 @@ void Snapshoter::initialize()
     }
 }
 
-void Snapshoter::handleMessage(cMessage *msg)
+void Snapshotter::handleMessage(cMessage *msg)
 {
     if (msg == event) { //msg->isSelfMessage()
         EV << "Taking snapshot\n";
