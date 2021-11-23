@@ -80,7 +80,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, d_height, d_width, d_region)
+    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_users')
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
@@ -89,7 +89,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, snapshot= False)
+    hp.writeSnapshotsConfig(f, snapshot= True)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")

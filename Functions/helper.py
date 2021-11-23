@@ -381,7 +381,7 @@ def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x
 #  seed = {}\n'''.format(function_name, filename, directions, num_ues, center_x,
                         center_y, sites, micro_per_small, small_per_site, seed))
 
-def writeCommentConfigILP(f, function_name, filename, seed, d_height, d_width, d_region):
+def writeCommentConfigILP(f, function_name, filename, seed, d_height, d_width, d_region, extra: str = None):
   f.write('''#Function: {}
 #Parameters: 
 #  filename = '{}'
@@ -389,6 +389,8 @@ def writeCommentConfigILP(f, function_name, filename, seed, d_height, d_width, d
 #  Map height distance = {}
 #  Map width distance = {}
 #  Region side distance = {}\n'''.format(function_name, filename, seed, d_height, d_width, d_region))
+  if extra is not None:
+    f.write('#  Extra = {}\n'.format(extra))
 
 def writeScenarioManager(f, xml, doc= True):
   if doc:
@@ -406,8 +408,8 @@ def writeResourceBlocks(f, num: int, is5G: bool= False):
 def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterationvarsf}-${repetition}.sna",
   snapshot: bool = True, delay: float = 1.0):
   f.write('snapshot-file = {}\n'.format(filename))
-  f.write('**.snapshoter.snapshot = {}\n'.format("true" if snapshot else "false"))
-  f.write('**.snapshoter.delay = {}\n'.format(delay))
+  f.write('**.snapshotter.snapshot = {}\n'.format("true" if snapshot else "false"))
+  f.write('**.snapshotter.delay = {}\n'.format(delay))
 
 def defaultGeneral(f, is5g: bool = False):
   # General

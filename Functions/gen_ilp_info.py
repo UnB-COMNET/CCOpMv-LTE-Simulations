@@ -14,7 +14,7 @@ def main():
   d_region = 800
   n_macros = 2
   ini_path = '../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini'
-  xml_filename= 'ilp_fixed_users-sched=MAXCI-#0.sna'
+  xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
 
   if False:
     #Genereting .ini file
@@ -74,7 +74,7 @@ def main():
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
-    #ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
+    ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
 
   elif (show == 1):
     #Plotting ues configuration over time
