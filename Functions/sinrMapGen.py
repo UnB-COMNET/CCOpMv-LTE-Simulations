@@ -6,9 +6,9 @@ file_name = "sinrMap.txt"
 
 repetition = 10
 num_sector = 4
-d_height = 1000
+d_height = 4000
 d_width = d_height
-d_region = 500
+d_region = 2000
 positions = range(ceil(d_region/2), ceil(d_width + d_region/2), d_region)
 k = 0 
 j = 0
