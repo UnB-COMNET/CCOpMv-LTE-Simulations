@@ -573,3 +573,23 @@ class Centroid:
 
 def exportMap():
     None
+
+def region2Coord( region_id: int, d_region: float, d_width: float, d_height: float, z: float = 0) -> Coordinate:
+    n_width = int(d_width/d_region)
+    n_height = int(d_height/d_region)
+    coord = Coordinate(
+        d_region*(region_id%n_width)+d_region/2,
+        d_region*int(region_id/n_height)+d_region/2,
+        z)
+    return coord
+
+def coord2Region( coord: Coordinate, d_region: float, d_width: float, d_height: float,) -> int:
+    n_width = int(d_width/d_region)
+    n_height = int(d_height/d_region)
+    line = int(coord.y/d_region)
+    line = line if line < n_width else n_width-1
+    column = int(coord.x/d_region)
+    column = column if column < n_height else n_height-1
+
+    region_id = line*n_width + column
+    return region_id
