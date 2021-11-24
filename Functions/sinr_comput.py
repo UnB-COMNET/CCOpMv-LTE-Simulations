@@ -68,7 +68,7 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
   result = linear_to_db(re_h * re_h + im_h * im_h)
   #this may be >1 due to constructive interference
   if (result <= 1):
-    print("ERROR: invalid result computing jakes fading")
+    #print("ERROR: invalid result computing jakes fading")
     return 0
 
   return result

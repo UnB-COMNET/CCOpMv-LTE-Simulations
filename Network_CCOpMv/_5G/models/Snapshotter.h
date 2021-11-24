@@ -24,11 +24,11 @@ using namespace omnetpp;
 /**
  * TODO - Generated class
  */
-class Snapshoter : public cSimpleModule
+class Snapshotter : public cSimpleModule
 {
   public:
-    Snapshoter();
-    virtual ~Snapshoter();
+    Snapshotter();
+    virtual ~Snapshotter();
   private:
     cMessage *event;
   protected:
@@ -39,6 +39,6 @@ class Snapshoter : public cSimpleModule
     virtual void handleMessage(cMessage *msg);
 };
 
-Define_Module(Snapshoter);
+Define_Module(Snapshotter);
 
 #endif

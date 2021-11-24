@@ -27,7 +27,7 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 import simu5g.nodes.PgwStandard;
 import simu5g.common.carrierAggregation.CarrierAggregation;
-import _5G.models.Snapshoter;
+import _5G.models.Snapshotter;
 
 network SimpleNet
 {
@@ -65,7 +65,7 @@ network SimpleNet
         ue[numUe]: Ue {
             @display("p=301.855,236.72876;is=s");
         }
-        snapshoter: Snapshoter {
+        snapshotter: Snapshotter {
             parameters:
             	numUE = numUe;
             	@display("p=50.69,182.21;is=s");

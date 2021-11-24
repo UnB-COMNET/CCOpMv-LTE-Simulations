@@ -30,7 +30,7 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/_5G/models/Snapshoter.o
+OBJS = $O/_5G/models/Snapshotter.o
 
 # Message files
 MSGFILES =

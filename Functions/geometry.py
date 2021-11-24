@@ -274,7 +274,7 @@ class MapChess:
                  carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363*10**-9,
                  thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
                  gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
-                 enb_tx_power: float = 46, ue_tx_power: float = 26) :
+                 enb_tx_power: float = 46, ue_tx_power: float = 26, chosen_seed: int = 123) :
         self.d_region = d_region
         self.d_width = d_width
         self.d_height = d_height
@@ -303,6 +303,8 @@ class MapChess:
         self.enb_tx_power = enb_tx_power
         self.ue_tx_power = ue_tx_power
 
+        self.chosen_seed = chosen_seed
+
     def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         coord = Coordinate(
             self.d_region*(region_id%self.n_width)+self.d_region/2,
@@ -329,17 +331,20 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
-    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5):
+    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60):
         count = 0
         mean_speed = 3000#3/3.6
         var_speed = 1000#1/3.6
+        self.map_ues = []
+        seed(self.chosen_seed)
+
         for r in range(self.n_regions):
             self.map_ues.append([])
 
         if type == "Full":
-            ues = self.uesFullMapHexa_(small_per_macro= small_per_macro)
+            ues = self.uesFullMapHexa_(small_per_macro= small_per_macro, n_ues_macro= n_ues_macro)
         elif type == "Random":
-            ues = self.uesRandomMapHexa_(small_per_macro= small_per_macro, n_macros = n_macros)
+            ues = self.uesRandomMapHexa_(small_per_macro= small_per_macro, n_macros = n_macros, n_ues_macro = n_ues_macro)
         else: 
             ues = []
 
@@ -347,6 +352,7 @@ class MapChess:
             region = self.coord2Region(ue.position)
             if region < self.n_regions:
                 if not fixed:
+                    #Defining inital moviment of the ues
                     ue.moviment.speed = normalvariate(mu= mean_speed, sigma= var_speed)
                     ue.moviment.direction = random() * 360
                 self.map_ues[region].append(ue)
@@ -362,12 +368,13 @@ class MapChess:
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
-    def uesRandomMapHexa_(self, small_per_macro = 1, n_macros = 20)->List[Ue]:
+    #Place UEs using macrocells placed randomly in space delimited by a margin
+    def uesRandomMapHexa_(self, small_per_macro = 1, n_macros = 20, n_ues_macro = 60)->List[Ue]:
         d_macromacro = 1000
         d_macrocluster = 105
         d_macroue = 35
         dropradius_ue_cluster = 70
-        n_ues = 60
+        n_ues = n_ues_macro
         margin = 500
 
         tmp_smc: List[Smallcell] = []
@@ -383,13 +390,14 @@ class MapChess:
 
         return ues
 
-    def uesFullMapHexa_(self, small_per_macro = 1) -> List[Ue]:
+    #Place UEs using macrocells placed across all space
+    def uesFullMapHexa_(self, small_per_macro = 1, n_ues_macro = 60) -> List[Ue]:
 
         d_macromacro = 1000
         d_macrocluster = 105
         d_macroue = 35
         dropradius_ue_cluster = 70
-        n_ues = 60
+        n_ues = n_ues_macro
 
 
         tmp_smc: List[Smallcell] = []
@@ -464,8 +472,9 @@ class MapChess:
             coord.y = self.d_height
         return coord
 
-    def plotUes(self):
-        ues = self.getUEsPositionList()
+    def plotUes(self, external: bool = False, ues_positions: List[Coordinate] = None):
+        if not external: ues = self.getUEsPositionList()
+        else: ues = ues_positions
 
         plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='.', color='orange', markersize= 2)
 
@@ -507,10 +516,11 @@ class MapChess:
         
         return list_moviment
 
-    def getSinrMap(self, use_seed: int = 1) -> List[List[float]]:
+    def getSinrMap(self) -> List[List[float]]:
         regions_centers = self.getRegionsCentersList()
         sinr_map = []
-        seed(use_seed)
+        seed(self.chosen_seed+1)
+
         for enb_region in range(self.n_regions):
             sinr_map.append([])
             enb_coord = self.region2Coord(enb_region)
