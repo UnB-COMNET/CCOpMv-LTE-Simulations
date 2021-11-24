@@ -537,7 +537,7 @@ class MapChess:
                     carrier_frequency= self.carrier_frequency, ue_coord= ue_coord,
                     tx_coord= enb_coord, cable_loss= self.cable_loss, thermal_noise= self.thermal_noise,
                     fading_paths= self.fading_paths, delay_rms= self.delay_rms, los= self.los,
-                    scenario= self.scenario, h_enbs= self.h_enbs, h_ues= self.h_enbs,
+                    scenario= self.scenario, h_enbs= self.h_enbs, h_ues= self.h_ues,
                     h_building= self.h_building, w_street= self.w_street
                 )
                 sinr_map[enb_region].append(sinr)
