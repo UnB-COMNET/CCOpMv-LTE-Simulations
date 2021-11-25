@@ -1,5 +1,5 @@
 from coordinates import Coordinate
-from geometry import MapHexagonal, Macrocell, Moviment
+from geometry import MapHexagonal, Macrocell, Movement
 import typing as ty
 import numpy as np
 import geometry as geo
@@ -60,9 +60,9 @@ def writeComment(f, text):
 def writeMobilityType(f, type: str, object_name = "ue[*]"):
   f.write('*.{}.mobilityType = "{}"\n'.format(object_name, type))
 
-def writeArrayMovMobility(f, object_array_name, moviments: ty.List[Moviment]):
+def writeArrayMovMobility(f, object_array_name, movements: ty.List[Movement]):
   count = 0
-  for mov in moviments:
+  for mov in movements:
     writeMovMobility(f, speed =mov.speed, initial_heading=mov.direction, object_name= object_array_name+'['+str(count)+']')
     count += 1
 

@@ -79,7 +79,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
   scen.placeUEs(type= "Random", n_macros= n_macros)#Full = 4320 UEs
 
   ues_coords = scen.getUEsPositionList()
-  ues_mov = scen.getUEsMovimentList()
+  ues_mov = scen.getUEsMovementList()
   #scen.plotUes()
   num_ues = len(ues_coords)
 
@@ -116,7 +116,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.nl(f)
     hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue[*]")
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
-    hp.writeArrayMovMobility(f, object_array_name= 'ue', moviments= ues_mov)
+    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
 
 def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = []):
@@ -126,7 +126,7 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
   scen.placeAntennas(list_regions= antennas_regions)
 
   ues_coords = scen.getUEsPositionList()
-  ues_mov = scen.getUEsMovimentList()
+  ues_mov = scen.getUEsMovementList()
   enbs_coords = scen.getAntennasPositionList()
 
   num_ues = len(ues_coords)
@@ -170,7 +170,7 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.nl(f)
     hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue[*]")
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
-    hp.writeArrayMovMobility(f, object_array_name= 'ue', moviments= ues_mov)
+    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
