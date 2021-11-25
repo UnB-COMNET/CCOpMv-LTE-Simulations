@@ -10,7 +10,7 @@ def ilp_fixed_sinr_test(filename, seed, d_height:int =8000, d_width:int =8000, d
 
   ues_x_y = scen.getUEsPositionList()
   regions_x_y = scen.getRegionsCentersList()
-  num_ues = scen.n_regions
+  num_ues = 2#scen.n_regions
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed_info", filename, seed, d_height, d_width, d_region)

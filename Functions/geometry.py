@@ -331,6 +331,13 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
+    def placeUE(self, coord: Coordinate, index, speed, dir):
+        if len(self.map_ues) != self.n_regions:
+            for r in range(self.n_regions):
+                self.map_ues.append([])
+        
+        self.map_ues[coord2Region(coord,self.d_region,self.d_width,self.d_height)].append(Ue(coord,index,speed,dir))
+
     def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60):
         count = 0
         mean_speed = 3000#3/3.6
@@ -537,12 +544,59 @@ class MapChess:
                     carrier_frequency= self.carrier_frequency, ue_coord= ue_coord,
                     tx_coord= enb_coord, cable_loss= self.cable_loss, thermal_noise= self.thermal_noise,
                     fading_paths= self.fading_paths, delay_rms= self.delay_rms, los= self.los,
-                    scenario= self.scenario, h_enbs= self.h_enbs, h_ues= self.h_enbs,
+                    scenario= self.scenario, h_enbs= self.h_enbs, h_ues= self.h_ues,
                     h_building= self.h_building, w_street= self.w_street
                 )
                 sinr_map[enb_region].append(sinr)
 
         return sinr_map
 
+class Centroid:
+    def __init__(self, center: Coordinate):
+        self.center = center
+        self.ues = []
+
+    def placeUEs(self,numUE, radius, radius_ues):
+        for n in range(numUE):
+            macrocell = Macrocell(self.center)
+            coord_macrocell = placeObject(macrocell,radius,0)
+            macrocell = Macrocell(coord_macrocell)
+
+            position = placeObject(macrocell,radius_ues,0)
+            ue = Ue(position,n)
+            self.ues.append(ue)
+    
+    def getUEsPositionList(self) -> List[Coordinate]:
+        '''Documentation'''
+        if not self.ues:
+            print("There are no UEs in the smallcell")
+            return []
+    
+        list_coordinate = []
+        for i in range(len(self.ues)):
+            list_coordinate.append(self.ues[i].position)  
+
+        return list_coordinate
+
 def exportMap():
     None
+
+def region2Coord( region_id: int, d_region: float, d_width: float, d_height: float, z: float = 0) -> Coordinate:
+    n_width = int(d_width/d_region)
+    n_height = int(d_height/d_region)
+    coord = Coordinate(
+        d_region*(region_id%n_width)+d_region/2,
+        d_region*int(region_id/n_height)+d_region/2,
+        z)
+    return coord
+
+def coord2Region( coord: Coordinate, d_region: float, d_width: float, d_height: float,) -> int:
+    n_width = int(d_width/d_region)
+    n_height = int(d_height/d_region)
+    line = int(coord.y/d_region)
+    line = line if line < n_width else n_width-1
+    column = int(coord.x/d_region)
+    column = column if column < n_height else n_height-1
+
+    region_id = line*n_width + column
+    return region_id

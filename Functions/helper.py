@@ -94,11 +94,10 @@ def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[
 '''.format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
           iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
 
-def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate]):
-  count = 0
+def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate], count_init: int = 0):
   for coord in coordinates:
-    writeIniMobility(f, object_array_name+'['+str(count)+']', coord.x, coord.y, coord.z)
-    count += 1
+    writeIniMobility(f, object_array_name+'['+str(count_init)+']', coord.x, coord.y, coord.z)
+    count_init += 1
 
 def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):
   count = 0
@@ -322,8 +321,11 @@ def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str
     num_ues_micro = np.sum([len(x.ues) for x in macrocells[i].smallcells])
     writeScenarioPerso(f, object_name+str(i), [(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')], for5g)
 
-def writeEnableHandover(f, object_name, enable = True):# Enable handover
-  f.write('*.{}.lteNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
+def writeEnableHandover(f, object_name, enable = True, is5G = False):# Enable handover
+  if is5G:
+    f.write('*.{}.cellularNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
+  else:
+    f.write('*.{}.lteNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
 
 def writeEnableHandoverMultiUE(f, macrocells: ty.List[Macrocell], only_micro = True):
   for i in range(len(macrocells)):
