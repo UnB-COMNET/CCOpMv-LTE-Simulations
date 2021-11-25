@@ -1,5 +1,7 @@
 from typing import List
+
 import helper as hp
+import helper_ned as hned
 import random
 import geometry as geo
 
@@ -117,7 +119,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.writeArrayMovMobility(f, object_array_name= 'ue', moviments= ues_mov)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
 
-def ilp_fixed(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = []):
+def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = []):
   #random.seed(seed)
   scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
   scen.placeUEs(type= "Random", n_macros= n_macros)#Full = 4320 UEs
@@ -184,3 +186,20 @@ def ilp_fixed(filename, seed, d_height:int =8000, d_width:int =8000, d_region:in
     hp.writeX2Configuration(f, object_name= "eNB*", quantity= num_enbs) #Connections between enbs
     hp.writeComment(f, text= "Connections")
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
+
+def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =8000, image:str =None, n_enbs: int = 2):
+
+  filename = "../Network_CCOpMv/_5G/networks/{}.ned".format(network)
+
+  with open(filename, 'wt') as f:
+    hned.writeBaseImports(f, is5g= True)
+    hned.writeNet(f, net_name= network)
+    hned.writeParams(f, bg_x= d_width, bg_y = d_height, bg_image= image)
+    hned.writeBaseSubmodules(f, is5g= True)
+    hned.writeMultiNode(f, quantity= n_enbs)
+    hned.writeSubmodule(f, name= "ue[numUe]", type= "Ue", size= "s")
+    hned.writeSnapshotter(f, submodule_size= 's')
+    hned.writeConnections(f, base= True)
+    hned.writeMultiNodeConnections(f, object_name= "eNB" , quantity= n_enbs)
+    hned.writeSeparation(f, "X2 Connections")
+    hned.writeX2Connections(f, object_names=["eNB"], quantities= [n_enbs])

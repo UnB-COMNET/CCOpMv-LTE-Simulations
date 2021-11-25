@@ -1,4 +1,5 @@
 #from geometry import MapHexagonal, Macrocell
+from os import name
 from typing import List
 import numpy as np
 from dataclasses import dataclass
@@ -11,13 +12,6 @@ class Parameter:
   type: str
   name: str
   value: str = None
-
-@dataclass
-class Submodule:
-  name: str
-  type: str
-  size: str
-  image: str = None
 
 def writeX2Connections(f, object_names : List[str], quantities : List[int], initial_values : List[int] = None):
 
@@ -42,18 +36,6 @@ def writeX2Connections(f, object_names : List[str], quantities : List[int], init
                 .format(name=object_names[i], number=number, name2=object_names[name_index], number2=number2))
 
   return 0
-
-def writeNode(f, object_name):
-  f.write("\t\t{}".format(object_name)+": eNodeB {\n\t\t\t@display(\"p=442.51,335.65\");\n\t\t}\n")
-
-def writeNodes(f, object_name, quantity : int, initial : int = 0):
-  for i in range(initial, initial+quantity):
-    writeNode(f, object_name+str(i))
-
-def writeNodeConnections(f, object_name, number: int):
-  for i in range(number):
-    f.write("\t\tpgw.pppg++ <--> Eth10G <--> {}{}.ppp;\n".format(object_name, i))
-  
 
 def writeSeparation(f, name):
   f.write('\n\t\t//' + separation + ' ' + name + ' ' + separation + '\n')
@@ -89,7 +71,7 @@ import {prefix}.common.binder.Binder;
 import {prefix}.nodes.Ue;
 import {prefix}.nodes.eNodeB;
 import {prefix}.world.radio.LteChannelControl;
-import {prefix}.nodes.PgwStandard;'''.format(package = "_5G" if is5g else "LTE", prefix = "simu5g" if is5g else "lte"))
+import {prefix}.nodes.PgwStandard;\n'''.format(package = "_5G" if is5g else "LTE", prefix = "simu5g" if is5g else "lte"))
 
   if is5g: f.write("import simu5g.common.carrierAggregation.CarrierAggregation;")
 
@@ -98,9 +80,9 @@ import {prefix}.nodes.PgwStandard;'''.format(package = "_5G" if is5g else "LTE",
   f.write("\n\n")
 
 def writeNet(f, net_name: str):
-  f.write("network {}\n{\n".format(net_name))
+  f.write("network {}\n{{\n".format(net_name))
 
-def writeParams(f, bg_x: float, bg_y: float, bg_image: str, params: List[Parameter] = [Parameter("int", "numUe", "1")]):
+def writeParams(f, bg_x: float, bg_y: float, bg_image: str = None, params: List[Parameter] = [Parameter("int", "numUe", "1")]):
   f.write("\tparameters:\n")
   for p in params:
     f.write("\t\t{} {}".format(p.type, p.name))
@@ -108,7 +90,7 @@ def writeParams(f, bg_x: float, bg_y: float, bg_image: str, params: List[Paramet
       f.write("= default({});\n".format(p.value))
     else: f.write(";\n")
   #Background dimensions/image
-  f.write('\t\t@display("bgd={x},{y};bgi={image}");\n'.format(x= bg_x, y= bg_y, image = bg_image))
+  f.write('\t\t@display("bgd={x},{y}{image}");\n'.format(x= bg_x, y= bg_y, image = ";bgi={image}".format(bg_image) if bg_image is not None else ""))
   f.write("\tsubmodules:\n")
 
 def writeBaseSubmodules(f, is5g: bool = False):
@@ -125,27 +107,44 @@ def writeBaseSubmodules(f, is5g: bool = False):
 \t\t\t@display("p=29,31;is=s");
 \t\t}\n''')
   if is5g:
-    f.write('\t\tcarrierAggregation: CarrierAggregation {\n\t\t\t\@display("p=50.993748,258.7;is=s");\n\t\t}\n')
+    f.write('\t\tcarrierAggregation: CarrierAggregation {\n\t\t\t@display("p=50.993748,258.7;is=s");\n\t\t}\n')
   f.write('''\t\tserver: StandardHost {
 \t\t\t@display("p=243.96501,94.07125;is=l;i=device/server");
 \t\t}
 \t\trouter: Router {
 \t\t\t@display("p=397.99374,86.835;i=device/smallrouter");
 \t\t}
-\t\tpgw: PgwStandard { //TODO: entender o modulo
+\t\tpgw: PgwStandard {
 \t\t\t@display("p=529.28,130.2525;is=l");
-\t\t}''')
+\t\t}\n''')
 
-def writeSubmodule(f, submodule: Submodule):
-  f.write('''\t\t{name}: U{type} {
-\t\t\t@display(is={size}''').format(name = submodule.name, type= submodule.type, size= submodule.size)
-  if submodule.image is not None:
-    f.write(", i={image}".format(image = submodule.image))
+def writeSubmodule(f, name: str, type: str, size: str, image: str = None):
+  f.write('''\t\t{name}: {type} {{
+\t\t\t@display(is={size}'''.format(name = name, type= type, size= size))
+  if image is not None:
+    f.write(", i={image}".format(image = image))
   f.write(");\n\t\t}\n")
 
 def writeSnapshotter(f, submodule_size):
-  f.write('''\t\tsnapshotter: Snapshotter {
+  f.write('''\t\tsnapshotter: Snapshotter {{
 \t\t\tparameters:
 \t\t\t\tnumUE = numUe;
 \t\t\t\t@display("is={}");
-\t\t\t}\n'''.format(submodule_size))
+\t\t}}\n'''.format(submodule_size))
+
+def writeMultiNode(f, object_name: str = "eNB", type: str = "eNodeB", size: str = "l", image: str = None, quantity: int = 1):
+  for i in range(quantity):
+    writeSubmodule(f, name= object_name+str(i), type= type, size= size, image= image)
+
+def writeConnections(f, port1: str = None, port2: str = None, base = True):
+  if base:
+    f.write("\tconnections:\n")
+    f.write("\t\tserver.pppg++ <--> Eth10G <--> router.pppg++;\n\t\trouter.pppg++ <--> Eth10G <--> pgw.filterGate;\n")
+
+  if port1 is not None and port2 is not None:
+    f.write("\t\t{} <--> Eth10G <--> {};\n".format(port1, port2))
+    
+
+def writeMultiNodeConnections(f, object_name: str = "eNB", quantity: int = 1, port2: str = "pgw.pppg++"):
+  for i in range(quantity):
+    writeConnections(f, port1= object_name+str(i)+".ppp", port2= port2, base= False)
