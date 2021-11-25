@@ -26,6 +26,7 @@ import simu5g.nodes.eNodeB;
 import simu5g.world.radio.LteChannelControl;
 import simu5g.nodes.PgwStandard;
 import simu5g.common.carrierAggregation.CarrierAggregation;
+import _5G.models.Snapshotter;
 
 network ILPFixedNet
 {
@@ -79,3 +80,4 @@ network ILPFixedNet
 
 		//############### X2 Connections ###############
 		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
+}

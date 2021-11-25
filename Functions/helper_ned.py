@@ -73,14 +73,17 @@ import {prefix}.nodes.eNodeB;
 import {prefix}.world.radio.LteChannelControl;
 import {prefix}.nodes.PgwStandard;\n'''.format(package = "_5G" if is5g else "LTE", prefix = "simu5g" if is5g else "lte"))
 
-  if is5g: f.write("import simu5g.common.carrierAggregation.CarrierAggregation;")
+  if is5g: f.write("import simu5g.common.carrierAggregation.CarrierAggregation;\n")
 
-  if snapshot: f.write("import _5G.models.Snapshotter;")
+  if snapshot: f.write("import _5G.models.Snapshotter;\n")
 
-  f.write("\n\n")
+  f.write("\n")
 
 def writeNet(f, net_name: str):
   f.write("network {}\n{{\n".format(net_name))
+
+def writeEndNet(f):
+  f.write("}\n")
 
 def writeParams(f, bg_x: float, bg_y: float, bg_image: str = None, params: List[Parameter] = [Parameter("int", "numUe", "1")]):
   f.write("\tparameters:\n")

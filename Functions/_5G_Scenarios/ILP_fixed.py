@@ -192,7 +192,7 @@ def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =
   filename = "../Network_CCOpMv/_5G/networks/{}.ned".format(network)
 
   with open(filename, 'wt') as f:
-    hned.writeBaseImports(f, is5g= True)
+    hned.writeBaseImports(f, is5g= True, snapshot= True)
     hned.writeNet(f, net_name= network)
     hned.writeParams(f, bg_x= d_width, bg_y = d_height, bg_image= image)
     hned.writeBaseSubmodules(f, is5g= True)
@@ -203,3 +203,4 @@ def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =
     hned.writeMultiNodeConnections(f, object_name= "eNB" , quantity= n_enbs)
     hned.writeSeparation(f, "X2 Connections")
     hned.writeX2Connections(f, object_names=["eNB"], quantities= [n_enbs])
+    hned.writeEndNet(f)
