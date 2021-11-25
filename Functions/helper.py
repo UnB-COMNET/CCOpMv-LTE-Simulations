@@ -320,8 +320,11 @@ def writeMultiScenariosPerso(f, macrocells: ty.List[Macrocell], object_name: str
     num_ues_micro = np.sum([len(x.ues) for x in macrocells[i].smallcells])
     writeScenarioPerso(f, object_name+str(i), [(num_ues_macro, 'URBAN_MACROCELL'), (num_ues_micro, 'URBAN_MICROCELL')], for5g)
 
-def writeEnableHandover(f, object_name, enable = True):# Enable handover
-  f.write('*.{}.lteNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
+def writeEnableHandover(f, object_name, enable = True, is5G = False):# Enable handover
+  if is5G:
+    f.write('*.{}.cellularNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
+  else:
+    f.write('*.{}.lteNic.phy.enableHandover = {}\n'.format(object_name, "true" if enable else "false"))
 
 def writeEnableHandoverMultiUE(f, macrocells: ty.List[Macrocell], only_micro = True):
   for i in range(len(macrocells)):
