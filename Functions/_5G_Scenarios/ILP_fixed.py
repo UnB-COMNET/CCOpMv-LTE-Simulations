@@ -89,7 +89,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, snapshot= True)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-${repetition}.sna", snapshot= True)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
