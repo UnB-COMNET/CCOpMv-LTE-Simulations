@@ -18,7 +18,9 @@ def main():
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
 
-  if True:
+  run_all = False
+
+  if run_all:
     #Genereting .ini file
     ilpf.ilp_fixed_users(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
 

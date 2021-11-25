@@ -358,7 +358,7 @@ class MapChess:
                 self.map_ues[region].append(ue)
                 count += 1
 
-    def placeAntennas(self, list_regions) :
+    def placeAntennas(self, list_regions: List[int]) :
         count = 0
         self.map_antennas = np.empty(self.n_regions, dtype= np.dtype(object))
         self.map_antennas.fill(None)

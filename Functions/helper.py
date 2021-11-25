@@ -161,12 +161,13 @@ def writeSchedulingOptions(f, sched: ty.List[str]):
     temp += ' "' + s + '",'
   f.write(temp[:-1] + '}\n**.schedulingDisciplineDl = ${sched}\n')
 
-def writeNumApps(f, numUEs: int, directions: int, num_macros: int = 1, multi: bool = False):
+def writeNumApps(f, numUEs: int, directions: int, num_multi: int = 1, multi: bool = False):
   if multi:
     f.write("*.ue*[*].numApps = {}\n".format(directions))
+    f.write("*.server.numApps = {} * {} * {}\n".format(directions, numUEs, num_multi))
   else:
     f.write("*.ue[*].numApps = {}\n".format(directions))
-  f.write("*.server.numApps = {} * {} * {}\n".format(directions, numUEs, num_macros))
+    f.write("*.server.numApps = {} * {} * {}\n".format(directions, numUEs, 1))
 
 def writeAppVoipUL(f, numUEs: int, n_app: int = 0, object_name: str = "ue[*]", port: int = 4000):
   f.write('''*.{name}.app[{n}].typename="VoIPSender"
@@ -178,8 +179,8 @@ def writeAppVoipUL(f, numUEs: int, n_app: int = 0, object_name: str = "ue[*]", p
   f.write('''*.server.app[{n}..{f}].typename="VoIPReceiver"
 *.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}\n'''.format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1, port = port))
 
-def writeMultiAppVoipUL(f, numUEs: int, num_macros: int, number_app: int = 0, num_apps: int = 2):
-  for m in range(num_macros):
+def writeMultiAppVoipUL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2):
+  for m in range(num_multi):
     f.write('''*.{name}.app[{n}].typename="VoIPSender"
 *.{name}.app[{n}].PacketSize = default
 *.{name}.app[{n}].destAddress = "server"
@@ -200,8 +201,8 @@ def writeAppVoipDL(f, numUEs: int, n_app: int = 0):
   f.write('''*.ue[*].app[{n}].typename="VoIPReceiver"
 *.ue[*].app[{n}].localPort = 3000\n'''.format(n = n_app))
 
-def writeMultiAppVoipDL(f, numUEs: int, num_macros: int, number_app: int = 0, num_apps: int = 2):
-  for m in range(num_macros):
+def writeMultiAppVoipDL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2):
+  for m in range(num_multi):
     f.write('''*.server.app[{n}..{f}].typename="VoIPSender"
 *.server.app[{n}..{f}].PacketSize = default
 *.server.app[{n}..{f}].destAddress = "ue{m}[" + string(ancestorIndex(0) - {n}) + "]"
@@ -221,9 +222,9 @@ def writePropagation(f, model: str):
 def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_power: int = 30, txDirection: str="\"OMNI\"", is5G= False):
   f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))
   if is5G:
-    f.write("*.eNB.cellularNic.phy.txDirection = {}\n".format(txDirection))
+    f.write("**.cellularNic.phy.txDirection = {}\n".format(txDirection))
   else:
-    f.write("*.eNB.lteNic.phy.txDirection = {}\n".format(txDirection))
+    f.write("**.lteNic.phy.txDirection = {}\n".format(txDirection))
 
 def writeCarrierAggregation5G(f, carrierFrequency: str = "2GHz"):
   f.write('''*.carrierAggregation.componentCarrier[*].carrierFrequency = {}
