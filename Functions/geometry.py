@@ -331,6 +331,13 @@ class MapChess:
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
+    def placeUE(self, coord: Coordinate, index, speed, dir):
+        if len(self.map_ues) != self.n_regions:
+            for r in range(self.n_regions):
+                self.map_ues.append([])
+        
+        self.map_ues[coord2Region(coord,self.d_region,self.d_width,self.d_height)].append(Ue(coord,index,speed,dir))
+
     def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60):
         count = 0
         mean_speed = 3000#3/3.6
