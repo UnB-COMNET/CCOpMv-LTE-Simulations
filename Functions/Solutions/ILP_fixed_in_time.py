@@ -3,10 +3,9 @@ import random
 import math 
 
 def ccop_mv_MILP(
-    #Qual o max_space? 8000m x 8000m? Regiao 800m x 800m?
-    Max_Space,#Número total de regiões
-    Max_Time,#Número de momentos no tempo analizados
-    users_t_m,#Matriz [tempo][local] -> 1 vez por hora
+    Max_Space,#Total number of sectors
+    Max_Time,#Total number of slices of time
+    users_t_m,#Users positions in each slice of time
     #(Utilizar o mesmo modelo que antes? Considerar "antenas" aleatorias ou fazer de acordo com o mapa)
     MAX_USER_PER_ANTENNA_m,#Max de usuarios da antena em m
     antenasmap_m,#Mapa binario de onde podem ter antenas
@@ -24,11 +23,11 @@ def ccop_mv_MILP(
     ytmn = [[[solver.BoolVar("$y_{%d,%d,%d}$"%(t,m,n)) for n in range(0,M)] for m in range(0,M)] for t in range(0, T)]
     ## Constraints
     # Antennas must serve n areas only if the signal meet a minimum SNR omega
-    #for t in range(0,T):
-    #    for m in range(0, M):
-    #        for n in range(0,M):
-    #            ct = solver.Constraint(-solver.infinity(), snr_map_mn[m][n])
-    #            ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[n])
+    for t in range(0,T):
+        for m in range(0, M):
+            for n in range(0,M):
+                ct = solver.Constraint(-solver.infinity(), snr_map_mn[m][n])
+                ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[n])
     # Antenas m support a max number of users connected
     for t in range(0,T):
         for m in range(0,M):
