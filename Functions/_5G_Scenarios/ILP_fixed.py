@@ -159,7 +159,7 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeSchedulingOptions(f, sched= ['MAXCI'])
     hp.writeSeparation(f, "Scenario")
     hp.writeComment(f, text= "eNodeBs")
-    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= 'URBAN_MACROCELL')
+    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= 'URBAN_MACROCELL', for5g= True)
     hp.writeComment(f, text= "UEs")
     hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
     hp.writeSeparation(f, "Mobility")
