@@ -64,6 +64,9 @@ network ILPFixedNet
 		eNB1: eNodeB {
 			@display(is=l);
 		}
+		eNB2: eNodeB {
+			@display(is=l);
+		}
 		ue[numUe]: Ue {
 			@display(is=s);
 		}
@@ -77,7 +80,10 @@ network ILPFixedNet
 		router.pppg++ <--> Eth10G <--> pgw.filterGate;
 		eNB0.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB1.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB2.ppp <--> Eth10G <--> pgw.pppg++;
 
 		//############### X2 Connections ###############
 		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB2.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB2.x2++;
 }

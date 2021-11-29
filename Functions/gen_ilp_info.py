@@ -49,7 +49,7 @@ make
 
   #Placing UEs
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
-  scen.plotUes()
+  #scen.plotUes()
 
   #Generating sinr map
   print("-------------Generating sinr map")
@@ -80,7 +80,7 @@ make
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
-    #ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
+    ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
 
   elif (show == 1):
     #Plotting ues configuration over time
@@ -89,22 +89,6 @@ make
       scen.plotUes(external= True, ues_positions= t_ues)
   #print(map_ues_time)
 
-Max_Space=4
-Max_Time=6
-users_t_m = [[ceil(random()*20) for m in range(0,Max_Space)] for t in range(0,Max_Time)]
-antenasmap_m = [1,1,1,1]
-MAX_USER_PER_ANTENNA_m=[60,40,60,40]
-snr_map_mn=[[50 if n == m else -0.1 for n in range(0,Max_Space)] for m in range(0,Max_Space)]
-MIN_SNR_m=[20,30,10,25]
-
-
-ccop_mv_MILP(Max_Space,
-    Max_Time, 
-    users_t_m, 
-    MAX_USER_PER_ANTENNA_m, 
-    antenasmap_m, 
-    snr_map_mn, 
-    MIN_SNR_m)
 if __name__ == "__main__":
   main()
   print("Done")

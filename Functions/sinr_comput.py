@@ -25,7 +25,7 @@ def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: f
 
   snr = final_recv_power - linear_to_dbm(den)
 
-  return snr
+  return db_to_linear(snr)
 
 def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_frequency: float,
                   sim_time: float = 0.001):
@@ -158,3 +158,6 @@ def linear_to_dbm(linear: float):
 
 def dbm_to_linear(db: float):
   return pow(10, (db - 30) / 10)
+
+def db_to_linear(db: float):
+  return pow(10, db/10)
