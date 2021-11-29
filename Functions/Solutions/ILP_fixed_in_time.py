@@ -9,8 +9,8 @@ def ccop_mv_MILP(
     #(Utilizar o mesmo modelo que antes? Considerar "antenas" aleatorias ou fazer de acordo com o mapa)
     MAX_USER_PER_ANTENNA_m,#Max de usuarios da antena em m
     antenasmap_m,#Mapa binario de onde podem ter antenas
-    snr_map_mn,#Matriz [local_antena][local_usuario]
-    MIN_SNR_m):#Minimo SNR dado pela antena de local m
+    snr_map_mn,#Matriz [local_antena][local_usuario] Watts
+    MIN_SNR_m):#Minimo SNR dado pela antena de local m Watts
 
     solver = pywraplp.Solver("Mixed Integer Programming", pywraplp.Solver.CBC_MIXED_INTEGER_PROGRAMMING)
     M = Max_Space
