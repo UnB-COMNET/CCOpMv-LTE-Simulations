@@ -4,6 +4,7 @@ from geometry import MapChess
 import xml.etree.ElementTree as ET
 
 def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
+  """This function parses a snapshot file (.sna) returning quantity of UEs in the map sections over time."""
   accumulated_xml = ''
   map_ues_time = [[len(region) for region in scen.map_ues]]
   coords_objs = []
@@ -41,6 +42,7 @@ def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
   return map_ues_time
 
 def get_coord_ues_time(scen: MapChess, xml_filename: str) -> List[List[Coordinate]]:
+  """This function parses a snapshot file (.sna) returning the UEs location over time."""
   accumulated_xml = ''
   coord_ues_time = [scen.getUEsPositionList()]
 
