@@ -1,20 +1,19 @@
 #from geometry import MapHexagonal, Macrocell
-from os import name
 from typing import List
 import numpy as np
 from dataclasses import dataclass
-from coordinates import Coordinate
 
 separation = "###############"
 
 @dataclass
 class Parameter:
-  """
-  This dataclass contains the type, name and value of a network parameter.
-  """
+  """This dataclass contains the type, name and value of a network parameter."""
   type: str
+  """Determines the type of the parameter."""
   name: str
+  """Determines the name of the parameter."""
   value: str = None
+  """Determines the value of the parameter."""
 
 def writeX2Connections(f, object_names : List[str], quantities : List[int], initial_values : List[int] = None):
   """
@@ -59,8 +58,9 @@ def writeBaseImports(f, is5g: bool= False, snapshot: bool= False):
   This function writes the default imports used in a .ned file from INET and SimuLTE or Simu5G. 
   
   Keyword arguments:
-  is5g -- if true uses Simu5G else SimuLTE (default False)
-  snapshot -- if true import our own snapshotter module else don't (default False)
+
+  1. *is5g*: if true uses Simu5G else SimuLTE (default False)
+  2. *snapshot*: if true import our own snapshotter module else don't (default False)
   """
 
   f.write('''//
@@ -128,7 +128,7 @@ def writeBaseSubmodules(f, is5g: bool = False):
   This function writes the base necessary submodules of a SimuLTE or Simu5G network in a .ned file.
   
   Keyword arguments:
-  is5g -- if true add the Simu5G exclusive modules else don't (default False)
+  1. *is5g*: if true add the Simu5G exclusive modules else don't (default False)
   """
   f.write('''\t\tchannelControl: LteChannelControl {
 \t\t\t@display("p=101,76;is=s");
@@ -186,7 +186,8 @@ def writeConnections(f, port1: str = None, port2: str = None, base = True):
   This function writes the connection informed and possibly the base conections of a SimuLTE or Simu5G network in a .ned file.
 
   Keyword arguments:
-  base -- if true add the SimuLTE and Simu5G base connections else don't (default True)
+
+  1. *base*: if true add the SimuLTE and Simu5G base connections else don't (default True)
   """
   if base:
     f.write("\tconnections:\n")
