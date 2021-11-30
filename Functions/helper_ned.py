@@ -9,12 +9,17 @@ separation = "###############"
 
 @dataclass
 class Parameter:
+  """
+  This dataclass contains the type, name and value of a network parameter.
+  """
   type: str
   name: str
   value: str = None
 
 def writeX2Connections(f, object_names : List[str], quantities : List[int], initial_values : List[int] = None):
-
+  """
+  This funtion writes the informed X2 conections in a .ned file, based in the objects and their quantities informed.
+  """
   if initial_values is None:
     initial_values = np.zeros(len(quantities), dtype= int)
 
@@ -37,13 +42,26 @@ def writeX2Connections(f, object_names : List[str], quantities : List[int], init
 
   return 0
 
-def writeSeparation(f, name):
+def writeSeparation(f, name: str):
+  """
+  This function writes the string 'name' as a comment separation in the .ned file.
+  """
   f.write('\n\t\t//' + separation + ' ' + name + ' ' + separation + '\n')
 
 def writeComment(f, text):
+  """
+  This function writes the string 'text' as a comment in the .ned file.
+  """
   f.write("\n\t\t//# {}\n".format(text))
 
 def writeBaseImports(f, is5g: bool= False, snapshot: bool= False):
+  """
+  This function writes the default imports used in a .ned file from INET and SimuLTE or Simu5G. 
+  
+  Keyword arguments:
+  is5g -- if true uses Simu5G else SimuLTE (default False)
+  snapshot -- if true import our own snapshotter module else don't (default False)
+  """
 
   f.write('''//
 // This program is free software: you can redistribute it and/or modify
@@ -80,12 +98,21 @@ import {prefix}.nodes.PgwStandard;\n'''.format(package = "_5G" if is5g else "LTE
   f.write("\n")
 
 def writeNet(f, net_name: str):
+  """
+  This function writes the first three lines of a network definition in a .ned file.
+  """
   f.write("network {}\n{{\n".format(net_name))
 
 def writeEndNet(f):
+  """
+  This function writes the last line of a network definition in a .ned file.
+  """
   f.write("}\n")
 
 def writeParams(f, bg_x: float, bg_y: float, bg_image: str = None, params: List[Parameter] = [Parameter("int", "numUe", "1")]):
+  """
+  This function writes the background information and the informed parameters in a .ned file.
+  """
   f.write("\tparameters:\n")
   for p in params:
     f.write("\t\t{} {}".format(p.type, p.name))
@@ -97,6 +124,12 @@ def writeParams(f, bg_x: float, bg_y: float, bg_image: str = None, params: List[
   f.write("\tsubmodules:\n")
 
 def writeBaseSubmodules(f, is5g: bool = False):
+  """
+  This function writes the base necessary submodules of a SimuLTE or Simu5G network in a .ned file.
+  
+  Keyword arguments:
+  is5g -- if true add the Simu5G exclusive modules else don't (default False)
+  """
   f.write('''\t\tchannelControl: LteChannelControl {
 \t\t\t@display("p=101,76;is=s");
 \t\t}
@@ -122,13 +155,19 @@ def writeBaseSubmodules(f, is5g: bool = False):
 \t\t}\n''')
 
 def writeSubmodule(f, name: str, type: str, size: str, image: str = None):
+  """
+  This function writes a submodule in a .ned file.
+  """
   f.write('''\t\t{name}: {type} {{
-\t\t\t@display(is={size}'''.format(name = name, type= type, size= size))
+\t\t\t@display("is={size}'''.format(name = name, type= type, size= size))
   if image is not None:
-    f.write(", i={image}".format(image = image))
-  f.write(");\n\t\t}\n")
+    f.write(', i={image}'.format(image = image))
+  f.write('");\n\t\t}\n')
 
 def writeSnapshotter(f, submodule_size):
+  """
+  This function writes the snapshotter submodule in a .ned file assuming a 'numUe' parameter.
+  """
   f.write('''\t\tsnapshotter: Snapshotter {{
 \t\t\tparameters:
 \t\t\t\tnumUE = numUe;
@@ -136,10 +175,19 @@ def writeSnapshotter(f, submodule_size):
 \t\t}}\n'''.format(submodule_size))
 
 def writeMultiNode(f, object_name: str = "eNB", type: str = "eNodeB", size: str = "l", image: str = None, quantity: int = 1):
+  """
+  This function writes nodes as submodules in the informed quantity in a .ned file.
+  """
   for i in range(quantity):
     writeSubmodule(f, name= object_name+str(i), type= type, size= size, image= image)
 
 def writeConnections(f, port1: str = None, port2: str = None, base = True):
+  """
+  This function writes the connection informed and possibly the base conections of a SimuLTE or Simu5G network in a .ned file.
+
+  Keyword arguments:
+  base -- if true add the SimuLTE and Simu5G base connections else don't (default True)
+  """
   if base:
     f.write("\tconnections:\n")
     f.write("\t\tserver.pppg++ <--> Eth10G <--> router.pppg++;\n\t\trouter.pppg++ <--> Eth10G <--> pgw.filterGate;\n")
@@ -149,5 +197,8 @@ def writeConnections(f, port1: str = None, port2: str = None, base = True):
     
 
 def writeMultiNodeConnections(f, object_name: str = "eNB", quantity: int = 1, port2: str = "pgw.pppg++"):
+  """
+  This function writes the necessary connections of the informed quantity nodes in a .ned file.
+  """
   for i in range(quantity):
     writeConnections(f, port1= object_name+str(i)+".ppp", port2= port2, base= False)
