@@ -59,16 +59,16 @@ network ILPFixedNet
 			@display("p=529.28,130.2525;is=l");
 		}
 		eNB0: eNodeB {
-			@display(is=l);
+			@display("is=l");
 		}
 		eNB1: eNodeB {
-			@display(is=l);
+			@display("is=l");
 		}
 		eNB2: eNodeB {
-			@display(is=l);
+			@display("is=l");
 		}
 		ue[numUe]: Ue {
-			@display(is=s);
+			@display("is=s");
 		}
 		snapshotter: Snapshotter {
 			parameters:

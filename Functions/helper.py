@@ -28,9 +28,9 @@ def makeNewConfig(f,name, extends = False, extend_name = ''):
 
 def writeOutput(f, path: str, vector_rec: bool = False):
   """This function writes the output configuration in a .ini file."""
-  f.write('''output-scalar-file = {}.sca
-output-vector-file = {}.vec
-**.vector-recording = {}\n'''.format(path, path, 'true' if vector_rec else 'false'))
+  f.write(("output-scalar-file = {}.sca\n"
+           "output-vector-file = {}.vec\n"
+           "**.vector-recording = {}\n").format(path, path, 'true' if vector_rec else 'false'))
 
 def writeTime(f, time: int, repeat: int):
   """This function writes the time configuration in a .ini file, including the number of repetitions."""
@@ -99,11 +99,11 @@ def writeMassMobDefault(f, object_name = "ue[*]", update_interval: float = 1.0, 
 
 def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[str, float] = 0, display = False):
   """This function writes the initial location of an object in a .ini file."""
-  f.write('''*.{name}.mobility.initialX = {iniX}m
-*.{name}.mobility.initialY = {iniY}m
-*.{name}.mobility.initialZ = {iniZ}m
-*.{name}.mobility.initFromDisplayString = {display}
-'''.format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
+  f.write(("*.{name}.mobility.initialX = {iniX}m\n"
+           "*.{name}.mobility.initialY = {iniY}m\n"
+           "*.{name}.mobility.initialZ = {iniZ}m\n"
+           "*.{name}.mobility.initFromDisplayString = {display}\n"
+          ).format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
 def getOptionsString(ini: ty.List[float], name: str) -> str:
   """This function writes a named iteration variable in a .ini file."""
@@ -116,12 +116,12 @@ def getOptionsString(ini: ty.List[float], name: str) -> str:
 
 def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display = False):
   """This function writes the initial location of an object using named iteration variables in a .ini file."""
-  f.write('''*.{name}.mobility.initialX = {iniX}
-*.{name}.mobility.initialY = {iniY}
-*.{name}.mobility.initialZ = {iniZ}
-*.{name}.mobility.initFromDisplayString = {display}
-'''.format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
-          iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
+  f.write(("*.{name}.mobility.initialX = {iniX}\n"
+           "*.{name}.mobility.initialY = {iniY}\n"
+           "*.{name}.mobility.initialZ = {iniZ}\n"
+           "*.{name}.mobility.initFromDisplayString = {display}\n"
+          ).format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
+                   iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
 
 def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate], count_init: int = 0):
   """This function writes the network name in a .ini file."""
@@ -147,10 +147,10 @@ def writeUeMobilityPerso(f, scen: MapHexagonal, display: bool = False, multi: bo
 
     ini = ini + ini_smallcell
     for i in range(len(ini)):
-      f.write('''*.ue{num}[{number}].mobility.initialX = {iniX}m
-*.ue{num}[{number}].mobility.initialY = {iniY}m
-*.ue{num}[{number}].mobility.initialZ = {iniZ}m
-'''.format(number = i, num = count, iniX = ini[i].x, iniY = ini[i].y, iniZ = iniZ[i]))
+      f.write(("*.ue{num}[{number}].mobility.initialX = {iniX}m\n"
+               "*.ue{num}[{number}].mobility.initialY = {iniY}m\n"
+               "*.ue{num}[{number}].mobility.initialZ = {iniZ}m\n"
+              ).format(number = i, num = count, iniX = ini[i].x, iniY = ini[i].y, iniZ = iniZ[i]))
 
     f.write("*.ue{num}[*].mobility.initFromDisplayString = {display}\n".format(display = 'true' if display else 'false', num = count,))
     if not multi: break
@@ -160,14 +160,14 @@ def writeConstraint(f, object_name, maxX: ty.Union[str, float] = 'inf', maxY: ty
                     maxZ: ty.Union[str, float] = 'inf', minX: ty.Union[str, float] = '-inf',
                     minY: ty.Union[str, float] = '-inf', minZ: ty.Union[str, float] = '-inf'):
   """This function writes the mobility contraints of an object in a .ini file."""
-  f.write('''*.{name}.mobility.constraintAreaMaxX = {maxX} m
-*.{name}.mobility.constraintAreaMaxY = {maxY} m
-*.{name}.mobility.constraintAreaMaxZ = {maxZ} m
-*.{name}.mobility.constraintAreaMinX = {minX} m
-*.{name}.mobility.constraintAreaMinY = {minY} m
-*.{name}.mobility.constraintAreaMinZ = {minZ} m
-'''.format(name = object_name, maxX = maxX, maxY = maxY, maxZ = maxZ, 
-          minX = minX, minY = minY, minZ = minZ))
+  f.write(("*.{name}.mobility.constraintAreaMaxX = {maxX} m\n"
+           "*.{name}.mobility.constraintAreaMaxY = {maxY} m\n"
+           "*.{name}.mobility.constraintAreaMaxZ = {maxZ} m\n"
+           "*.{name}.mobility.constraintAreaMinX = {minX} m\n"
+           "*.{name}.mobility.constraintAreaMinY = {minY} m\n"
+           "*.{name}.mobility.constraintAreaMinZ = {minZ} m\n"
+          ).format(name = object_name, maxX = maxX, maxY = maxY, maxZ = maxZ, 
+                   minX = minX, minY = minY, minZ = minZ))
 
 
 def writeSeeds(f, seed_set: ty.Union[str, int] = "${repetition}", num_rngs: int = 1, seeds: ty.List[int] = []):
@@ -196,51 +196,53 @@ def writeNumApps(f, numUEs: int, directions: int, num_multi: int = 1, multi: boo
 
 def writeAppVoipUL(f, numUEs: int, n_app: int = 0, object_name: str = "ue[*]", port: int = 4000):
   """This function writes the VoIP UL aplication configuration involving objects and a server in a .ini file."""
-  f.write('''*.{name}.app[{n}].typename="VoIPSender"
-*.{name}.app[{n}].PacketSize = default
-*.{name}.app[{n}].destAddress = "server"
-*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue
-*.{name}.app[{n}].localPort = 4888
-*.{name}.app[{n}].startTime = 0.01s\n'''.format(name = object_name, n = n_app, port = port))
-  f.write('''*.server.app[{n}..{f}].typename="VoIPReceiver"
-*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}\n'''.format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1, port = port))
+  f.write(('*.{name}.app[{n}].typename="VoIPSender"\n'
+           '*.{name}.app[{n}].PacketSize = default\n'
+           '*.{name}.app[{n}].destAddress = "server"\n'
+           '*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue\n'
+           '*.{name}.app[{n}].localPort = 4888\n'
+           '*.{name}.app[{n}].startTime = 0.01s\n').format(name = object_name, n = n_app, port = port))
+  f.write(('*.server.app[{n}..{f}].typename="VoIPReceiver"\n'
+           '*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}\n').format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1, port = port))
 
 def writeMultiAppVoipUL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2):
   """This function writes the VoIP UL application configuration involving multiple UE lists and a server in a .ini file."""
   for m in range(num_multi):
-    f.write('''*.{name}.app[{n}].typename="VoIPSender"
-*.{name}.app[{n}].PacketSize = default
-*.{name}.app[{n}].destAddress = "server"
-*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue
-*.{name}.app[{n}].localPort = 4888
-*.{name}.app[{n}].startTime = 0.01s\n'''.format(name = "ue"+str(m)+"[*]", n = number_app, port = 4000 + m*numUEs))
-    f.write('''*.server.app[{n}..{f}].typename="VoIPReceiver"
-*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}
-'''.format(n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 4000 + m*numUEs))
+    f.write(('*.{name}.app[{n}].typename="VoIPSender"\n'
+             '*.{name}.app[{n}].PacketSize = default\n'
+             '*.{name}.app[{n}].destAddress = "server"\n'
+             '*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue\n'
+             '*.{name}.app[{n}].localPort = 4888\n'
+             '*.{name}.app[{n}].startTime = 0.01s\n'
+             ).format(name = "ue"+str(m)+"[*]", n = number_app, port = 4000 + m*numUEs))
+    f.write(('*.server.app[{n}..{f}].typename="VoIPReceiver"\n'
+             '*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}\n'
+            ).format(n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 4000 + m*numUEs))
 
 def writeAppVoipDL(f, numUEs: int, n_app: int = 0):
   """This function writes the VoIP DL aplication configuration involving an UE list and a server in a .ini file."""
-  f.write('''*.server.app[{n}..{f}].typename="VoIPSender"
-*.server.app[{n}..{f}].PacketSize = default
-*.server.app[{n}..{f}].destAddress = "ue[" + string(ancestorIndex(0) - {numUEs}) + "]"
-*.server.app[{n}..{f}].destPort = 3000
-*.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)
-*.server.app[{n}..{f}].startTime = 0.01s\n'''.format(numUEs = numUEs, n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
-  f.write('''*.ue[*].app[{n}].typename="VoIPReceiver"
-*.ue[*].app[{n}].localPort = 3000\n'''.format(n = n_app))
+  f.write(('*.server.app[{n}..{f}].typename="VoIPSender"\n'
+           '*.server.app[{n}..{f}].PacketSize = default\n'
+           '*.server.app[{n}..{f}].destAddress = "ue[" + string(ancestorIndex(0) - {numUEs}) + "]"\n'
+           '*.server.app[{n}..{f}].destPort = 3000\n'
+           '*.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)\n'
+           '*.server.app[{n}..{f}].startTime = 0.01s\n'
+          ).format(numUEs = numUEs, n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
+  f.write(('*.ue[*].app[{n}].typename="VoIPReceiver"\n'
+           '*.ue[*].app[{n}].localPort = 3000\n').format(n = n_app))
 
 def writeMultiAppVoipDL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2):
   """This function writes the VoIP DL application configuration involving multiple UE lists and a server in a .ini file."""
   for m in range(num_multi):
-    f.write('''*.server.app[{n}..{f}].typename="VoIPSender"
-*.server.app[{n}..{f}].PacketSize = default
-*.server.app[{n}..{f}].destAddress = "ue{m}[" + string(ancestorIndex(0) - {n}) + "]"
-*.server.app[{n}..{f}].destPort = 3000
-*.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)
-*.server.app[{n}..{f}].startTime = 0.01s
-'''.format(m = m, n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 3000 + m*numUEs))
-    f.write('''*.{name}.app[{n}].typename="VoIPReceiver"
-*.{name}.app[{n}].localPort = 3000\n'''.format(name = "ue"+str(m)+"[*]", n = number_app))
+    f.write(('*.server.app[{n}..{f}].typename="VoIPSender"\n'
+             '*.server.app[{n}..{f}].PacketSize = default\n'
+             '*.server.app[{n}..{f}].destAddress = "ue{m}[" + string(ancestorIndex(0) - {n}) + "]"\n'
+             '*.server.app[{n}..{f}].destPort = 3000\n'
+             '*.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)\n'
+             '*.server.app[{n}..{f}].startTime = 0.01s\n'
+            ).format(m = m, n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 3000 + m*numUEs))
+    f.write(('*.{name}.app[{n}].typename="VoIPReceiver"\n'
+             '*.{name}.app[{n}].localPort = 3000\n').format(name = "ue"+str(m)+"[*]", n = number_app))
 
 def writeNumUEs(f, numUEs: int):
   """This function writes the number os UEs in a .ini file."""
@@ -270,68 +272,67 @@ def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_pow
 
 def writeCarrierAggregation5G(f, carrierFrequency: str = "2GHz"):
   """This function writes the carrier aggregation submodule configuration from Simu5G in a .ini file."""
-  f.write('''*.carrierAggregation.componentCarrier[*].carrierFrequency = {}
-'''.format(carrierFrequency))
+  f.write('*.carrierAggregation.componentCarrier[*].carrierFrequency = {}\n'.format(carrierFrequency))
 
 def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25,
-ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
-extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
-antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
-componentCarrierIndex: int = 0, correlation_distance: int = 50, d2d_interference: bool = True,
-delay_rms: str = "363e-9", downlink_interference: bool = False, dynamic_los: bool = False,
-enable_extCell_los: bool = True, fading: bool = True, fading_paths: int = 6,
-fixed_los: bool = False, harqReduction: float = 0.2, inside_building: bool = False,
-lambdaMaxTh: float = 0.2, lambdaMinTh: float = 0.02, lambdaRatioTh: float = 20,
-rsrqScale: float = 1.0, rsrqShift: float = 22, shadowing: bool = True, targetBler: float = 0.01,
-thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
-uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
+                        ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
+                        extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
+                        antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
+                        componentCarrierIndex: int = 0, correlation_distance: int = 50, d2d_interference: bool = True,
+                        delay_rms: str = "363e-9", downlink_interference: bool = False, dynamic_los: bool = False,
+                        enable_extCell_los: bool = True, fading: bool = True, fading_paths: int = 6,
+                        fixed_los: bool = False, harqReduction: float = 0.2, inside_building: bool = False,
+                        lambdaMaxTh: float = 0.2, lambdaMinTh: float = 0.02, lambdaRatioTh: float = 20,
+                        rsrqScale: float = 1.0, rsrqShift: float = 22, shadowing: bool = True, targetBler: float = 0.01,
+                        thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
+                        uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
   """This function writes the channel model submodule configuration in a .ini file."""
-  f.write('''**.cellularNic.channelModel[*].building_height = {}
-**.cellularNic.channelModel[*].nodeb_height = {}
-**.cellularNic.channelModel[*].ue_height = {}
-**.cellularNic.channelModel[*].street_wide = {}
-**.cellularNic.channelModel[*].fading_type = {}
-**.cellularNic.channelModel[*].extCell_interference = {}
-**.cellularNic.channelModel[*].antennGainEnB = {}
-**.cellularNic.channelModel[*].antennGainMicro = {}
-**.cellularNic.channelModel[*].antennaGainUe = {}
-**.cellularNic.channelModel[*].bs_noise_figure = {}
-**.cellularNic.channelModel[*].cable_loss = {}
-**.cellularNic.channelModel[*].componentCarrierIndex = {}
-**.cellularNic.channelModel[*].correlation_distance = {}
-**.cellularNic.channelModel[*].d2d_interference = {}
-**.cellularNic.channelModel[*].delay_rms = {}
-**.cellularNic.channelModel[*].downlink_interference = {} 
-**.cellularNic.channelModel[*].dynamic_los = {}
-**.cellularNic.channelModel[*].enable_extCell_los = {}
-**.cellularNic.channelModel[*].fading = {}
-**.cellularNic.channelModel[*].fading_paths = {}
-**.cellularNic.channelModel[*].fixed_los = {}
-**.cellularNic.channelModel[*].harqReduction = {}
-**.cellularNic.channelModel[*].inside_building = {}
-**.cellularNic.channelModel[*].lambdaMaxTh = {}
-**.cellularNic.channelModel[*].lambdaMinTh = {}
-**.cellularNic.channelModel[*].lambdaRatioTh = {}
-**.cellularNic.channelModel[*].rsrqScale = {}
-**.cellularNic.channelModel[*].rsrqShift = {}
-**.cellularNic.channelModel[*].shadowing = {}
-**.cellularNic.channelModel[*].targetBler = {}
-**.cellularNic.channelModel[*].thermalNoise = {}
-**.cellularNic.channelModel[*].tolerateMaxDistViolation = {}
-**.cellularNic.channelModel[*].ue_noise_figure = {}
-**.cellularNic.channelModel[*].uplink_interference = {}
-**.cellularNic.channelModel[*].useRsrqFromLog = {}
-**.cellularNic.channelModel[*].useTorus = {}
-'''.format(building_height, nodeb_height, ue_height, street_wide, fading_type,
-"true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
-bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
-delay_rms, "false" if not downlink_interference else "true", "false" if not dynamic_los else "true",
-"true" if enable_extCell_los else "false", "true" if fading else "false", fading_paths,
-"false" if not fixed_los else "true", harqReduction, "false" if not inside_building else "true",
-lambdaMaxTh, lambdaMinTh, lambdaRatioTh, rsrqScale, rsrqShift, "true" if shadowing else "false",
-targetBler, thermalNoise, "false" if not tolerateMaxDistViolation else "true", ue_noise_figure,
-"false" if not uplink_interference else "true", "false" if not useRsrqFromLog else "true",
-"false" if not useTorus else "true"))
+  f.write(('**.cellularNic.channelModel[*].building_height = {}\n'
+           '**.cellularNic.channelModel[*].nodeb_height = {}\n'
+           '**.cellularNic.channelModel[*].ue_height = {}\n'
+           '**.cellularNic.channelModel[*].street_wide = {}\n'
+           '**.cellularNic.channelModel[*].fading_type = {}\n'
+           '**.cellularNic.channelModel[*].extCell_interference = {}\n'
+           '**.cellularNic.channelModel[*].antennGainEnB = {}\n'
+           '**.cellularNic.channelModel[*].antennGainMicro = {}\n'
+           '**.cellularNic.channelModel[*].antennaGainUe = {}\n'
+           '**.cellularNic.channelModel[*].bs_noise_figure = {}\n'
+           '**.cellularNic.channelModel[*].cable_loss = {}\n'
+           '**.cellularNic.channelModel[*].componentCarrierIndex = {}\n'
+           '**.cellularNic.channelModel[*].correlation_distance = {}\n'
+           '**.cellularNic.channelModel[*].d2d_interference = {}\n'
+           '**.cellularNic.channelModel[*].delay_rms = {}\n'
+           '**.cellularNic.channelModel[*].downlink_interference = {}\n'
+           '**.cellularNic.channelModel[*].dynamic_los = {}\n'
+           '**.cellularNic.channelModel[*].enable_extCell_los = {}\n'
+           '**.cellularNic.channelModel[*].fading = {}\n'
+           '**.cellularNic.channelModel[*].fading_paths = {}\n'
+           '**.cellularNic.channelModel[*].fixed_los = {}\n'
+           '**.cellularNic.channelModel[*].harqReduction = {}\n'
+           '**.cellularNic.channelModel[*].inside_building = {}\n'
+           '**.cellularNic.channelModel[*].lambdaMaxTh = {}\n'
+           '**.cellularNic.channelModel[*].lambdaMinTh = {}\n'
+           '**.cellularNic.channelModel[*].lambdaRatioTh = {}\n'
+           '**.cellularNic.channelModel[*].rsrqScale = {}\n'
+           '**.cellularNic.channelModel[*].rsrqShift = {}\n'
+           '**.cellularNic.channelModel[*].shadowing = {}\n'
+           '**.cellularNic.channelModel[*].targetBler = {}\n'
+           '**.cellularNic.channelModel[*].thermalNoise = {}\n'
+           '**.cellularNic.channelModel[*].tolerateMaxDistViolation = {}\n'
+           '**.cellularNic.channelModel[*].ue_noise_figure = {}\n'
+           '**.cellularNic.channelModel[*].uplink_interference = {}\n'
+           '**.cellularNic.channelModel[*].useRsrqFromLog = {}\n'
+           '**.cellularNic.channelModel[*].useTorus = {}\n'
+          ).format(building_height, nodeb_height, ue_height, street_wide, fading_type,
+                   "true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
+                   bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
+                   delay_rms, "false" if not downlink_interference else "true", "false" if not dynamic_los else "true",
+                   "true" if enable_extCell_los else "false", "true" if fading else "false", fading_paths,
+                   "false" if not fixed_los else "true", harqReduction, "false" if not inside_building else "true",
+                   lambdaMaxTh, lambdaMinTh, lambdaRatioTh, rsrqScale, rsrqShift, "true" if shadowing else "false",
+                   targetBler, thermalNoise, "false" if not tolerateMaxDistViolation else "true", ue_noise_figure,
+                   "false" if not uplink_interference else "true", "false" if not useRsrqFromLog else "true",
+                   "false" if not useTorus else "true"))
 
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   """This function writes the configuration that defines a node as a microcell in a .ini file."""
@@ -456,28 +457,28 @@ def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int]
 
 def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x, center_y, sites, micro_per_small, small_per_site, seed):
   """This function writes a comment with the main parameters of the MapHexagonal scenario used in a .ini file."""
-  f.write('''#Function: {}
-#Parameters: 
-#  filename = '{}'
-#  directions = {}
-#  num_ues = {}
-#  center_x = {}
-#  center_y = {}
-#  sites = {}
-#  micro_per_small = {}
-#  small_per_site = {}
-#  seed = {}\n'''.format(function_name, filename, directions, num_ues, center_x,
-                        center_y, sites, micro_per_small, small_per_site, seed))
+  f.write(("#Function: {}\n"
+           "#Parameters: \n"
+           "#  filename = '{}'\n"
+           "#  directions = {}\n"
+           "#  num_ues = {}\n"
+           "#  center_x = {}\n"
+           "#  center_y = {}\n"
+           "#  sites = {}\n"
+           "#  micro_per_small = {}\n"
+           "#  small_per_site = {}\n"
+           "#  seed = {}\n").format(function_name, filename, directions, num_ues, center_x,
+                                    center_y, sites, micro_per_small, small_per_site, seed))
 
 def writeCommentConfigILP(f, function_name, filename, seed, d_height, d_width, d_region, extra: str = None):
   """This function writes a comment with the main parameters of the ILP scenario used in a .ini file."""
-  f.write('''#Function: {}
-#Parameters: 
-#  filename = '{}'
-#  seed = {}
-#  Map height distance = {}
-#  Map width distance = {}
-#  Region side distance = {}\n'''.format(function_name, filename, seed, d_height, d_width, d_region))
+  f.write(("#Function: {}\n"
+           "#Parameters: \n"
+           "#  filename = '{}'\n"
+           "#  seed = {}\n"
+           "#  Map height distance = {}\n"
+           "#  Map width distance = {}\n"
+           "#  Region side distance = {}\n").format(function_name, filename, seed, d_height, d_width, d_region))
   if extra is not None:
     f.write('#  Extra = {}\n'.format(extra))
 
@@ -493,8 +494,8 @@ def writeResourceBlocks(f, num: int, is5G: bool= False):
   if is5G:
     f.write("**.numBands = {}\n".format(num))
   else:
-    f.write('''**.numRbDl = {}\n**.numRbUl = {}
-**.binder.numBands = {} # this value should be kept equal to the number of RBs\n'''.format(num))
+    f.write(('**.numRbDl = {}\n**.numRbUl = {}\n'
+             '**.binder.numBands = {} # this value should be kept equal to the number of RBs\n').format(num))
 
 def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterationvarsf}-${repetition}.sna",
   snapshot: bool = True, delay: float = 1.0):
@@ -516,5 +517,5 @@ def defaultGeneral(f, is5g: bool = False):
   #Resource blocks
   if not is5g:
     writeSeparation(f, "Resource Blocks")
-    f.write('''**.numRbDl = 6\n**.numRbUl = 6
-**.binder.numBands = 6 # this value should be kept equal to the number of RBs\n''')
+    f.write(('**.numRbDl = 6\n**.numRbUl = 6\n'
+             '**.binder.numBands = 6 # this value should be kept equal to the number of RBs\n'))
