@@ -1,5 +1,5 @@
 //package inet.mobility.single;
-package inet.mobility.single;
+package _5G.models;
 
 import inet.mobility.base.MovingMobilityBase;
 

@@ -12,33 +12,28 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "inet/mobility/single/VariableSpeedMobility.h"
+#include "VariableSpeedMobility.h"
 
-#include <inet/common/INETMath.h>
-
-namespace inet {
-
-Register_Class(VariableSpeedMobility);
-Define_Module(VariableSpeedMobility);
+namespace omnetpp {
 
 VariableSpeedMobility::VariableSpeedMobility() {
 }
 
 void VariableSpeedMobility::initialize(int stage) {
     LineSegmentsMobilityBase::initialize(stage);
-    if (stage == INITSTAGE_LOCAL) {
-        rad heading = deg(par("initialMovementHeading"));
-        rad elevation = deg(par("initialMovementElevation"));
+    if (stage == inet::INITSTAGE_LOCAL) {
+        inet::rad heading = inet::deg(par("initialMovementHeading"));
+        inet::rad elevation = inet::deg(par("initialMovementElevation"));
         changeIntervalParameter = &par("changeInterval");
         meanSpeedParameter = &par("meanSpeed");
         standardDeviationParameter = &par("standardDeviation");
-        quaternion = Quaternion(EulerAngles(heading, -elevation, rad(0)));
+        quaternion = inet::Quaternion(inet::EulerAngles(heading, -elevation, inet::rad(0)));
     }
 }
 
 void VariableSpeedMobility::move(){
     simtime_t now = simTime();
-    rad dummyAngle;
+    inet::rad dummyAngle;
     if (now == nextChange) {
         lastPosition = targetPosition;
         handleIfOutside(REFLECT, targetPosition, lastVelocity, dummyAngle, dummyAngle, quaternion);
@@ -57,14 +52,15 @@ void VariableSpeedMobility::move(){
     }
 }
 
+//Uses second rng
 void VariableSpeedMobility::setTargetPosition(){
     quaternion.normalize();
-    Coord direction = quaternion.rotate(Coord::X_AXIS);
+    inet::Coord direction = quaternion.rotate(inet::Coord::X_AXIS);
 
     simtime_t nextChangeInterval = *changeIntervalParameter;
     EV_DEBUG << "interval: " << nextChangeInterval << endl;
     sourcePosition = lastPosition;
-    targetPosition = lastPosition + direction * normal(*meanSpeedParameter,standardDeviationParameter->doubleValue()) * nextChangeInterval.dbl();
+    targetPosition = lastPosition + direction * normal(*meanSpeedParameter,standardDeviationParameter->doubleValue(), 1) * nextChangeInterval.dbl();
     previousChange = simTime();
     nextChange = previousChange + nextChangeInterval;
 }

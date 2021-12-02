@@ -13,33 +13,37 @@
 
 #include <inet/common/INETDefs.h>
 #include <inet/mobility/base/LineSegmentsMobilityBase.h>
+#include <inet/common/INETMath.h>
+#include <omnetpp.h>
 
-#ifndef __INET_VARIABLESPEEDMOBILITY_H
-#define __INET_VARIABLESPEEDMOBILITY_H
+#ifndef __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
+#define __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
 
-namespace inet {
+namespace omnetpp {
 
-class INET_API VariableSpeedMobility : public LineSegmentsMobilityBase
+class VariableSpeedMobility : public inet::LineSegmentsMobilityBase
 {
     protected:
-        cPar *changeIntervalParameter = nullptr;
-        cPar *meanSpeedParameter = nullptr;
-        cPar *standardDeviationParameter = nullptr;
+        inet::cPar *changeIntervalParameter = nullptr;
+        inet::cPar *meanSpeedParameter = nullptr;
+        inet::cPar *standardDeviationParameter = nullptr;
 
-        Quaternion quaternion;
+        inet::Quaternion quaternion;
         simtime_t previousChange;
-        Coord sourcePosition;
+        inet::Coord sourcePosition;
 
     protected:
-        virtual int numInitStages() const override { return NUM_INIT_STAGES; }
-        virtual void initialize(int stage) override;
-        virtual void move() override;
-        virtual void setTargetPosition() override;
+        virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
+        virtual void initialize(int stage);
+        virtual void move();
+        virtual void setTargetPosition();
 
     public:
         VariableSpeedMobility();
 };
 
-} // namespace inet
+Define_Module(VariableSpeedMobility);
 
-#endif  // ifndef __INET_VARIABLESPEEDMOBILITY
+}
+
+#endif  //
