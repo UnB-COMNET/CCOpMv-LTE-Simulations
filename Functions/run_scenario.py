@@ -14,9 +14,9 @@ def main():
   #hetb.hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed, with_stop= True)
   #hetb.hetnet_mov('../Network_CCOpMv/LTE/simulations/hetnet_mov.ini', directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed)
   #ilpf.ilp_fixed_info('../Network_CCOpMv/_5G/simulations/ilp_fixed_info.ini', seed)
-  #ilpf.ilp_fixed_users(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
-  ilpf.ilp_fixed_ini(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros, antennas_regions= [22, 36, 75])
-  ilpf.ilp_fixed_ned(n_enbs= 3)
+  ilpf.ilp_fixed_users('../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini', chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
+  #ilpf.ilp_fixed_ini(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros, antennas_regions= [22, 36, 75])
+  #ilpf.ilp_fixed_ned(n_enbs= 3)
   
 if __name__ == "__main__":
   main()

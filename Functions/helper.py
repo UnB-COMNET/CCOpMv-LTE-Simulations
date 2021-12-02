@@ -76,19 +76,20 @@ def writeMobilityType(f, type: str, object_name = "ue[*]"):
   """This function writes the mobility type configuration in a .ini file."""
   f.write('*.{}.mobilityType = "{}"\n'.format(object_name, type))
 
-def writeArrayMovMobility(f, object_array_name, movements: ty.List[Movement], random_speed: bool = False, mean: float = 0, var: float = 0):
+def writeArrayMovMobility(f, object_array_name, movements: ty.List[Movement], fixed_speed: bool = True):
   """This function writes the moving mobility configuration of an array of objects a .ini file."""
   count = 0
   for mov in movements:
-    if random_speed:
-      pass
+    if not fixed_speed:
+      writeMovMobility(f, speed =None, initial_heading=mov.direction, object_name= object_array_name+'['+str(count)+']')
     else:
       writeMovMobility(f, speed =mov.speed, initial_heading=mov.direction, object_name= object_array_name+'['+str(count)+']')
     count += 1
 
-def writeMovMobility(f, speed = 0, initial_heading = 0, object_name = "ue[*]"):
+def writeMovMobility(f, speed: float = None, initial_heading = 0, object_name = "ue[*]"):
   """This function writes the moving mobility configuration of an object in a .ini file."""
-  f.write('*.{}.mobility.speed = {}mps\n'.format(object_name, speed))
+  if speed is not None:
+    f.write('*.{}.mobility.speed = {}mps\n'.format(object_name, speed))
   f.write('*.{}.mobility.initialMovementHeading = {}deg\n'.format(object_name, initial_heading))
 
 def writeMassMobDefault(f, object_name = "ue[*]", update_interval: float = 1.0, angle_delta: float = 0, axis_angle: float = 0):
@@ -96,6 +97,12 @@ def writeMassMobDefault(f, object_name = "ue[*]", update_interval: float = 1.0, 
   f.write('*.{}.mobility.changeInterval = {}s\n'.format(object_name, update_interval))
   f.write('*.{}.mobility.angleDelta = {}deg\n'.format(object_name, angle_delta))
   f.write('*.{}.mobility.rotationAxisAngle = {}deg\n'.format(object_name, axis_angle))
+
+def writeVarSpeedMobDefault(f, speed_mean: float, std_dev: float, update_interval: float = 1.0, object_name = "ue[*]"):
+  """This function writes the default configuration of the VariableSpeedMobility mobility type in a .ini file."""
+  f.write('*.{}.mobility.changeInterval = {}s\n'.format(object_name, update_interval))
+  f.write('*.{}.mobility.meanSpeed = {}mps\n'.format(object_name, speed_mean))
+  f.write('*.{}.mobility.standardDeviation = {}\n'.format(object_name, std_dev))
 
 def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[str, float] = 0, display = False):
   """This function writes the initial location of an object in a .ini file."""
