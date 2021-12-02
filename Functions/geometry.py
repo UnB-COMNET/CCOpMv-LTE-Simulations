@@ -8,13 +8,16 @@ from sinr_comput import compute_sinr
 from coordinates import Coordinate, PolarCoordinate
 
 class Smallcell:
+    """Represents a Smallcell region, composed of a center, antennas and UEs"""
+    
     def __init__(self, center: Coordinate):
+        """Initializes a Smallcell around the informed center"""
         self.center = center
         self.antennas = []
         self.ues = []
 
     def getAntennasPositionList(self) -> List[Coordinate]:
-        '''Documentation...'''
+        """Returns the coordinates of the antennas"""
         if not self.antennas:
             print("There are no antennas in the smallcell")
             return []
@@ -27,7 +30,7 @@ class Smallcell:
         return list_coordinate
 
     def getUEsPositionList(self) -> List[Coordinate]:
-        '''Documentation'''
+        """Returns the coordinates of the UEs"""
         if not self.ues:
             print("There are no UEs in the smallcell")
             return []
@@ -39,14 +42,17 @@ class Smallcell:
         return list_coordinate
 
 class Macrocell:
+    """Returns the a Macrocell region, composed of a center, antennas, UEs and Smallcells"""
+    
     def __init__(self, center: Coordinate) :
+        """Initializes a Macrocell around the informed center"""
         self.center = center
         self.smallcells = []
         self.ues = []
         self.antennas = []
 
     def getSmallcellsPositionList(self) -> List[Coordinate]:
-        '''Documentation...'''
+        """Returns the coordinates of the Smallcells centers"""
         if not self.smallcells:
             print("There are no smallcell in the macrocell")
             return []
@@ -58,7 +64,7 @@ class Macrocell:
         return list_coordinate
     
     def getUEsPositionList(self) -> List[Coordinate]:
-        '''Documentation'''
+        """Returns the coordinates of the UEs"""
         if not self.ues:
             print("There are no UE in the macrocell")
             return []
@@ -70,7 +76,7 @@ class Macrocell:
         return list_coordinate
 
     def getAntennasPositionList(self) -> List[Coordinate]:
-        '''Documentation'''
+        """Returns the coordinates of the antennas"""
         if not self.antennas:
             print("There are no antenna in the macrocell")
             return []
@@ -82,7 +88,10 @@ class Macrocell:
         return list_coordinate
 
 class MapHexagonal:
+    """Represents a scenario with a hexagonal format containing Macrocells"""
+
     def __init__(self, center: Coordinate, n_site: int = 7, n_antennas: int = 10, n_ues: int = 30) :
+        """Initializes the scenario bases on the center Coordinates and other parameters"""
         self.d_macromacro = 1000
         self.d_macrocluster = 105
         self.d_macroue = 35
@@ -115,7 +124,7 @@ class MapHexagonal:
             self.macrocells.append(macrocell)
 
     def getMacrocellsPositionList(self) -> List[Coordinate]:
-        '''Documentation...'''
+        """Returns the coordinates of the Macrocells centers"""
         if not self.macrocells:
             print("There are no macrocells in the hexagonal map")
             return []
@@ -127,11 +136,19 @@ class MapHexagonal:
         return list_coordinate
 
     def placeSmallCell(self, macrocell: Macrocell, radius, min_distance) :
+        """Places a Smallcell in the informed Macrocell"""
         position = placeObject(macrocell,radius,min_distance)
         smallcell = Smallcell(position)
         macrocell.smallcells.append(smallcell)
                 
     def placeUEs(self):
+        """Places the necessary UEs 
+        
+        The UEs are placed based on the informed number of UEs
+        per Macrocell, acording with the 3GPP TR 36.814 Annex A.2.1.1.2
+        Configuration 4b.
+        
+        This configuration assumes the existence of one Smallcell inside each Macrocell."""
         for i in range(len(self.macrocells)):
             macrocell = self.macrocells[i]
             smallcell = macrocell.smallcells[0]
@@ -148,28 +165,40 @@ class MapHexagonal:
                     macrocell.ues.append(ue)                                          
 
     def placeAntennas(self, smallcell: Smallcell, radius, min_distance, n_antennas: int) :
+        """Places the necessary antennas of the informed Smallcell"""
         for i in range(n_antennas):
             position = placeObject(smallcell, radius, min_distance)
             antenna = Antenna(position, None)
             smallcell.antennas.append(antenna)
 
 class Antenna:
+    """Represents a antenna (eNodeB)"""
+
     def __init__(self, position: Coordinate, index) :
+        """Initializes the antenna based on its coordinates"""
         self.position = position
         self.index = index
 
 class Ue:
+    """Represents a UE"""
+
     def __init__(self, position: Coordinate, index, speed = 0, dir = 0):
+        """Initializes the UE based on its coordinates, speed and direction"""
         self.position = position
         self.index = index
         self.movement = Movement(speed, dir)
 
 class Movement:
+    """Represents a movement made by an entity"""
+
     def __init__(self, speed, dir):
+        """Initializes the class based on the its speed and direction"""
         self.speed = speed
         self.direction = dir
 
 def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordinate:
+    """Determines the position of an object randomly based on the radius
+    and minimal distance informed"""
     not_Done = True
     while not_Done:
         radius_obj = radius * sqrt(random())
@@ -185,15 +214,18 @@ def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordi
     return position
 
 def euclidianDistance(a: Coordinate, b: Coordinate) -> float:
+    """Computes the euclidian distance between two coordinates"""
     d = sqrt(pow(a.x - b.x,2) + pow(a.y - b.y,2))
     return d
 
 def polar2rect(r, phi) -> Tuple[float, float]:
+    """Converts a polar coordinate to its retangular form"""
     x = r * cos(phi)
     y = r * sin(phi)
     return x, y
 
 def rect2polar(x, y) -> Tuple[float, float]:
+    """Converts a rectangular coordinate to its polar form"""
     r = sqrt(pow(x,2) + pow(y,2))
     if r == 0:
         print("The radius must be greater than zero")
@@ -214,6 +246,7 @@ def rect2polar(x, y) -> Tuple[float, float]:
     return r, phi
 
 def startScenario() -> MapHexagonal:
+    """Starts a MapHexagonal scenario creating its class and positioning the necessary entities"""
     # Creating hexagonal map
     center = Coordinate(1500,1500)
     map = MapHexagonal(center)
@@ -232,6 +265,8 @@ def startScenario() -> MapHexagonal:
     return map
 
 def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
+    """Plot a map of the MapHexagonal scenario using matplotlib"""
+
     if n_macrocells != 1 and n_macrocells != 7:
         print("Invalid number of macrocells. Insert 1 or 7.")        
         return
@@ -268,6 +303,7 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
     print("Plot")
 
 class MapChess:
+    """Represents a scenario that divides the map into multiple square shaped regions (sectors)"""
     def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20, los: bool = False,
@@ -275,6 +311,8 @@ class MapChess:
                  thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
                  gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
                  enb_tx_power: float = 46, ue_tx_power: float = 26, chosen_seed: int = 123) :
+        """Initializes the scenario based on multiple parameters"""
+
         self.d_region = d_region
         self.d_width = d_width
         self.d_height = d_height
@@ -306,6 +344,7 @@ class MapChess:
         self.chosen_seed = chosen_seed
 
     def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
+        """Returns the central coordinate of a region (sector)"""
         coord = Coordinate(
             self.d_region*(region_id%self.n_width)+self.d_region/2,
             self.d_region*int(region_id/self.n_height)+self.d_region/2,
@@ -313,6 +352,7 @@ class MapChess:
         return coord
 
     def coord2Region(self, coord: Coordinate) -> int:
+        """Returns the number of the region (sector) that contains the informed coordinate"""
         line = int(coord.y/self.d_region)
         line = line if line < self.n_width else self.n_width-1
         column = int(coord.x/self.d_region)
@@ -322,6 +362,7 @@ class MapChess:
         return region_id
 
     def placeTestUEs(self):
+        """Places one UE in the center of each region (sector)"""
         #self.map_ues = np.array(
         #                [[Ue(self.region2Coord(m), m)] 
         #                for m in range(self.n_regions)])
@@ -332,6 +373,7 @@ class MapChess:
             self.map_ues[m] = [Ue(coord, m)]
 
     def placeUE(self, coord: Coordinate, index, speed, dir):
+        """Places one UE at the informed coordinate"""
         if len(self.map_ues) != self.n_regions:
             for r in range(self.n_regions):
                 self.map_ues.append([])
@@ -339,6 +381,7 @@ class MapChess:
         self.map_ues[coord2Region(coord,self.d_region,self.d_width,self.d_height)].append(Ue(coord,index,speed,dir))
 
     def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60):
+        """Places UEs across the map based on the informed type"""
         count = 0
         mean_speed = 3000#3/3.6
         var_speed = 1000#1/3.6
@@ -366,6 +409,7 @@ class MapChess:
                 count += 1
 
     def placeAntennas(self, list_regions: List[int]) :
+        """Places antennas in the center of the regions (sectors) informed"""
         count = 0
         self.map_antennas = np.empty(self.n_regions, dtype= np.dtype(object))
         self.map_antennas.fill(None)
@@ -375,8 +419,12 @@ class MapChess:
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
-    #Place UEs using macrocells placed randomly in space delimited by a margin
     def uesRandomMapHexa_(self, small_per_macro = 1, n_macros = 20, n_ues_macro = 60)->List[Ue]:
+        """Places UEs using fictional macrocells placed randomly in space delimited by a margin
+        
+        The UEs are placed based on the informed number of UEs
+        per Macrocell, acording with the 3GPP TR 36.814 Annex A.2.1.1.2
+        Configuration 4b."""
         d_macromacro = 1000
         d_macrocluster = 105
         d_macroue = 35
@@ -399,7 +447,12 @@ class MapChess:
 
     #Place UEs using macrocells placed across all space
     def uesFullMapHexa_(self, small_per_macro = 1, n_ues_macro = 60) -> List[Ue]:
-
+        """Places UEs using macrocells placed across all space trying to maximize their quantity
+        without overlaping macrocells.
+        
+        The UEs are placed based on the informed number of UEs
+        per Macrocell, acording with the 3GPP TR 36.814 Annex A.2.1.1.2
+        Configuration 4b."""
         d_macromacro = 1000
         d_macrocluster = 105
         d_macroue = 35
@@ -443,6 +496,12 @@ class MapChess:
 
     def placeHexaUes_(self, tmp_mcs: List[Macrocell], tmp_smc: List[Smallcell], n_ues:int, dropradius_ue_cluster: int,
                       d_macromacro: int, d_macroue: int, small_per_macro: int):
+        """Places the UEs according with the macrocells and smallcells informed.
+        
+        The UEs are placed based on the informed number of UEs
+        per Macrocell, acording with the 3GPP TR 36.814 Annex A.2.1.1.2
+        Configuration 4b."""
+        
         count = 0
         ues: List[Ue] = []
         for i in range(len(tmp_mcs)):
@@ -469,6 +528,7 @@ class MapChess:
         return ues
     
     def verifyCoord_(self, coord: Coordinate):
+        """Verifies if the coordinate is within the delimited map"""
         if (coord.x < 0):
             coord.x = 0
         if (coord.x > self.d_width):
@@ -480,6 +540,7 @@ class MapChess:
         return coord
 
     def plotUes(self, external: bool = False, ues_positions: List[Coordinate] = None):
+        """Plots the existing UEs using matplotlib"""
         if not external: ues = self.getUEsPositionList()
         else: ues = ues_positions
 
@@ -488,8 +549,8 @@ class MapChess:
         plt.show()
         print("Plot")
 
-
     def getRegionsCentersList(self) -> List[Coordinate]:
+        """Returns the coordinates of each region (sector) center."""
         list_coordinate = []
         for m in range(self.n_regions):
             coord = self.region2Coord(m)
@@ -498,7 +559,7 @@ class MapChess:
         return list_coordinate
 
     def getAntennasPositionList(self) -> List[Coordinate]:
-
+        """Returns the coordinates of all antennas."""
         list_coordinate = []
         for ant in self.map_antennas:
             if (ant != None):
@@ -507,6 +568,7 @@ class MapChess:
         return list_coordinate
 
     def getUEsPositionList(self) -> List[Coordinate]:
+        """Returns the coordinates of all UEs."""
         list_coordinate = []
         for region in self.map_ues:
             for ue in region:
@@ -515,6 +577,7 @@ class MapChess:
         return list_coordinate
 
     def getUEsMovementList(self) -> List[Movement]:
+        """Returns the movement atribute of all UEs."""
         list_movement = []
         for region in self.map_ues:
             if (region != []):
@@ -524,6 +587,10 @@ class MapChess:
         return list_movement
 
     def getSinrMap(self) -> List[List[float]]:
+        """Returns the sinr map.
+        
+        The sinr map is composed of the received sinr values at each region (section)
+        for a antenna (eNodeB) positioned at each one of the regions (sections)"""
         regions_centers = self.getRegionsCentersList()
         sinr_map = []
         seed(self.chosen_seed+1)
