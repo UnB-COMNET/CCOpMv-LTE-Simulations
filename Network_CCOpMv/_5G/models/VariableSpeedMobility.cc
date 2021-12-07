@@ -28,6 +28,7 @@ void VariableSpeedMobility::initialize(int stage) {
         meanSpeedParameter = &par("meanSpeed");
         standardDeviationParameter = &par("standardDeviation");
         quaternion = inet::Quaternion(inet::EulerAngles(heading, -elevation, inet::rad(0)));
+        WATCH(lastVelocity);
     }
 }
 

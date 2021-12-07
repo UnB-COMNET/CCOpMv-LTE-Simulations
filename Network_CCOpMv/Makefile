@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for Network_CCOpMv
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$$\(INET4_PROJ\)/src -I$$\(SIMU5G_1_1_0_PROJ\)/src -L$$\(INET4_PROJ\)/src -L$$\(SIMU5G_1_1_0_PROJ\)/src -lINET$$\(D\) -lsimu5g$$\(D\)
+#  opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$(INET4_PROJ)/src -I$(SIMU5G_1_1_0_PROJ)/src -L$(INET4_PROJ)/src -L$(SIMU5G_1_1_0_PROJ)/src -lINET$(D) -lsimu5g$(D)
 #
 
 # Name of target to be created (-o option)

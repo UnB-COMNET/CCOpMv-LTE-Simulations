@@ -11,22 +11,20 @@ import os
 def main():
   #Main parameters
   chosen_seed = 123
-  d_height = 8000
-  d_width = 8000
-  d_region = 800
-  n_macros = 2
+  d_height = 4000
+  d_width = 4000
+  d_region = 400
+  n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
 
-  run_all = False
+  run_all = True
 
   if run_all:
     #Genereting .ini file
     ilpf.ilp_fixed_users(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
 
     open(xml_filename, 'w').close()
-
-    input("Waiting.")
 
     oppmake = r"opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)"
     #Running Omnet++
