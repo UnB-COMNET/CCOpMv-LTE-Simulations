@@ -1,14 +1,18 @@
+from typing import List
+
 import helper as hp
+import helper_ned as hned
 import random
 import geometry as geo
 
-def ilp_fixed_info(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800):
+#Not used
+def ilp_fixed_sinr_test(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800):
   random.seed(seed)
   scen = start_scenario_chess(d_height, d_width, d_region)
 
   ues_x_y = scen.getUEsPositionList()
   regions_x_y = scen.getRegionsCentersList()
-  num_ues = scen.n_regions
+  num_ues = 2#scen.n_regions
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed_info", filename, seed, d_height, d_width, d_region)
@@ -69,18 +73,18 @@ def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =10
 
   return scen
 
-def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800):
-  random.seed(seed)
-  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7)
-  scen.placeUEs(type= "Random", n_macros= 5)#Full = 4320 UEs
+def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2):
+  #random.seed(seed)
+  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
+  scen.placeUEs(type= "Random", n_macros= n_macros)#Full = 4320 UEs
 
   ues_coords = scen.getUEsPositionList()
-  ues_mov = scen.getUEsMovimentList()
+  ues_mov = scen.getUEsMovementList()
   #scen.plotUes()
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, d_height, d_width, d_region)
+    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_users')
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
@@ -89,7 +93,7 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, snapshot= False)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-${repetition}.sna", snapshot= True)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -107,9 +111,98 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.writeSeparation(f, "Scenario")
     hp.writeComment(f, text= "UEs")
     hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
+    hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
-    hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue[*]")
+    hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
+    hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
-    hp.writeArrayMovMobility(f, object_array_name= 'ue', moviments= ues_mov)
-    hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)#todo
+    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
+    hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+
+def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr = 10, repetitions = 5):
+  #random.seed(seed)
+  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
+  scen.placeUEs(type= "Random", n_macros= n_macros)#Full = 4320 UEs
+  scen.placeAntennas(list_regions= antennas_regions)
+
+  ues_coords = scen.getUEsPositionList()
+  ues_mov = scen.getUEsMovementList()
+  enbs_coords = scen.getAntennasPositionList()
+
+  num_ues = len(ues_coords)
+  num_enbs = len(enbs_coords)
+
+  with open(filename, 'wt') as f:
+    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.defaultGeneral(f, is5g= True)
+    hp.makeNewConfig(f, name= 'Config ilp_fixed')
+    hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
+    hp.writeTime(f, time= 10, repeat= repetitions)
+    hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
+    hp.nl(f)
+    hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"$-{repetition}")
+    hp.writeSeparation(f, "Snapshots")
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
+    hp.writeSeparation(f, "Transmission Power")
+    hp.writeTransmissionPower(f, is5G= True)
+    hp.writeSeparation(f, "Channel Control")
+    hp.writeCarrierAggregation5G(f,carrierFrequency = "{}GHz".format(scen.carrier_frequency))
+    hp.writeSeparation(f, "Channel Model")
+    hp.writeChannelModel5G(f, tolerateMaxDistViolation= True, extCell_interference= False)
+    hp.writeSeparation(f, "Resource Blocks")
+    hp.writeResourceBlocks(f, 6, is5G= True)
+    hp.writeSeparation(f, "UEs")
+    hp.writeNumUEs(f, num_ues)
+    hp.writeComment(f, text= "Conecting UEs to eNodeB")
+    hp.writeConnectUE(f, UEs= [num_ues], ENBs= [1])
+    hp.writeComment(f, text= "Scheduler")
+    hp.writeSchedulingOptions(f, sched= ['MAXCI'])
+    hp.writeSeparation(f, "Scenario")
+    hp.writeComment(f, text= "eNodeBs")
+    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= 'URBAN_MACROCELL', for5g= True)
+    hp.writeComment(f, text= "UEs")
+    hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
+    hp.writeSeparation(f, "Mobility")
+    hp.writeComment(f, text= "eNodeB")
+    hp.writeMultiIniMobility(f,object_name= 'eNB', coordinates= enbs_coords)
+    hp.writeConstraint(f, object_name= 'eNB*', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeComment(f, text= "UEs")
+    hp.nl(f)
+    hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
+    hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
+    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
+    hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeSeparation(f, "Apps")
+    hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
+    hp.writeComment(f, text= "VoIP UL")
+    hp.writeAppVoipUL(f, num_ues, n_app= 0)
+    hp.writeComment(f, text= "VoIP DL")
+    hp.writeAppVoipDL(f, num_ues, n_app= 1)
+    hp.writeSeparation(f, "Handover")
+    hp.writeComment(f, text= "Enable handover")
+    hp.writeEnableHandover(f, object_name= "eNB*", enable= True, is5G= True)
+    hp.writeEnableHandover(f, object_name= "ue[*]", enable= True, is5G= True)
+    hp.writeComment(f, text= "X2 configuration")
+    hp.writeX2Configuration(f, object_name= "eNB*", quantity= num_enbs) #Connections between enbs
+    hp.writeComment(f, text= "Connections")
+    hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
+
+def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =8000, image:str =None, n_enbs: int = 2):
+
+  filename = "../Network_CCOpMv/_5G/networks/{}.ned".format(network)
+
+  with open(filename, 'wt') as f:
+    hned.writeBaseImports(f, is5g= True, snapshot= True)
+    hned.writeNet(f, net_name= network)
+    hned.writeParams(f, bg_x= d_width, bg_y = d_height, bg_image= image)
+    hned.writeBaseSubmodules(f, is5g= True)
+    hned.writeMultiNode(f, quantity= n_enbs)
+    hned.writeSubmodule(f, name= "ue[numUe]", type= "Ue", size= "s")
+    hned.writeSnapshotter(f, submodule_size= 's')
+    hned.writeConnections(f, base= True)
+    hned.writeMultiNodeConnections(f, object_name= "eNB" , quantity= n_enbs)
+    hned.writeSeparation(f, "X2 Connections")
+    hned.writeX2Connections(f, object_names=["eNB"], quantities= [n_enbs])
+    hned.writeEndNet(f)
