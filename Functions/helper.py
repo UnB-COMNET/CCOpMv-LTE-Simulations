@@ -298,7 +298,7 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
                         thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
                         uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
   """This function writes the channel model submodule configuration in a .ini file."""
-  f.write(('**.cellularNic.LteChannelModelType = "{}"'
+  f.write(('**.cellularNic.LteChannelModelType = "{}"\n'
            '**.cellularNic.channelModel[*].building_height = {}\n'
            '**.cellularNic.channelModel[*].nodeb_height = {}\n'
            '**.cellularNic.channelModel[*].ue_height = {}\n'
