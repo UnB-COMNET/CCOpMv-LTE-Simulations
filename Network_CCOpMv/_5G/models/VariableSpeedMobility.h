@@ -11,13 +11,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 
+#ifndef __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
+#define __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
+
 #include <inet/common/INETDefs.h>
 #include <inet/mobility/base/LineSegmentsMobilityBase.h>
 #include <inet/common/INETMath.h>
 #include <omnetpp.h>
-
-#ifndef __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
-#define __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
 
 namespace omnetpp {
 
