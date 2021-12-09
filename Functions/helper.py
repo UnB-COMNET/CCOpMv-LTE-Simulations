@@ -26,6 +26,10 @@ def makeNewConfig(f,name, extends = False, extend_name = ''):
   if extends:
     f.write('extends = {}\n'.format(extend_name))
 
+def writeVectorExtra(f, module, statistic = '*', value: bool = True):
+  """This function writes the vector recording configuration of the specified statistics in a .ini file."""
+  f.write("{}.{}.vector-recording = {}\n".format(module, statistic, 'true' if value else 'false'))
+
 def writeOutput(f, path: str, vector_rec: bool = False):
   """This function writes the output configuration in a .ini file."""
   f.write(("output-scalar-file = {}.sca\n"
@@ -281,7 +285,7 @@ def writeCarrierAggregation5G(f, carrierFrequency: str = "2GHz"):
   """This function writes the carrier aggregation submodule configuration from Simu5G in a .ini file."""
   f.write('*.carrierAggregation.componentCarrier[*].carrierFrequency = {}\n'.format(carrierFrequency))
 
-def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25,
+def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  building_height: float = 20, nodeb_height: float = 25,
                         ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
                         extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
                         antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
@@ -294,7 +298,8 @@ def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25
                         thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
                         uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
   """This function writes the channel model submodule configuration in a .ini file."""
-  f.write(('**.cellularNic.channelModel[*].building_height = {}\n'
+  f.write(('**.cellularNic.LteChannelModelType = "{}"'
+           '**.cellularNic.channelModel[*].building_height = {}\n'
            '**.cellularNic.channelModel[*].nodeb_height = {}\n'
            '**.cellularNic.channelModel[*].ue_height = {}\n'
            '**.cellularNic.channelModel[*].street_wide = {}\n'
@@ -330,7 +335,7 @@ def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25
            '**.cellularNic.channelModel[*].uplink_interference = {}\n'
            '**.cellularNic.channelModel[*].useRsrqFromLog = {}\n'
            '**.cellularNic.channelModel[*].useTorus = {}\n'
-          ).format(building_height, nodeb_height, ue_height, street_wide, fading_type,
+          ).format(model_name, building_height, nodeb_height, ue_height, street_wide, fading_type,
                    "true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
                    bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
                    delay_rms, "false" if not downlink_interference else "true", "false" if not dynamic_los else "true",
