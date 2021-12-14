@@ -20,22 +20,49 @@ using namespace omnetpp;
 
 simsignal_t MoreInfoChannelModel::idRcvdSinr_ = registerSignal("idRcvdSinr");
 
-std::vector<double> MoreInfoChannelModel::getSINR(LteAirFrame *frame, UserControlInfo* lteInfo)
+bool MoreInfoChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
-    std::vector<double> snrVector;
+    bool is_error;
 
     RbMap rbmap = lteInfo->getGrantedBlocks();
 
-    snrVector = LteRealisticChannelModel::getSINR(frame, lteInfo);
+    is_error = LteRealisticChannelModel::isError(frame, lteInfo);
 
     Direction dir = (Direction) lteInfo->getDirection();
 
     MacNodeId ueId = 0;
 
-    if (dir == UL){
+    RbMap::iterator it;
+    std::map<Band, unsigned int>::iterator jt;
+
+    int usedRBs = 0;
+
+    //for each Remote unit used to transmit the packet
+    for (it = rbmap.begin(); it != rbmap.end(); ++it)
+    {
+       //for each logical band used to transmit the packet
+       for (jt = it->second.begin(); jt != it->second.end(); ++jt)
+       {
+           //this Rb is not allocated
+           if (jt->second == 0)
+               continue;
+
+           //check the antenna used in Das
+           if ((lteInfo->getTxMode() == CL_SPATIAL_MULTIPLEXING
+                   || lteInfo->getTxMode() == OL_SPATIAL_MULTIPLEXING)
+                   && rbmap.size() > 1)
+               //we consider only the snr associated to the LB used
+               if (it->first != lteInfo->getCw())
+                   continue;
+
+           usedRBs++;
+       }
+    }
+
+    if (dir == UL && usedRBs > 0 && (lteInfo->getFrameType() != FEEDBACKPKT)){
             ueId = lteInfo->getSourceId() - UE_MIN_ID;
             emit(idRcvdSinr_, ueId);
     }
 
-    return snrVector;
+    return is_error;
 }

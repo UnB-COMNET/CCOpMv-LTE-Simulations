@@ -31,7 +31,7 @@ class MoreInfoChannelModel : public LteRealisticChannelModel
     static omnetpp::simsignal_t idRcvdSinr_;
 
   public:
-    virtual std::vector<double> getSINR(LteAirFrame *frame, UserControlInfo* lteInfo);
+    virtual bool isError(LteAirFrame *frame, UserControlInfo* lteInfo);
 };
 
 Define_Module(MoreInfoChannelModel);
