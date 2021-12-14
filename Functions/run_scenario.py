@@ -7,7 +7,7 @@ def main():
   d_height = 4000
   d_width = 4000
   d_region = 400
-  n_macros = 1
+  n_macros = 2
   ini_path = '../Network_CCOpMv/_5G/simulations/ilp_fixed.ini'
   enbs = [45]
   min_sinr = 10
