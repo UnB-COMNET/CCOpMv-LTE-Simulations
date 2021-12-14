@@ -20,49 +20,70 @@ using namespace omnetpp;
 
 simsignal_t MoreInfoChannelModel::idRcvdSinr_ = registerSignal("idRcvdSinr");
 
-bool MoreInfoChannelModel::isError(LteAirFrame *frame, UserControlInfo* lteInfo)
+std::vector<double> MoreInfoChannelModel::getSINR(LteAirFrame *frame, UserControlInfo* lteInfo)
 {
-    bool is_error;
+    std::vector<double> snrV;
 
     RbMap rbmap = lteInfo->getGrantedBlocks();
 
-    is_error = LteRealisticChannelModel::isError(frame, lteInfo);
+    snrV = LteRealisticChannelModel::getSINR(frame, lteInfo);
 
     Direction dir = (Direction) lteInfo->getDirection();
 
     MacNodeId ueId = 0;
+    MacNodeId id = 0;
+
+    bool doEmit = true;
 
     RbMap::iterator it;
     std::map<Band, unsigned int>::iterator jt;
 
     int usedRBs = 0;
 
-    //for each Remote unit used to transmit the packet
-    for (it = rbmap.begin(); it != rbmap.end(); ++it)
-    {
-       //for each logical band used to transmit the packet
-       for (jt = it->second.begin(); jt != it->second.end(); ++jt)
-       {
-           //this Rb is not allocated
-           if (jt->second == 0)
-               continue;
+    //Get txmode
+    TxMode txmode = (TxMode) lteInfo->getTxMode();
 
-           //check the antenna used in Das
-           if ((lteInfo->getTxMode() == CL_SPATIAL_MULTIPLEXING
-                   || lteInfo->getTxMode() == OL_SPATIAL_MULTIPLEXING)
-                   && rbmap.size() > 1)
-               //we consider only the snr associated to the LB used
-               if (it->first != lteInfo->getCw())
+    if (dir==UL){
+        id = lteInfo->getSourceId();
+        // If rank is 1 and we used SMUX to transmit we have to corrupt this packet
+        if (txmode == CL_SPATIAL_MULTIPLEXING
+               || txmode == OL_SPATIAL_MULTIPLEXING)
+        {
+           //compare lambda min (smaller eingenvalues of channel matrix) with the threshold used to compute the rank
+           if (binder_->phyPisaData.getLambda(id, 1) < lambdaMinTh_)
+               doEmit = false;
+        }
+
+        //for each Remote unit used to transmit the packet
+        for (it = rbmap.begin(); it != rbmap.end(); ++it)
+        {
+           //for each logical band used to transmit the packet
+           for (jt = it->second.begin(); jt != it->second.end(); ++jt)
+           {
+               //this Rb is not allocated
+               if (jt->second == 0)
                    continue;
 
-           usedRBs++;
-       }
+               //check the antenna used in Das
+               if ((lteInfo->getTxMode() == CL_SPATIAL_MULTIPLEXING
+                       || lteInfo->getTxMode() == OL_SPATIAL_MULTIPLEXING)
+                       && rbmap.size() > 1)
+                   //we consider only the snr associated to the LB used
+                   if (it->first != lteInfo->getCw())
+                       continue;
+
+               usedRBs++;
+               int snr = snrV[jt->first];//XXX because jt->first is a Band (=unsigned short)
+               if (snr < binder_->phyPisaData.minSnr())
+                   doEmit = false;
+           }
+        }
+
+        if (usedRBs > 0 && (lteInfo->getFrameType() != FEEDBACKPKT) && doEmit){
+                ueId = lteInfo->getSourceId() - UE_MIN_ID;
+                emit(idRcvdSinr_, ueId);
+        }
     }
 
-    if (dir == UL && usedRBs > 0 && (lteInfo->getFrameType() != FEEDBACKPKT)){
-            ueId = lteInfo->getSourceId() - UE_MIN_ID;
-            emit(idRcvdSinr_, ueId);
-    }
-
-    return is_error;
+    return snrV;
 }
