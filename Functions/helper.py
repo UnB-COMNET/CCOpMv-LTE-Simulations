@@ -281,9 +281,14 @@ def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_pow
   else:
     f.write("**.lteNic.phy.txDirection = {}\n".format(txDirection))
 
-def writeCarrierAggregation5G(f, carrierFrequency: str = "2GHz"):
+def writeCarrierAggregation5G(f, num_carriers:int = 1, carriers_frequencies: ty.List[float] = [2], eNBs_carriers: bool = False):
   """This function writes the carrier aggregation submodule configuration from Simu5G in a .ini file."""
-  f.write('*.carrierAggregation.componentCarrier[*].carrierFrequency = {}\n'.format(carrierFrequency))
+  f.write('**.numComponentCarriers = {}\n'.format(num_carriers))
+  for i in range(num_carriers):
+    f.write('*.carrierAggregation.componentCarrier[{}].carrierFrequency = {}GHz\n'.format(i, carriers_frequencies[i]))
+  if eNBs_carriers:
+    for i in range(num_carriers):
+      f.write("*.eNB{}.cellularNic.channelModel[*].componentCarrierIndex = {}\n".format(i, i))
 
 def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  building_height: float = 20, nodeb_height: float = 25,
                         ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
