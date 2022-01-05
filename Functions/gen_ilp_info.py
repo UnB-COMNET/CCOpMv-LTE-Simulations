@@ -17,6 +17,7 @@ def main():
   n_macros = 2
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
+  min_sinr = 60
 
   run_all = False
 
@@ -70,7 +71,7 @@ make
     #Generating default parameters
     max_user_antenna_m = [60 for i in range(scen.n_regions)]
     antennas_map_m = [1 for i in range(scen.n_regions)]
-    min_snr_m = [10 for i in range(scen.n_regions)]
+    min_snr_m = [min_sinr for i in range(scen.n_regions)]
 
     #Generating ues time map
     print("-------------Generating ues map")
