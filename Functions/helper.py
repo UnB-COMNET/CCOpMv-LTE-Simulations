@@ -116,11 +116,11 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
            "*.{name}.mobility.initFromDisplayString = {display}\n"
           ).format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
-def getOptionsString(ini: ty.List[float], name: str) -> str:
+def getOptionsString(ini: ty.List[float], name: str, unit: str = 'm') -> str:
   """This function writes a named iteration variable in a .ini file."""
   ini_str = '${'+name+'='
   for f in np.unique(ini):
-    ini_str += ' ' + str(f) + 'm,'
+    ini_str += ' ' + str(f) + unit + ','
   ini_str = ini_str[:-1] + "}"
 
   return ini_str
@@ -513,6 +513,14 @@ def writeResourceBlocks(f, num: int, is5G: bool= False):
   else:
     f.write(('**.numRbDl = {}\n**.numRbUl = {}\n'
              '**.binder.numBands = {} # this value should be kept equal to the number of RBs\n').format(num))
+
+def writeResourceBlocksOptions(f, name: str, nums: ty.List[int], is5G: bool= False):
+  """This function writes the number of resource blocks used in a .ini file."""
+  if is5G:
+    f.write("**.numBands = {}\n".format(getOptionsString(nums, name, '')))
+  else:
+    f.write(('**.numRbDl = {}\n**.numRbUl = ${{{}}}\n'
+             '**.binder.numBands = ${{{}}} # this value should be kept equal to the number of RBs\n').format(getOptionsString(nums, name, ''), name, name))    
 
 def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterationvarsf}-${repetition}.sna",
   snapshot: bool = True, delay: float = 1.0):
