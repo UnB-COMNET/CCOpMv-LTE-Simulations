@@ -11,7 +11,7 @@ def main():
   ini_path = '../Network_CCOpMv/_5G/simulations/ilp_fixed_sliced.ini'
   enbs = [45, 55]
   min_sinr = 40
-  num_bands = [6, 100]
+  num_bands = [100]
   multi_carriers = False
 
   # Scenario only changes with num_ues, center and micro_per_small
