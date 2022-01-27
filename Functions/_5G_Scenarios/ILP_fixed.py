@@ -2,6 +2,7 @@ from typing import List
 
 import helper as hp
 import helper_ned as hned
+import helper_xml as hxml
 import random
 import geometry as geo
 import numpy as np
@@ -202,15 +203,24 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
   scen.placeAntennas(list_regions= antennas_regions)
 
-  ues_coords = scen.getUEsPositionList()
-  ues_mov = scen.getUEsMovementList()
+  xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
+  ues_in_time = hxml.get_ues_time(scen, xml_filename)
+
+  ues_coords = []
+  ues_mov = []
+  for slice in ues_in_time:
+    ues_coords.append([ue.position for ue in slice])
+    ues_mov.append([ue.movement for ue in slice])
+  ues_coords = np.swapaxes(ues_coords, 0, 1).tolist()
+  ues_mov = np.swapaxes(ues_mov, 0, 1).tolist()
+
   enbs_coords = scen.getAntennasPositionList()
 
-  num_ues = len(ues_coords)
+  num_ues = len(scen.getUEsList())
   num_enbs = len(enbs_coords)
 
   iter_slice_name = "Slice"
-  num_slices = 2
+  num_slices = len(ues_in_time)
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
@@ -256,8 +266,8 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.nl(f)
     hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue[*]")
     #hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
-    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= [[i, i] for i in ues_coords], paral_name= iter_slice_name)
-    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= [[i, i] for i in ues_mov], fixed_speed= True, paral_name= iter_slice_name)
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords, paral_name= iter_slice_name)
+    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= True, paral_name= iter_slice_name)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
