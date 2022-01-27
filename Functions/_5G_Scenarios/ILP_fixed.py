@@ -280,14 +280,14 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.writeAppVoipUL(f, num_ues, n_app= 0)
     hp.writeComment(f, text= "VoIP DL")
     hp.writeAppVoipDL(f, num_ues, n_app= 1)
-    hp.writeSeparation(f, "Handover")
-    hp.writeComment(f, text= "Enable handover")
-    hp.writeEnableHandover(f, object_name= "eNB*", enable= True, is5G= True)
-    hp.writeEnableHandover(f, object_name= "ue[*]", enable= True, is5G= True)
-    hp.writeComment(f, text= "X2 configuration")
-    hp.writeX2Configuration(f, object_name= "eNB*", quantity= num_enbs) #Connections between enbs
-    hp.writeComment(f, text= "Connections")
-    hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
+    #hp.writeSeparation(f, "Handover")
+    #hp.writeComment(f, text= "Enable handover")
+    #hp.writeEnableHandover(f, object_name= "eNB*", enable= True, is5G= True)
+    #hp.writeEnableHandover(f, object_name= "ue[*]", enable= True, is5G= True)
+    #hp.writeComment(f, text= "X2 configuration")
+    #hp.writeX2Configuration(f, object_name= "eNB*", quantity= num_enbs) #Connections between enbs
+    #hp.writeComment(f, text= "Connections")
+    #hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
 def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =8000, image:str =None, n_enbs: int = 2):
 
