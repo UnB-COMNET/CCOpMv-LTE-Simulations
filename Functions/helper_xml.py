@@ -11,7 +11,7 @@ def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
   """This function parses a snapshot file (.sna) returning quantity of UEs in the map sections over time."""
   accumulated_xml = ''
   map_ues_time = [[len(region) for region in scen.map_ues]]
-  coords_objs = []
+  coords_obj = []
   count = 0
 
   with open(xml_filename) as temp:
@@ -56,6 +56,7 @@ def get_ues_time(scen: MapChess, xml_filename: str) -> List[List[Ue]]:
   """This function parses a snapshot file (.sna) returning the UEs location over time."""
   accumulated_xml = ''
   ues_time = [scen.getUEsList()]
+  prev_speeds = []
 
   with open(xml_filename) as temp:
     while True:
@@ -67,17 +68,24 @@ def get_ues_time(scen: MapChess, xml_filename: str) -> List[List[Ue]]:
                 while(int(root.get('simtime')) >= len(ues_time)):
                   ues_time.append([])
                 coords_obj = root.findall(".//*[@class='inet::Coord']")
-                #Supoe que a "lastPosition" seja o penultimo objeto com essa class
+                #Supoe que a "lastPosition" seja o penultimo objeto com essa class inet::Coord
                 coords_text = coords_obj[-2].find("./info").text
                 coords_numbers = [float(s) for s in coords_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit()]
                 coord = Coordinate(x= coords_numbers[0], y= coords_numbers[1], z= coords_numbers[2])
-                #Supoe que a "lastVelocity" seja o ultimo objeto com essa class
+                #Supoe que a "lastVelocity" seja o ultimo objeto com essa class inet::Coord
                 speed_text = coords_obj[-1].find("./info").text
                 speed_numbers = [float(s) for s in speed_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit() or (len(s) > 1 and s[0] == '-' and s[1].isdigit())]
                 speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)
                 direction = degrees(atan(speed_numbers[1]/speed_numbers[0]))
                 ues_time[int(root.get('simtime'))].append(Ue(coord, [int(s) for s in re.findall(r'\d+', root.get('object'))][-1],
                                                                    speed= speed, dir= direction))
+                
+                if int(root.get('simtime')) == 1:
+                  prev_obj = root.findall(".//*[@class='float']")
+                  #Supoe que a "previousSpeed" seja o ultimo objeto com essa class float
+                  prev_speed = float(prev_obj[-1].find("./info").text)                                               
+                  prev_speeds.append(prev_speed)
+                
                 accumulated_xml = ''
         else:
             accumulated_xml += line
@@ -85,20 +93,30 @@ def get_ues_time(scen: MapChess, xml_filename: str) -> List[List[Ue]]:
         root = ET.XML(accumulated_xml)
         while(int(root.get('simtime')) >= len(ues_time)):
           ues_time.append([])
+          prev_speeds.append([])
         coords_obj = root.findall(".//*[@class='inet::Coord']")
-        #Supoe que a "lastPosition" seja o penultimo objeto com essa class
+        #Supoe que a "lastPosition" seja o penultimo objeto com essa class inet::Coord
         coords_text = coords_obj[-2].find("./info").text
         coords_numbers = [float(s) for s in coords_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit()]
         coord = Coordinate(x= coords_numbers[0], y= coords_numbers[1], z= coords_numbers[2])
-        #Supoe que a "lastVelocity" seja o ultimo objeto com essa class
+        #Supoe que a "lastVelocity" seja o ultimo objeto com essa class inet::Coord
         speed_text = coords_obj[-1].find("./info").text
         speed_numbers = [float(s) for s in speed_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit() or (len(s) > 1 and s[0] == '-' and s[1].isdigit())]
         speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)
         direction = degrees(atan(speed_numbers[1]/speed_numbers[0]))
         ues_time[int(root.get('simtime'))].append(Ue(coord, [int(s) for s in re.findall(r'\d+', root.get('object'))][-1],
                                                             speed= speed, dir= direction))
+        if int(root.get('simtime')) == 1:
+          prev_obj = root.findall(".//*[@class='float']")
+          #Supoe que a "previousSpeed" seja o ultimo objeto com essa class float
+          prev_speed = float(prev_obj[-1].find("./info").text)                                               
+          prev_speeds.append(prev_speed)
+        
         accumulated_xml = ''
         
         break
+
+  for i in range(len(ues_time[0])):
+    ues_time[0][i].movement.speed = prev_speeds[i]
 
   return ues_time
