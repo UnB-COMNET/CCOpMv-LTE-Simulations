@@ -2,7 +2,7 @@ from math import ceil
 import geometry as geo
 import sinr_comput as sc
 from random import random, seed
-from helper_xml import get_map_ues_time, get_coord_ues_time
+from helper_xml import get_map_ues_time, get_ues_time
 from Solutions.ILP_fixed_in_time import ccop_mv_MILP
 import _5G_Scenarios.ILP_fixed as ilpf
 import subprocess
@@ -83,9 +83,9 @@ make
 
   elif (show == 1):
     #Plotting ues configuration over time
-    ues_coords = get_coord_ues_time(scen= scen, xml_filename= xml_filename)
+    ues_coords = get_ues_time(scen= scen, xml_filename= xml_filename)
     for t_ues in ues_coords:
-      scen.plotUes(external= True, ues_positions= t_ues)
+      scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
   #print(map_ues_time)
 
 if __name__ == "__main__":
