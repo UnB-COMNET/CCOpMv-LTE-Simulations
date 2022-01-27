@@ -209,20 +209,21 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
   num_ues = len(ues_coords)
   num_enbs = len(enbs_coords)
 
-  iter_slice_name = "Time"
+  iter_slice_name = "Slice"
+  num_slices = 2
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
-    hp.writeTime(f, time= [10 , 10], repeat= repetitions, iter_name= iter_slice_name)
+    hp.writeTime(f, time= 1, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "*", value= True)
-    hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${repetition}-${RBs}")
+    hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -232,13 +233,14 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
       hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel" ,tolerateMaxDistViolation= True, extCell_interference= False)
+    hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, num_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
     #hp.writeConnectUE(f, UEs= [num_ues], ENBs= [1])
-    hp.writeConnectOptions(f, list_connections= [ [1, 1] for i in range(num_ues)], parallel_var= iter_slice_name)
+    hp.writeConnectOptions(f, list_connections= [[1, 1] for i in range(num_ues)], parallel_var= iter_slice_name)
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI'])
     hp.writeSeparation(f, "Scenario")

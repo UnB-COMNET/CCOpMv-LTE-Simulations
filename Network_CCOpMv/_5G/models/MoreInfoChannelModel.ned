@@ -23,6 +23,7 @@ import simu5g.stack.phy.ChannelModel.LteRealisticChannelModel;
 simple MoreInfoChannelModel extends LteRealisticChannelModel
 {
     parameters:
+        int num_slice = default(0);
     @class("MoreInfoChannelModel");
     
     // statistics

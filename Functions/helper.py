@@ -32,9 +32,10 @@ def writeVectorExtra(f, module, statistic = '*', value: bool = True):
 
 def writeOutput(f, path: str, vector_rec: bool = False):
   """This function writes the output configuration in a .ini file."""
-  f.write(("output-scalar-file = {}.sca\n"
-           "output-vector-file = {}.vec\n"
-           "**.vector-recording = {}\n").format(path, path, 'true' if vector_rec else 'false'))
+  f.write(("output-scalar-file = {path}.sca\n"
+           "output-vector-file = {path}.vec\n"
+           "**.vector-recording = {vector}\n"
+           "eventlog-file = {path}.elog\n").format(path = path, vector= 'true' if vector_rec else 'false'))
 
 def writeTime(f, time: ty.Union[int, ty.List[int]], repeat: int, iter_name = ''):
   """This function writes the time configuration in a .ini file, including the number of repetitions."""
@@ -398,6 +399,9 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
                    targetBler, thermalNoise, "false" if not tolerateMaxDistViolation else "true", ue_noise_figure,
                    "false" if not uplink_interference else "true", "false" if not useRsrqFromLog else "true",
                    "false" if not useTorus else "true"))
+
+def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
+  f.write('**.cellularNic.num_slice = {}\n'.format(getOptionsString(values= range(num_slices), name= iter_name)))
 
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   """This function writes the configuration that defines a node as a microcell in a .ini file."""
