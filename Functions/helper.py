@@ -134,7 +134,7 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
 def getOptionsString(values: ty.List[ty.Union[float, int, str]], name: str = '', unit: str = '', parallel: str = "") -> str:
   """This function writes a named or not iteration variable in a .ini file."""
   val_str = '${'+ (name+'= ' if name != "" else "")
-  for f in np.unique(values):
+  for f in values:
     val_str += str(f) + unit + ', '
   val_str = val_str[:-2]
 
@@ -144,19 +144,27 @@ def getOptionsString(values: ty.List[ty.Union[float, int, str]], name: str = '',
 
   return val_str
 
-def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display = False):
+def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display: bool = False,
+                            iter_name: bool = False, paral_name: str= '', unit: str = 'm'):
   """This function writes the initial location of an object using named iteration variables in a .ini file."""
   f.write(("*.{name}.mobility.initialX = {iniX}\n"
            "*.{name}.mobility.initialY = {iniY}\n"
            "*.{name}.mobility.initialZ = {iniZ}\n"
            "*.{name}.mobility.initFromDisplayString = {display}\n"
-          ).format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
-                   iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
+          )
+  .format(name= object_name, iniX = getOptionsString(iniX, 'iniX' if iter_name else '', unit, paral_name), iniY = getOptionsString(iniY, 'iniY' if iter_name else '', unit, paral_name), 
+          iniZ = getOptionsString(iniZ, 'iniZ' if iter_name else '', unit, paral_name) if iniZ is not None else "0"+unit, display = 'true' if display else 'false'))
 
-def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate], count_init: int = 0):
+def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[ty.Union[Coordinate, ty.List[Coordinate]]], count_init: int = 0,
+                          iter_name: bool= False, paral_name: str= ''):
   """This function writes the network name in a .ini file."""
   for coord in coordinates:
-    writeIniMobility(f, object_array_name+'['+str(count_init)+']', coord.x, coord.y, coord.z)
+    if type(coord) is list:
+      writeOptionsIniMobility(f, object_array_name+'['+str(count_init)+']', [c.x for c in coord], [c.y for c in coord], [c.z for c in coord],
+                              iter_name= iter_name, paral_name= paral_name)
+    else:
+      writeIniMobility(f, object_array_name+'['+str(count_init)+']', coord.x, coord.y, coord.z)
+    
     count_init += 1
 
 def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):

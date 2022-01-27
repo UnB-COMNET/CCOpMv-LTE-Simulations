@@ -8,11 +8,11 @@ def main():
   d_width = 4000
   d_region = 400
   n_macros = 1
-  ini_path = '../Network_CCOpMv/_5G/simulations/ilp_fixed.ini'
+  ini_path = '../Network_CCOpMv/_5G/simulations/ilp_fixed_sliced.ini'
   enbs = [45]
   min_sinr = 10
   num_bands = [6, 100]
-  multi_carriers = True
+  multi_carriers = False
 
   # Scenario only changes with num_ues, center and micro_per_small
   #hetb.hetnet_base(filename, directions, center_x, center_y, num_ues, sites, micro_per_small, small_per_site, seed, with_stop= True)

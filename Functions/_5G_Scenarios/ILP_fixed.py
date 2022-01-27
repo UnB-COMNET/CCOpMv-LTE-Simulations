@@ -252,7 +252,7 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.nl(f)
     hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
     hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
-    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= [[i, i] for i in ues_coords], paral_name= "Spd")
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeSeparation(f, "Apps")
