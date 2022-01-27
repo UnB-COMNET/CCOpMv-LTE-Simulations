@@ -9,8 +9,8 @@ def main():
   d_region = 400
   n_macros = 1
   ini_path = '../Network_CCOpMv/_5G/simulations/ilp_fixed_sliced.ini'
-  enbs = [45, 55]
-  min_sinr = 40
+  enbs = [36, 54]
+  min_sinr = 60
   num_bands = [100]
   multi_carriers = False
 
