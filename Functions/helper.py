@@ -401,7 +401,7 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
                    "false" if not useTorus else "true"))
 
 def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
-  f.write('**.cellularNic.num_slice = {}\n'.format(getOptionsString(values= range(num_slices), name= iter_name)))
+  f.write('**.cellularNic.channelModel[*].num_slice = {}\n'.format(getOptionsString(values= range(num_slices), name= iter_name)))
 
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   """This function writes the configuration that defines a node as a microcell in a .ini file."""
