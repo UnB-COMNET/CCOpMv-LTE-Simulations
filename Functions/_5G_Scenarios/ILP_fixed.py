@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 import helper as hp
 import helper_ned as hned
@@ -222,6 +222,10 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
 
+  optimized = parse_results("result_"+ str(min_sinr)+".txt", num_slices)
+
+  connections = getUesConnections(optimized, ues_coords, antennas_regions, d_region, d_width, d_height)
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
@@ -250,7 +254,7 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.writeNumUEs(f, num_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
     #hp.writeConnectUE(f, UEs= [num_ues], ENBs= [1])
-    hp.writeConnectOptions(f, list_connections= [[1, 1] for i in range(num_ues)], parallel_var= iter_slice_name)
+    hp.writeConnectOptions(f, list_connections= connections, parallel_var= iter_slice_name)
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI'])
     hp.writeSeparation(f, "Scenario")
@@ -301,3 +305,26 @@ def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =
     hned.writeSeparation(f, "X2 Connections")
     hned.writeX2Connections(f, object_names=["eNB"], quantities= [n_enbs])
     hned.writeEndNet(f)
+
+def parse_results(filename: str, slices_num: int) -> List[Dict]:
+  results = []
+  for i in range(slices_num):
+    results.append({})
+
+  with open(filename, "r") as f:
+    for line in f:
+      data = [int(x) for x in line.split()]
+      results[data[0]][data[2]] = data[1]
+
+  return results
+
+def getUesConnections(result, ues_coords, antennas_regions: List[int], d_region, d_width, d_height):
+  connections = []
+  for ue in ues_coords:
+    connections.append([])
+    for s in range(len(ue)):
+      region = geo.coord2Region(ue[s], d_region, d_width, d_height)
+      connections[-1].append(antennas_regions.index(result[s][region]))
+
+  return connections
+

@@ -69,23 +69,25 @@ def ccop_mv_MILP(
 
     status = solver.Solve()
     if status == pywraplp.Solver.OPTIMAL:
-        print(objective.Value()/T)
-        for t in range(0,T):
-            print("t=%d"%t)
-            for m in range(0,M):
-                print(xtm[t][m],"=", xtm[t][m].solution_value())
-                if xtm[t][m].solution_value() > 0:
-                    users=0
-                    snr_medio=0
-                    contador=0
-                    for n in range(0,M):
-                        if ytmn[t][m][n].solution_value() > 0 :
-                            contador+=1
-                            snr_medio+=snr_map_mn[m][n]
-                            print("\t",ytmn[t][m][n], "=",snr_map_mn[m][n],"dB")
-                            users+=users_t_m[t][n]
-                    print("\t\tSNR medio:", snr_medio/contador)
-                    print("\t\tUsuarios totais:", users)
+        with open("result_"+ str(MIN_SNR_m[0])+".txt", "w") as f:
+            print(objective.Value()/T)
+            for t in range(0,T):
+                print("t=%d"%t)
+                for m in range(0,M):
+                    print(xtm[t][m],"=", xtm[t][m].solution_value())
+                    if xtm[t][m].solution_value() > 0:
+                        users=0
+                        snr_medio=0
+                        contador=0
+                        for n in range(0,M):
+                            if ytmn[t][m][n].solution_value() > 0 :
+                                contador+=1
+                                snr_medio+=snr_map_mn[m][n]
+                                print("\t",ytmn[t][m][n], "=",snr_map_mn[m][n],"dB")
+                                f.write("{t} {m} {n}\n".format(t= t, m= m, n= n))
+                                users+=users_t_m[t][n]
+                        print("\t\tSNR medio:", snr_medio/contador)
+                        print("\t\tUsuarios totais:", users)
 
 
 
