@@ -14,7 +14,7 @@ def main():
   d_height = 4000
   d_width = 4000
   d_region = 400
-  n_macros = 2
+  n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
   min_sinr = 60

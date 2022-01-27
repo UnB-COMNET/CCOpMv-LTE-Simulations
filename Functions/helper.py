@@ -72,6 +72,21 @@ def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
       last += len(s.antennas)
     writeConnectUE(f, ues, enbs, "ue"+str(i))
 
+def writeConnectOptions(f, list_connections: ty.List[ty.Union[ty.List[int], int]], object_name: str= "ue", parallel_var: str = ""):
+  count = 0
+  for i in list_connections:
+    if type(i) is list:
+      enb_str = getOptionsString(values= i, parallel= parallel_var)
+    else:
+      enb_str = i
+    
+    f.write('''**.{name}[{number}].macCellId = {enb}
+**.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = enb_str, name = object_name))
+    count += 1
+    pass
+
+
+
 def writeComment(f, text):
   """This function writes 'text' as a comment in a .ini file."""
   f.write("\n# {}\n".format(text))
@@ -116,14 +131,18 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
            "*.{name}.mobility.initFromDisplayString = {display}\n"
           ).format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
-def getOptionsString(ini: ty.List[float], name: str, unit: str = 'm') -> str:
-  """This function writes a named iteration variable in a .ini file."""
-  ini_str = '${'+name+'='
-  for f in np.unique(ini):
-    ini_str += ' ' + str(f) + unit + ','
-  ini_str = ini_str[:-1] + "}"
+def getOptionsString(values: ty.List[ty.Union[float, int, str]], name: str = '', unit: str = '', parallel: str = "") -> str:
+  """This function writes a named or not iteration variable in a .ini file."""
+  val_str = '${'+ (name+'= ' if name != "" else "")
+  for f in np.unique(values):
+    val_str += str(f) + unit + ', '
+  val_str = val_str[:-2]
 
-  return ini_str
+  if parallel != '':
+    val_str += ' ! {}'.format(parallel)
+  val_str +=  "}"
+
+  return val_str
 
 def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display = False):
   """This function writes the initial location of an object using named iteration variables in a .ini file."""

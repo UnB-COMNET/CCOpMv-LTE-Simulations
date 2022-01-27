@@ -195,6 +195,81 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeComment(f, text= "Connections")
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
+def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
+                  num_bands: List[int] = [100], multi_carriers: bool = True):
+
+  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
+  scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
+  scen.placeAntennas(list_regions= antennas_regions)
+
+  ues_coords = scen.getUEsPositionList()
+  ues_mov = scen.getUEsMovementList()
+  enbs_coords = scen.getAntennasPositionList()
+
+  num_ues = len(ues_coords)
+  num_enbs = len(enbs_coords)
+
+  with open(filename, 'wt') as f:
+    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.defaultGeneral(f, is5g= True)
+    hp.makeNewConfig(f, name= 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
+    hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
+    hp.writeTime(f, time= 10, repeat= repetitions)
+    hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
+    hp.nl(f)
+    hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "*", value= True)
+    hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${repetition}-${RBs}")
+    hp.writeSeparation(f, "Snapshots")
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
+    hp.writeSeparation(f, "Transmission Power")
+    hp.writeTransmissionPower(f, is5G= True)
+    hp.writeSeparation(f, "Channel Control")
+    if multi_carriers:
+      hp.writeCarrierAggregation5G(f, num_carriers= len(antennas_regions), carriers_frequencies= [scen.carrier_frequency - 0.02*np.max(num_bands)*i/100 for i in range(len(antennas_regions))], eNBs_carriers= True)
+    else:
+      hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
+    hp.writeSeparation(f, "Channel Model")
+    hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel" ,tolerateMaxDistViolation= True, extCell_interference= False)
+    hp.writeSeparation(f, "Resource Blocks")
+    hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
+    hp.writeSeparation(f, "UEs")
+    hp.writeNumUEs(f, num_ues)
+    hp.writeComment(f, text= "Conecting UEs to eNodeB")
+    #hp.writeConnectUE(f, UEs= [num_ues], ENBs= [1])
+    hp.writeConnectOptions(f, list_connections= [ [i, i+1, i+2] for i in range(num_ues)], parallel_var= "Spd")
+    hp.writeComment(f, text= "Scheduler")
+    hp.writeSchedulingOptions(f, sched= ['MAXCI'])
+    hp.writeSeparation(f, "Scenario")
+    hp.writeComment(f, text= "eNodeBs")
+    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= 'URBAN_MACROCELL', for5g= True)
+    hp.writeComment(f, text= "UEs")
+    hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
+    hp.writeSeparation(f, "Mobility")
+    hp.writeComment(f, text= "eNodeB")
+    hp.writeMultiIniMobility(f,object_name= 'eNB', coordinates= enbs_coords)
+    hp.writeConstraint(f, object_name= 'eNB*', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeComment(f, text= "UEs")
+    hp.nl(f)
+    hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
+    hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
+    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
+    hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeSeparation(f, "Apps")
+    hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
+    hp.writeComment(f, text= "VoIP UL")
+    hp.writeAppVoipUL(f, num_ues, n_app= 0)
+    hp.writeComment(f, text= "VoIP DL")
+    hp.writeAppVoipDL(f, num_ues, n_app= 1)
+    hp.writeSeparation(f, "Handover")
+    hp.writeComment(f, text= "Enable handover")
+    hp.writeEnableHandover(f, object_name= "eNB*", enable= True, is5G= True)
+    hp.writeEnableHandover(f, object_name= "ue[*]", enable= True, is5G= True)
+    hp.writeComment(f, text= "X2 configuration")
+    hp.writeX2Configuration(f, object_name= "eNB*", quantity= num_enbs) #Connections between enbs
+    hp.writeComment(f, text= "Connections")
+    hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
+
 def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =8000, image:str =None, n_enbs: int = 2):
 
   filename = "../Network_CCOpMv/_5G/networks/{}.ned".format(network)
