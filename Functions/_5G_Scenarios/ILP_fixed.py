@@ -209,12 +209,14 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
   num_ues = len(ues_coords)
   num_enbs = len(enbs_coords)
 
+  iter_slice_name = "Time"
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
-    hp.writeTime(f, time= 10, repeat= repetitions)
+    hp.writeTime(f, time= [10 , 10], repeat= repetitions, iter_name= iter_slice_name)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "*", value= True)
@@ -236,7 +238,7 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.writeNumUEs(f, num_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
     #hp.writeConnectUE(f, UEs= [num_ues], ENBs= [1])
-    hp.writeConnectOptions(f, list_connections= [ [i, i+1, i+2] for i in range(num_ues)], parallel_var= "Spd")
+    hp.writeConnectOptions(f, list_connections= [ [1, 1] for i in range(num_ues)], parallel_var= iter_slice_name)
     hp.writeComment(f, text= "Scheduler")
     hp.writeSchedulingOptions(f, sched= ['MAXCI'])
     hp.writeSeparation(f, "Scenario")
@@ -252,8 +254,8 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.nl(f)
     hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue[*]")
     #hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
-    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= [[i, i] for i in ues_coords], paral_name= "Spd")
-    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= [[i, i] for i in ues_mov], fixed_speed= True, paral_name= "Spd")
+    hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= [[i, i] for i in ues_coords], paral_name= iter_slice_name)
+    hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= [[i, i] for i in ues_mov], fixed_speed= True, paral_name= iter_slice_name)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)

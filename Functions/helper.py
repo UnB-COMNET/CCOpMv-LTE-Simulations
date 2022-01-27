@@ -36,9 +36,12 @@ def writeOutput(f, path: str, vector_rec: bool = False):
            "output-vector-file = {}.vec\n"
            "**.vector-recording = {}\n").format(path, path, 'true' if vector_rec else 'false'))
 
-def writeTime(f, time: int, repeat: int):
+def writeTime(f, time: ty.Union[int, ty.List[int]], repeat: int, iter_name = ''):
   """This function writes the time configuration in a .ini file, including the number of repetitions."""
-  f.write("sim-time-limit = {}s\nrepeat = {}\n".format(time, repeat))
+  if type(time) is list:
+    f.write("sim-time-limit = {}\nrepeat = {}\n".format(getOptionsString(time, name= iter_name, unit= 's'), repeat))
+  else:
+    f.write("sim-time-limit = {}s\nrepeat = {}\n".format(time, repeat))
 
 def writeNetwork(f, network: str):
   """This function writes the network name in a .ini file."""
