@@ -196,15 +196,21 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeComment(f, text= "Connections")
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
-def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
+def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True):
 
   scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
-  scen.placeAntennas(list_regions= antennas_regions)
 
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  ues_in_time = hxml.get_ues_time(scen, xml_filename)
+  ues_in_time = hxml.get_ues_time(scen.getUEsList(), xml_filename)
+
+  iter_slice_name = "Slice"
+  num_slices = len(ues_in_time)
+
+  optimized, antennas_regions = parse_results("result_"+ str(min_sinr)+".txt", num_slices)
+
+  scen.placeAntennas(list_regions= antennas_regions)
 
   ues_coords = []
   ues_mov = []
@@ -218,11 +224,6 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
 
   num_ues = len(scen.getUEsList())
   num_enbs = len(enbs_coords)
-
-  iter_slice_name = "Slice"
-  num_slices = len(ues_in_time)
-
-  optimized = parse_results("result_"+ str(min_sinr)+".txt", num_slices)
 
   connections = getUesConnections(optimized, ues_coords, antennas_regions, d_region, d_width, d_height)
 
@@ -306,8 +307,9 @@ def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =
     hned.writeX2Connections(f, object_names=["eNB"], quantities= [n_enbs])
     hned.writeEndNet(f)
 
-def parse_results(filename: str, slices_num: int) -> List[Dict]:
+def parse_results(filename: str, slices_num: int):
   results = []
+  enbs = []
   for i in range(slices_num):
     results.append({})
 
@@ -315,8 +317,10 @@ def parse_results(filename: str, slices_num: int) -> List[Dict]:
     for line in f:
       data = [int(x) for x in line.split()]
       results[data[0]][data[2]] = data[1]
+      enbs.append(data[1])
+      enbs = np.unique(enbs).tolist()
 
-  return results
+  return results, enbs
 
 def getUesConnections(result, ues_coords, antennas_regions: List[int], d_region, d_width, d_height):
   connections = []
