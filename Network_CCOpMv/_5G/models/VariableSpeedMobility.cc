@@ -29,7 +29,6 @@ void VariableSpeedMobility::initialize(int stage) {
         standardDeviationParameter = &par("standardDeviation");
         quaternion = inet::Quaternion(inet::EulerAngles(heading, -elevation, inet::rad(0)));
         WATCH(lastVelocity);
-        WATCH(previousSpeed);
     }
 }
 
@@ -59,7 +58,6 @@ void VariableSpeedMobility::setTargetPosition(){
     quaternion.normalize();
     inet::Coord direction = quaternion.rotate(inet::Coord::X_AXIS);
     float speed = normal(*meanSpeedParameter,standardDeviationParameter->doubleValue(), 1);
-    previousSpeed = speed;
 
     simtime_t nextChangeInterval = *changeIntervalParameter;
     EV_DEBUG << "interval: " << nextChangeInterval << endl;

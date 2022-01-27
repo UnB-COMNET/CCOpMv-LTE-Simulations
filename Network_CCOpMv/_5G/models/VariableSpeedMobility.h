@@ -32,8 +32,6 @@ class VariableSpeedMobility : public inet::LineSegmentsMobilityBase
         simtime_t previousChange;
         inet::Coord sourcePosition;
 
-        float previousSpeed = 0;
-
     protected:
         virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
         virtual void initialize(int stage);
