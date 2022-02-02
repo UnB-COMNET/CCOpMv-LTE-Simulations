@@ -197,13 +197,13 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
 def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1):
 
   scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
 
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  ues_in_time = hxml.get_ues_time(scen.getUEsList(), xml_filename)
+  ues_in_time = hxml.get_ues_time(scen.getUEsList(), xml_filename, time)
 
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
@@ -232,7 +232,7 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
-    hp.writeTime(f, time= 1, repeat= repetitions)
+    hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "*", value= True)
@@ -328,7 +328,7 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], d_region,
     connections.append([])
     for s in range(len(ue)):
       region = geo.coord2Region(ue[s], d_region, d_width, d_height)
-      connections[-1].append(antennas_regions.index(result[s][region]))
+      connections[-1].append(antennas_regions.index(result[s][region])+1)
 
   return connections
 

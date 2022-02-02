@@ -52,7 +52,7 @@ def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
 
   return map_ues_time
 
-def get_ues_time(ues_list, xml_filename: str) -> List[List[Ue]]:
+def get_ues_time(ues_list, xml_filename: str, time: float = 1) -> List[List[Ue]]:
   """This function parses a snapshot file (.sna) returning the UEs location over time."""
   accumulated_xml = ''
   ues_time = [ues_list]
@@ -75,7 +75,7 @@ def get_ues_time(ues_list, xml_filename: str) -> List[List[Ue]]:
                 #lasVelocity diz a velocidade inicial do slice anterior
                 speed_text = coords_obj[-1].find("./info").text
                 speed_numbers = [float(s) for s in speed_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit() or (len(s) > 1 and s[0] == '-' and s[1].isdigit())]
-                speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)
+                speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)/time
                 direction = degrees(atan(speed_numbers[1]/speed_numbers[0]))
                 mov = Movement(speed, direction)
                 ues_time[int(root.get('simtime'))].append(Ue(coord, [int(s) for s in re.findall(r'\d+', root.get('object'))][-1]))
@@ -96,7 +96,7 @@ def get_ues_time(ues_list, xml_filename: str) -> List[List[Ue]]:
         #Supoe que a "lastVelocity" seja o ultimo objeto com essa class inet::Coord
         speed_text = coords_obj[-1].find("./info").text
         speed_numbers = [float(s) for s in speed_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit() or (len(s) > 1 and s[0] == '-' and s[1].isdigit())]
-        speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)
+        speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)/time
         direction = degrees(atan(speed_numbers[1]/speed_numbers[0]))
         mov = Movement(speed, direction)
         ues_time[int(root.get('simtime'))].append(Ue(coord, [int(s) for s in re.findall(r'\d+', root.get('object'))][-1]))
