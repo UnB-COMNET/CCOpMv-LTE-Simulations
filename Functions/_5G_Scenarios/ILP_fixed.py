@@ -328,6 +328,7 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], d_region,
     connections.append([])
     for s in range(len(ue)):
       region = geo.coord2Region(ue[s], d_region, d_width, d_height)
+      #Assume-se que a regiao do UE é servida por alguma das antenas
       connections[-1].append(antennas_regions.index(result[s][region])+1)
 
   return connections
