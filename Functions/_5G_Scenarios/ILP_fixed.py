@@ -197,9 +197,10 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
 def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True):
 
-  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
+  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+                      enb_tx_power= 30 if is_micro else 46)
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
 
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
@@ -228,7 +229,7 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
   connections = getUesConnections(optimized, ues_coords, antennas_regions, d_region, d_width, d_height)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
@@ -251,6 +252,9 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
+    if is_micro:
+      hp.writeSeparation(f, "eNBs")
+      hp.writeMultiMicro(f, num_enbs, node_name = "eNB")
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, num_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
@@ -260,9 +264,9 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.writeSchedulingOptions(f, sched= ['MAXCI'])
     hp.writeSeparation(f, "Scenario")
     hp.writeComment(f, text= "eNodeBs")
-    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= 'URBAN_MACROCELL', for5g= True)
+    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= scen.scenario, for5g= True)
     hp.writeComment(f, text= "UEs")
-    hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
+    hp.writeScenarioPerso(f, num_and_scen=[(num_ues, scen.scenario)], for5g= True)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeMultiIniMobility(f,object_name= 'eNB', coordinates= enbs_coords)
