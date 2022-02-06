@@ -3820,7 +3820,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[32].mobility.lastVelocity">
-    <info>(-3471.86, -340.403, 0) m</info>
+    <info>(-3471.85, -340.403, 0) m</info>
   </object>
 
 </object>
@@ -13912,7 +13912,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[59].mobility.lastVelocity">
-    <info>(1148.56, 666.935, 0) m</info>
+    <info>(1148.55, 666.935, 0) m</info>
   </object>
 
 </object>
@@ -14484,7 +14484,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[4].mobility.lastPosition">
-    <info>(62.021, 695.27, 0) m</info>
+    <info>(62.0212, 695.271, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[4].mobility.lastOrientation">
@@ -15180,7 +15180,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[10].mobility.lastPosition">
-    <info>(3347.58, 85.0604, 0) m</info>
+    <info>(3347.58, 85.0603, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[10].mobility.lastOrientation">
@@ -22148,7 +22148,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[10].mobility.lastVelocity">
-    <info>(-1666.31, 2297.86, 0) m</info>
+    <info>(-1666.31, 2297.87, 0) m</info>
   </object>
 
 </object>
@@ -22372,7 +22372,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[12].mobility.lastPosition">
-    <info>(3631.94, 144.07, 0) m</info>
+    <info>(3631.94, 144.071, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[12].mobility.lastOrientation">
@@ -23532,7 +23532,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[22].mobility.lastPosition">
-    <info>(117.469, 666.117, 0) m</info>
+    <info>(117.468, 666.117, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[22].mobility.lastOrientation">
@@ -27476,7 +27476,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[56].mobility.lastPosition">
-    <info>(3572.75, 9.66153, 0) m</info>
+    <info>(3572.75, 9.66155, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[56].mobility.lastOrientation">
@@ -27484,7 +27484,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[56].mobility.lastVelocity">
-    <info>(743.559, -2434.8, 0) m</info>
+    <info>(743.559, -2434.81, 0) m</info>
   </object>
 
 </object>
@@ -27940,7 +27940,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[0].mobility.lastPosition">
-    <info>(2108.76, 3090.7, 0) m</info>
+    <info>(2108.76, 3090.71, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[0].mobility.lastOrientation">
@@ -29920,7 +29920,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[17].mobility.lastVelocity">
-    <info>(1257.55, 4726.92, 0) m</info>
+    <info>(1257.56, 4726.92, 0) m</info>
   </object>
 
 </object>
@@ -30492,7 +30492,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[22].mobility.lastPosition">
-    <info>(2982.29, 3085, 0) m</info>
+    <info>(2982.3, 3085, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[22].mobility.lastOrientation">
@@ -30956,7 +30956,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[26].mobility.lastPosition">
-    <info>(582.003, 11.8759, 0) m</info>
+    <info>(582.003, 11.8761, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[26].mobility.lastOrientation">
@@ -32348,7 +32348,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[38].mobility.lastPosition">
-    <info>(2543.26, 71.7553, 0) m</info>
+    <info>(2543.26, 71.7552, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[38].mobility.lastOrientation">
@@ -32936,7 +32936,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[43].mobility.lastVelocity">
-    <info>(-3222.46, 2778.45, 0) m</info>
+    <info>(-3222.47, 2778.45, 0) m</info>
   </object>
 
 </object>
@@ -34320,7 +34320,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[55].mobility.lastPosition">
-    <info>(2488.17, 159.626, 0) m</info>
+    <info>(2488.17, 159.625, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[55].mobility.lastOrientation">
@@ -34552,7 +34552,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[57].mobility.lastPosition">
-    <info>(231.322, 145.387, 0) m</info>
+    <info>(231.322, 145.386, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[57].mobility.lastOrientation">
@@ -35248,7 +35248,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[3].mobility.lastPosition">
-    <info>(3233.6, 743.689, 0) m</info>
+    <info>(3233.6, 743.69, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[3].mobility.lastOrientation">
@@ -36524,7 +36524,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[14].mobility.lastPosition">
-    <info>(869.096, 2335.48, 0) m</info>
+    <info>(869.095, 2335.48, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[14].mobility.lastOrientation">
@@ -37684,7 +37684,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[24].mobility.lastPosition">
-    <info>(68.4036, 2482.56, 0) m</info>
+    <info>(68.4037, 2482.56, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[24].mobility.lastOrientation">
@@ -38148,7 +38148,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[28].mobility.lastPosition">
-    <info>(3570.05, 24.8898, 0) m</info>
+    <info>(3570.05, 24.8896, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[28].mobility.lastOrientation">
@@ -38968,7 +38968,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[35].mobility.lastVelocity">
-    <info>(2998.2, -2314.14, 0) m</info>
+    <info>(2998.2, -2314.15, 0) m</info>
   </object>
 
 </object>
@@ -39888,7 +39888,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[43].mobility.lastPosition">
-    <info>(469.716, 2321.85, 0) m</info>
+    <info>(469.715, 2321.85, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[43].mobility.lastOrientation">
@@ -40468,7 +40468,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[48].mobility.lastPosition">
-    <info>(2638.85, 2582.63, 0) m</info>
+    <info>(2638.85, 2582.62, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[48].mobility.lastOrientation">
@@ -44296,7 +44296,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[21].mobility.lastPosition">
-    <info>(2891.34, 232.129, 0) m</info>
+    <info>(2891.34, 232.13, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[21].mobility.lastOrientation">
@@ -47428,7 +47428,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[48].mobility.lastPosition">
-    <info>(990.319, 1675.55, 0) m</info>
+    <info>(990.318, 1675.55, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[48].mobility.lastOrientation">
@@ -47892,7 +47892,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[52].mobility.lastPosition">
-    <info>(2525.71, 56.9762, 0) m</info>
+    <info>(2525.71, 56.9761, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[52].mobility.lastOrientation">
@@ -50096,7 +50096,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[11].mobility.lastPosition">
-    <info>(287.977, 62.0842, 0) m</info>
+    <info>(287.977, 62.0843, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[11].mobility.lastOrientation">
@@ -50336,7 +50336,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[13].mobility.lastVelocity">
-    <info>(-3242.22, 1378.63, 0) m</info>
+    <info>(-3242.21, 1378.63, 0) m</info>
   </object>
 
 </object>
@@ -51256,7 +51256,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[21].mobility.lastPosition">
-    <info>(602.582, 2543.61, 0) m</info>
+    <info>(602.583, 2543.61, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[21].mobility.lastOrientation">
@@ -51372,7 +51372,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[22].mobility.lastPosition">
-    <info>(1117.92, 434.201, 0) m</info>
+    <info>(1117.92, 434.2, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[22].mobility.lastOrientation">
@@ -51720,7 +51720,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[25].mobility.lastPosition">
-    <info>(767.745, 3740.99, 0) m</info>
+    <info>(767.746, 3740.99, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[25].mobility.lastOrientation">
@@ -53228,7 +53228,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[38].mobility.lastPosition">
-    <info>(3431.5, 1173.91, 0) m</info>
+    <info>(3431.5, 1173.9, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[38].mobility.lastOrientation">
@@ -54388,7 +54388,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[48].mobility.lastPosition">
-    <info>(2172.44, 299.066, 0) m</info>
+    <info>(2172.44, 299.065, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[48].mobility.lastOrientation">
@@ -54736,7 +54736,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[51].mobility.lastPosition">
-    <info>(17.1643, 1835.72, 0) m</info>
+    <info>(17.1642, 1835.72, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[51].mobility.lastOrientation">
@@ -56368,7 +56368,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[5].mobility.lastVelocity">
-    <info>(849.902, -2070.04, 0) m</info>
+    <info>(849.902, -2070.05, 0) m</info>
   </object>
 
 </object>
@@ -58216,7 +58216,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[21].mobility.lastPosition">
-    <info>(1901.65, 2341.34, 0) m</info>
+    <info>(1901.65, 2341.35, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[21].mobility.lastOrientation">
@@ -58564,7 +58564,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[24].mobility.lastPosition">
-    <info>(295.99, 1050.36, 0) m</info>
+    <info>(295.991, 1050.36, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[24].mobility.lastOrientation">
@@ -59144,7 +59144,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[29].mobility.lastPosition">
-    <info>(3106.78, 769.052, 0) m</info>
+    <info>(3106.78, 769.053, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[29].mobility.lastOrientation">
@@ -60652,7 +60652,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[42].mobility.lastPosition">
-    <info>(2586.6, 1755.77, 0) m</info>
+    <info>(2586.61, 1755.77, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[42].mobility.lastOrientation">
@@ -61812,7 +61812,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[52].mobility.lastPosition">
-    <info>(57.4728, 2681.52, 0) m</info>
+    <info>(57.4727, 2681.52, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[52].mobility.lastOrientation">
@@ -63204,7 +63204,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[4].mobility.lastPosition">
-    <info>(491.252, 3583.01, 0) m</info>
+    <info>(491.251, 3583.01, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[4].mobility.lastOrientation">
@@ -64712,7 +64712,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[17].mobility.lastPosition">
-    <info>(873.514, 1093.46, 0) m</info>
+    <info>(873.513, 1093.45, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[17].mobility.lastOrientation">
@@ -65176,7 +65176,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[21].mobility.lastPosition">
-    <info>(3924.13, 75.0822, 0) m</info>
+    <info>(3924.13, 75.0824, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[21].mobility.lastOrientation">
@@ -65988,7 +65988,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[28].mobility.lastPosition">
-    <info>(3631.75, 3323.67, 0) m</info>
+    <info>(3631.75, 3323.68, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[28].mobility.lastOrientation">
@@ -66568,7 +66568,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[33].mobility.lastPosition">
-    <info>(2229.78, 61.0241, 0) m</info>
+    <info>(2229.78, 61.0242, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[33].mobility.lastOrientation">
@@ -66916,7 +66916,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[36].mobility.lastPosition">
-    <info>(3376.24, 2797.91, 0) m</info>
+    <info>(3376.24, 2797.9, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[36].mobility.lastOrientation">
@@ -67380,7 +67380,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[40].mobility.lastPosition">
-    <info>(97.1287, 174.323, 0) m</info>
+    <info>(97.1293, 174.323, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[40].mobility.lastOrientation">
@@ -67496,7 +67496,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[41].mobility.lastPosition">
-    <info>(2081.07, 792.282, 0) m</info>
+    <info>(2081.07, 792.283, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[41].mobility.lastOrientation">
@@ -67728,7 +67728,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[43].mobility.lastPosition">
-    <info>(760.169, 3858.42, 0) m</info>
+    <info>(760.168, 3858.41, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[43].mobility.lastOrientation">
@@ -67968,7 +67968,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[45].mobility.lastVelocity">
-    <info>(-4544.57, 9.94836, 0) m</info>
+    <info>(-4544.58, 9.94836, 0) m</info>
   </object>
 
 </object>
@@ -69236,7 +69236,7 @@
   </object>
 
   <object class="inet::Coord" fullpath="SimpleNet.ue[56].mobility.lastPosition">
-    <info>(404.671, 320.642, 0) m</info>
+    <info>(404.67, 320.643, 0) m</info>
   </object>
 
   <object class="inet::Quaternion" fullpath="SimpleNet.ue[56].mobility.lastOrientation">

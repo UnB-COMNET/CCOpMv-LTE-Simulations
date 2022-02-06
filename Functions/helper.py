@@ -26,15 +26,23 @@ def makeNewConfig(f,name, extends = False, extend_name = ''):
   if extends:
     f.write('extends = {}\n'.format(extend_name))
 
+def writeVectorExtra(f, module, statistic = '*', value: bool = True):
+  """This function writes the vector recording configuration of the specified statistics in a .ini file."""
+  f.write("{}.{}.vector-recording = {}\n".format(module, statistic, 'true' if value else 'false'))
+
 def writeOutput(f, path: str, vector_rec: bool = False):
   """This function writes the output configuration in a .ini file."""
-  f.write(("output-scalar-file = {}.sca\n"
-           "output-vector-file = {}.vec\n"
-           "**.vector-recording = {}\n").format(path, path, 'true' if vector_rec else 'false'))
+  f.write(("output-scalar-file = {path}.sca\n"
+           "output-vector-file = {path}.vec\n"
+           "**.vector-recording = {vector}\n"
+           "eventlog-file = {path}.elog\n").format(path = path, vector= 'true' if vector_rec else 'false'))
 
-def writeTime(f, time: int, repeat: int):
+def writeTime(f, time: ty.Union[int, ty.List[int]], repeat: int, iter_name = ''):
   """This function writes the time configuration in a .ini file, including the number of repetitions."""
-  f.write("sim-time-limit = {}s\nrepeat = {}\n".format(time, repeat))
+  if type(time) is list:
+    f.write("sim-time-limit = {}\nrepeat = {}\n".format(getOptionsString(time, name= iter_name, unit= 's'), repeat))
+  else:
+    f.write("sim-time-limit = {}s\nrepeat = {}\n".format(time, repeat))
 
 def writeNetwork(f, network: str):
   """This function writes the network name in a .ini file."""
@@ -68,6 +76,21 @@ def writeConnectMultiUE(f, macrocells: ty.List[Macrocell]):
       last += len(s.antennas)
     writeConnectUE(f, ues, enbs, "ue"+str(i))
 
+def writeConnectOptions(f, list_connections: ty.List[ty.Union[ty.List[int], int]], object_name: str= "ue", parallel_var: str = ""):
+  count = 0
+  for i in list_connections:
+    if type(i) is list:
+      enb_str = getOptionsString(values= i, parallel= parallel_var)
+    else:
+      enb_str = i
+    
+    f.write('''**.{name}[{number}].macCellId = {enb}
+**.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = enb_str, name = object_name))
+    count += 1
+    pass
+
+
+
 def writeComment(f, text):
   """This function writes 'text' as a comment in a .ini file."""
   f.write("\n# {}\n".format(text))
@@ -76,21 +99,39 @@ def writeMobilityType(f, type: str, object_name = "ue[*]"):
   """This function writes the mobility type configuration in a .ini file."""
   f.write('*.{}.mobilityType = "{}"\n'.format(object_name, type))
 
-def writeArrayMovMobility(f, object_array_name, movements: ty.List[Movement], fixed_speed: bool = True):
+def writeArrayMovMobility(f, object_array_name, movements: ty.List[ty.Union[Movement, ty.List[Movement]]], fixed_speed: bool = True,
+                          iter_name: str = '', paral_name: str= '', unit_speed: str = 'mps', unit_heading: str = 'deg'):
   """This function writes the moving mobility configuration of an array of objects a .ini file."""
   count = 0
   for mov in movements:
-    if not fixed_speed:
-      writeMovMobility(f, speed =None, initial_heading=mov.direction, object_name= object_array_name+'['+str(count)+']')
+    if type(mov) is list:
+      direction = [m.direction for m in mov]
+      speed = [m.speed for m in mov]
     else:
-      writeMovMobility(f, speed =mov.speed, initial_heading=mov.direction, object_name= object_array_name+'['+str(count)+']')
+      direction = mov.direction
+      speed = mov.speed
+
+    if not fixed_speed:
+      writeMovMobility(f, speed =None, initial_heading=direction, object_name= object_array_name+'['+str(count)+']',
+                       iter_name= iter_name, paral_name= paral_name, unit_speed= unit_speed, unit_heading= unit_heading)
+    else:
+      writeMovMobility(f, speed =speed, initial_heading=direction, object_name= object_array_name+'['+str(count)+']',
+                       iter_name= iter_name, paral_name= paral_name, unit_speed= unit_speed, unit_heading= unit_heading)
     count += 1
 
-def writeMovMobility(f, speed: float = None, initial_heading = 0, object_name = "ue[*]"):
+def writeMovMobility(f, speed: ty.Union[float, ty.List[float]] = None, initial_heading: ty.Union[float, ty.List[float]] = 0, object_name = "ue[*]",
+                     iter_name: str = '', paral_name: str= '', unit_speed: str = 'mps', unit_heading: str = 'deg'):
   """This function writes the moving mobility configuration of an object in a .ini file."""
   if speed is not None:
-    f.write('*.{}.mobility.speed = {}mps\n'.format(object_name, speed))
-  f.write('*.{}.mobility.initialMovementHeading = {}deg\n'.format(object_name, initial_heading))
+    if type(speed) is list:
+      f.write('*.{}.mobility.speed = {}\n'.format(object_name, getOptionsString(speed, "Spd_"+iter_name if iter_name != '' else '', unit_speed, paral_name)))
+    else:
+      f.write('*.{}.mobility.speed = {}{}\n'.format(object_name, speed, unit_speed))
+  
+  if type(initial_heading) is list:
+    f.write('*.{}.mobility.initialMovementHeading = {}\n'.format(object_name, getOptionsString(initial_heading, "Ini_head_"+iter_name if iter_name != '' else '', unit_heading, paral_name)))
+  else:
+    f.write('*.{}.mobility.initialMovementHeading = {}{}\n'.format(object_name, initial_heading, unit_heading))
 
 def writeMassMobDefault(f, object_name = "ue[*]", update_interval: float = 1.0, angle_delta: float = 0, axis_angle: float = 0):
   """This function writes the default configuration of the MassMobility mobility type in a .ini file."""
@@ -112,28 +153,40 @@ def writeIniMobility(f, object_name, iniX: float, iniY: float, iniZ: ty.Union[st
            "*.{name}.mobility.initFromDisplayString = {display}\n"
           ).format(name= object_name, iniX = iniX, iniY = iniY, iniZ = iniZ, display = 'true' if display else 'false'))
 
-def getOptionsString(ini: ty.List[float], name: str) -> str:
-  """This function writes a named iteration variable in a .ini file."""
-  ini_str = '${'+name+'='
-  for f in np.unique(ini):
-    ini_str += ' ' + str(f) + 'm,'
-  ini_str = ini_str[:-1] + "}"
+def getOptionsString(values: ty.List[ty.Union[float, int, str]], name: str = '', unit: str = '', parallel: str = "") -> str:
+  """This function writes a named or not iteration variable in a .ini file."""
+  val_str = '${'+ (name+'= ' if name != "" else "")
+  for f in values:
+    val_str += str(f) + unit + ', '
+  val_str = val_str[:-2]
 
-  return ini_str
+  if parallel != '':
+    val_str += ' ! {}'.format(parallel)
+  val_str +=  "}"
 
-def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display = False):
+  return val_str
+
+def writeOptionsIniMobility(f, object_name, iniX: ty.List[float], iniY: ty.List[float], iniZ: ty.List[ty.Union[str, float]] = None, display: bool = False,
+                            iter_name: str = '', paral_name: str= '', unit: str = 'm'):
   """This function writes the initial location of an object using named iteration variables in a .ini file."""
   f.write(("*.{name}.mobility.initialX = {iniX}\n"
            "*.{name}.mobility.initialY = {iniY}\n"
            "*.{name}.mobility.initialZ = {iniZ}\n"
            "*.{name}.mobility.initFromDisplayString = {display}\n"
-          ).format(name= object_name, iniX = getOptionsString(iniX, 'iniX'), iniY = getOptionsString(iniY, 'iniY'), 
-                   iniZ = getOptionsString(iniZ, 'iniZ') if iniZ is not None else "0m", display = 'true' if display else 'false'))
+          )
+  .format(name= object_name, iniX = getOptionsString(iniX, 'iniX_'+iter_name if iter_name != '' else '', unit, paral_name), iniY = getOptionsString(iniY, 'iniY_'+iter_name if iter_name != '' else '', unit, paral_name), 
+          iniZ = getOptionsString(iniZ, 'iniZ_'+iter_name if iter_name != '' else '', unit, paral_name) if iniZ is not None else "0"+unit, display = 'true' if display else 'false'))
 
-def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[Coordinate], count_init: int = 0):
+def writeArrayIniMobility(f, object_array_name, coordinates: ty.List[ty.Union[Coordinate, ty.List[Coordinate]]], count_init: int = 0,
+                          iter_name: str= '', paral_name: str= ''):
   """This function writes the network name in a .ini file."""
   for coord in coordinates:
-    writeIniMobility(f, object_array_name+'['+str(count_init)+']', coord.x, coord.y, coord.z)
+    if type(coord) is list:
+      writeOptionsIniMobility(f, object_array_name+'['+str(count_init)+']', [c.x for c in coord], [c.y for c in coord], [c.z for c in coord],
+                              iter_name= iter_name, paral_name= paral_name)
+    else:
+      writeIniMobility(f, object_array_name+'['+str(count_init)+']', coord.x, coord.y, coord.z)
+    
     count_init += 1
 
 def writeMultiIniMobility(f, object_name, coordinates: ty.List[Coordinate]):
@@ -277,11 +330,16 @@ def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_pow
   else:
     f.write("**.lteNic.phy.txDirection = {}\n".format(txDirection))
 
-def writeCarrierAggregation5G(f, carrierFrequency: str = "2GHz"):
+def writeCarrierAggregation5G(f, num_carriers:int = 1, carriers_frequencies: ty.List[float] = [2], eNBs_carriers: bool = False):
   """This function writes the carrier aggregation submodule configuration from Simu5G in a .ini file."""
-  f.write('*.carrierAggregation.componentCarrier[*].carrierFrequency = {}\n'.format(carrierFrequency))
+  f.write('**.numComponentCarriers = {}\n'.format(num_carriers))
+  for i in range(num_carriers):
+    f.write('*.carrierAggregation.componentCarrier[{}].carrierFrequency = {}GHz\n'.format(i, carriers_frequencies[i]))
+  if eNBs_carriers:
+    for i in range(num_carriers):
+      f.write("*.eNB{}.cellularNic.channelModel[*].componentCarrierIndex = {}\n".format(i, i))
 
-def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25,
+def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  building_height: float = 20, nodeb_height: float = 25,
                         ue_height: float = 1.5,street_wide: float = 20, fading_type: str = "\"JAKES\"",
                         extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
                         antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
@@ -294,7 +352,8 @@ def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25
                         thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
                         uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
   """This function writes the channel model submodule configuration in a .ini file."""
-  f.write(('**.cellularNic.channelModel[*].building_height = {}\n'
+  f.write(('**.cellularNic.LteChannelModelType = "{}"\n'
+           '**.cellularNic.channelModel[*].building_height = {}\n'
            '**.cellularNic.channelModel[*].nodeb_height = {}\n'
            '**.cellularNic.channelModel[*].ue_height = {}\n'
            '**.cellularNic.channelModel[*].street_wide = {}\n'
@@ -330,7 +389,7 @@ def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25
            '**.cellularNic.channelModel[*].uplink_interference = {}\n'
            '**.cellularNic.channelModel[*].useRsrqFromLog = {}\n'
            '**.cellularNic.channelModel[*].useTorus = {}\n'
-          ).format(building_height, nodeb_height, ue_height, street_wide, fading_type,
+          ).format(model_name, building_height, nodeb_height, ue_height, street_wide, fading_type,
                    "true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
                    bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
                    delay_rms, "false" if not downlink_interference else "true", "false" if not dynamic_los else "true",
@@ -340,6 +399,9 @@ def writeChannelModel5G(f, building_height: float = 20, nodeb_height: float = 25
                    targetBler, thermalNoise, "false" if not tolerateMaxDistViolation else "true", ue_noise_figure,
                    "false" if not uplink_interference else "true", "false" if not useRsrqFromLog else "true",
                    "false" if not useTorus else "true"))
+
+def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
+  f.write('**.cellularNic.channelModel[*].num_slice = {}\n'.format(getOptionsString(values= range(num_slices), name= iter_name)))
 
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   """This function writes the configuration that defines a node as a microcell in a .ini file."""
@@ -503,6 +565,14 @@ def writeResourceBlocks(f, num: int, is5G: bool= False):
   else:
     f.write(('**.numRbDl = {}\n**.numRbUl = {}\n'
              '**.binder.numBands = {} # this value should be kept equal to the number of RBs\n').format(num))
+
+def writeResourceBlocksOptions(f, name: str, nums: ty.List[int], is5G: bool= False):
+  """This function writes the number of resource blocks used in a .ini file."""
+  if is5G:
+    f.write("**.numBands = {}\n".format(getOptionsString(nums, name, '')))
+  else:
+    f.write(('**.numRbDl = {}\n**.numRbUl = ${{{}}}\n'
+             '**.binder.numBands = ${{{}}} # this value should be kept equal to the number of RBs\n').format(getOptionsString(nums, name, ''), name, name))    
 
 def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterationvarsf}-${repetition}.sna",
   snapshot: bool = True, delay: float = 1.0):

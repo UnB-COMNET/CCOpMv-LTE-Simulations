@@ -2,7 +2,7 @@ from math import ceil
 import geometry as geo
 import sinr_comput as sc
 from random import random, seed
-from helper_xml import get_map_ues_time, get_coord_ues_time
+from helper_xml import get_map_ues_time, get_ues_time
 from Solutions.ILP_fixed_in_time import ccop_mv_MILP
 import _5G_Scenarios.ILP_fixed as ilpf
 import subprocess
@@ -17,6 +17,7 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
+  min_sinr = 60
 
   run_all = False
 
@@ -70,7 +71,7 @@ make
     #Generating default parameters
     max_user_antenna_m = [60 for i in range(scen.n_regions)]
     antennas_map_m = [1 for i in range(scen.n_regions)]
-    min_snr_m = [10 for i in range(scen.n_regions)]
+    min_snr_m = [min_sinr for i in range(scen.n_regions)]
 
     #Generating ues time map
     print("-------------Generating ues map")
@@ -78,13 +79,13 @@ make
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
-    ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 11, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
+    ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
 
   elif (show == 1):
     #Plotting ues configuration over time
-    ues_coords = get_coord_ues_time(scen= scen, xml_filename= xml_filename)
+    ues_coords = get_ues_time(scen= scen, xml_filename= xml_filename)
     for t_ues in ues_coords:
-      scen.plotUes(external= True, ues_positions= t_ues)
+      scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
   #print(map_ues_time)
 
 if __name__ == "__main__":

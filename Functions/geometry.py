@@ -408,6 +408,16 @@ class MapChess:
                 self.map_ues[region].append(ue)
                 count += 1
 
+    def loadUEs(self, ues: List[Ue]):
+        self.map_ues = []
+        for r in range(self.n_regions):
+            self.map_ues.append([])
+            
+        for ue in ues:
+            region = self.coord2Region(ue.position)
+            if region < self.n_regions:
+                self.map_ues[region].append(ue)
+
     def placeAntennas(self, list_regions: List[int]) :
         """Places antennas in the center of the regions (sectors) informed"""
         count = 0
@@ -575,6 +585,14 @@ class MapChess:
                 list_coordinate.append(ue.position)
         
         return list_coordinate
+
+    def getUEsList(self) -> List[Ue]:
+        """Returns all UEs."""
+        list_ues = []
+        for region in self.map_ues:
+            for ue in region:
+                list_ues.append(ue)
+        return list_ues
 
     def getUEsMovementList(self) -> List[Movement]:
         """Returns the movement atribute of all UEs."""

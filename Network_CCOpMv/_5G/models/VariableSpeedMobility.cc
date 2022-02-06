@@ -57,11 +57,12 @@ void VariableSpeedMobility::move(){
 void VariableSpeedMobility::setTargetPosition(){
     quaternion.normalize();
     inet::Coord direction = quaternion.rotate(inet::Coord::X_AXIS);
+    float speed = normal(*meanSpeedParameter,standardDeviationParameter->doubleValue(), 1);
 
     simtime_t nextChangeInterval = *changeIntervalParameter;
     EV_DEBUG << "interval: " << nextChangeInterval << endl;
     sourcePosition = lastPosition;
-    targetPosition = lastPosition + direction * normal(*meanSpeedParameter,standardDeviationParameter->doubleValue(), 1) * nextChangeInterval.dbl();
+    targetPosition = lastPosition + direction * speed * nextChangeInterval.dbl();
     previousChange = simTime();
     nextChange = previousChange + nextChangeInterval;
 }
