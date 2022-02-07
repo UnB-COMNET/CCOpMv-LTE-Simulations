@@ -123,9 +123,11 @@ def ilp_fixed_users(filename, seed, d_height:int =8000, d_width:int =8000, d_reg
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
 
 def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True):
-  #random.seed(seed)
-  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True):
+
+  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+                      enb_tx_power= 30 if is_micro else 46)
+
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -141,7 +143,7 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
-    hp.writeTime(f, time= 10, repeat= repetitions)
+    hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "*", value= True)
@@ -159,6 +161,9 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel" ,tolerateMaxDistViolation= True, extCell_interference= False)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
+    if is_micro:
+      hp.writeSeparation(f, "eNBs")
+      hp.writeMultiMicro(f, num_enbs, node_name = "eNB")
     hp.writeSeparation(f, "UEs")
     hp.writeNumUEs(f, num_ues)
     hp.writeComment(f, text= "Conecting UEs to eNodeB")
@@ -167,9 +172,9 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeSchedulingOptions(f, sched= ['MAXCI'])
     hp.writeSeparation(f, "Scenario")
     hp.writeComment(f, text= "eNodeBs")
-    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= 'URBAN_MACROCELL', for5g= True)
+    hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= scen.scenario, for5g= True)
     hp.writeComment(f, text= "UEs")
-    hp.writeScenarioPerso(f, num_and_scen=[(num_ues, 'URBAN_MACROCELL')], for5g= True)
+    hp.writeScenarioPerso(f, num_and_scen=[(num_ues, scen.scenario)], for5g= True)
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeMultiIniMobility(f,object_name= 'eNB', coordinates= enbs_coords)
