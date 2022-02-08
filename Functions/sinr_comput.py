@@ -93,7 +93,7 @@ def compute_path_loss(distance: float, los: bool, scenario: str, h_enbs: float, 
   if scenario == "URBAN_MACROCELL":
     path_loss = compute_urban_macro(distance, los, carrier_frequency, h_enbs, h_ues, h_building, w_street,tolerateMaxDistViolation)
   elif scenario == "URBAN_MICROCELL":
-    path_loss = compute_urban_micro()
+    path_loss = compute_urban_micro(distance, los, carrier_frequency, h_enbs, h_ues, tolerateMaxDistViolation)
   else:
     print("ERROR computing pathloss: invalid scenario")
     path_loss = 1000
@@ -139,7 +139,7 @@ def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_
       return att
 
 def compute_urban_micro(distance: float, los: bool, carrier_frequency: float, h_enbs: float = 25,
-                        h_ues: float = 1.5, h_building: float = 20, w_street: float = 20, tolerateMaxDistViolation: bool = False):
+                        h_ues: float = 1.5, tolerateMaxDistViolation: bool = False):
   
   speed_of_light = 299792458.0
 
@@ -177,6 +177,9 @@ def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
   if scenario == "URBAN_MACROCELL":
     if los: std_dev = 4
     else: std_dev = 6
+  elif scenario == "URBAN_MICROCELL":
+    if los: std_dev = 3
+    else: std_dev = 4
 
   #Get the log normal shadowing with std deviation stdDev
   att = random.normalvariate(0, std_dev)
