@@ -23,7 +23,7 @@ def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
                 root = ET.XML(accumulated_xml)
                 while(int(root.get('simtime')) >= len(map_ues_time)):
                   map_ues_time.append([])
-                  for i in range(scen.n_regions):
+                  for i in range(scen.n_sectors):
                     map_ues_time[-1].append(0)
                 coords_obj = root.findall(".//*[@class='inet::Coord']")
                 #Supoe que a "lastPosition" seja o penultimo objeto com essa classe
