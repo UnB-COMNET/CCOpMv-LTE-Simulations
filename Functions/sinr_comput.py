@@ -92,12 +92,14 @@ def compute_path_loss(distance: float, los: bool, scenario: str, h_enbs: float, 
   
   if scenario == "URBAN_MACROCELL":
     path_loss = compute_urban_macro(distance, los, carrier_frequency, h_enbs, h_ues, h_building, w_street,tolerateMaxDistViolation)
-
+  elif scenario == "URBAN_MICROCELL":
+    path_loss = compute_urban_micro(distance, los, carrier_frequency, h_enbs, h_ues, tolerateMaxDistViolation)
   else:
     print("ERROR computing pathloss: invalid scenario")
     path_loss = 1000
 
   return path_loss
+
 def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_enbs: float = 25,
                         h_ues: float = 1.5, h_building: float = 20, w_street: float = 20, tolerateMaxDistViolation: bool = False):
 
@@ -136,6 +138,38 @@ def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_
 
       return att
 
+def compute_urban_micro(distance: float, los: bool, carrier_frequency: float, h_enbs: float = 25,
+                        h_ues: float = 1.5, tolerateMaxDistViolation: bool = False):
+  
+  speed_of_light = 299792458.0
+
+  if distance < 10:
+    distance = 10
+  
+  dbp = 4 * (h_enbs - 1) * (h_ues - 1) * ((carrier_frequency * 1000000000)/speed_of_light)
+
+  if distance >= 5000:
+    if tolerateMaxDistViolation:
+      return 1000
+    else:
+      print("ERROR: Urban Microcell Model is valid for distance < 5000m")
+      return
+  else:
+    # Line of sight
+    if los:
+      if distance < dbp:
+        att = 22 * log10(distance) + 28 + 20 * log10(carrier_frequency)
+      else:
+        att = 40 * log10(distance) + 7.8 - 18 * log10(h_enbs - 1) \
+              -18 * log10(h_ues - 1) + 2 * log10(carrier_frequency)
+
+    # Non line of sight
+    else:
+      # [!!!] It changes compared to the macro scenario.
+      att = 36.7 * log10(distance) + 22.7 + 26 * log10(carrier_frequency)
+    
+    return att
+
 def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
 
   std_dev = 0
@@ -143,6 +177,9 @@ def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
   if scenario == "URBAN_MACROCELL":
     if los: std_dev = 4
     else: std_dev = 6
+  elif scenario == "URBAN_MICROCELL":
+    if los: std_dev = 3
+    else: std_dev = 4
 
   #Get the log normal shadowing with std deviation stdDev
   att = random.normalvariate(0, std_dev)
