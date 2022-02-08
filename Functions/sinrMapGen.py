@@ -4,6 +4,7 @@ import coordinates as coor
 
 file_name = "sinrMap.txt"
 
+is_microcell = True
 repetition = 10
 num_sector = 4
 d_height = 4000
@@ -23,7 +24,10 @@ with open(file_name, 'w') as f:
                 for x in positions:
                     sum = 0
                     for n in range(repetition):
-                        sinr = sc.compute_sinr(46,18,0,7,0,0.7,coor.Coordinate(x,y),coor.Coordinate(xenb,yenb),2,-104.5,6,363*10**-9,False,"URBAN_MACROCELL",25,1.5,20,20)
+                        if not(is_microcell):
+                            sinr = sc.compute_sinr(46,18,0,7,0,0.7,coor.Coordinate(x,y),coor.Coordinate(xenb,yenb),2,-104.5,6,363*10**-9,False,"URBAN_MACROCELL",25,1.5,20,20)
+                        else:
+                            sinr = sc.compute_sinr(46,18,0,7,0,0.7,coor.Coordinate(x,y),coor.Coordinate(xenb,yenb),2,-104.5,6,363*10**-9,False,"URBAN_MICROCELL",25,1.5,20,20)
                         sum += sinr
                     sinr_medio = sum/repetition
                     f.write("{}".format(sinr_medio))
