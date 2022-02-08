@@ -11,9 +11,9 @@ import os
 def main():
   #Main parameters
   chosen_seed = 123
-  d_height = 4000
-  d_width = 4000
-  d_region = 400
+  size_y = 4000
+  size_x = 4000
+  size_sector = 400
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
@@ -23,7 +23,7 @@ def main():
 
   if run_all:
     #Genereting .ini file
-    ilpf.ilp_fixed_users(ini_path, chosen_seed, d_height= d_height, d_width= d_width, d_region= d_region, n_macros= n_macros)
+    ilpf.ilp_fixed_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
 
     open(xml_filename, 'w').close()
 
@@ -42,7 +42,7 @@ make
   show_ues = False
 
   #Initiating scenario
-  scen = geo.MapChess(d_height, d_width, d_region, chosen_seed= chosen_seed) #100 setores
+  scen = geo.MapChess(size_y, size_x, size_sector, chosen_seed= chosen_seed) #100 setores
 
   if show_full:
     #Placing UEs: Full
@@ -73,9 +73,9 @@ make
   if get_solution:
 
     #Generating default parameters
-    max_user_antenna_m = [60 for i in range(scen.n_regions)]
-    antennas_map_m = [1 for i in range(scen.n_regions)]
-    min_snr_m = [min_sinr for i in range(scen.n_regions)]
+    max_user_antenna_m = [60 for i in range(scen.n_sectors)]
+    antennas_map_m = [1 for i in range(scen.n_sectors)]
+    min_snr_m = [min_sinr for i in range(scen.n_sectors)]
 
     #Generating ues time map
     print("-------------Generating ues map")
@@ -83,7 +83,7 @@ make
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
-    ccop_mv_MILP(Max_Space= scen.n_regions, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
+    ccop_mv_MILP(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
 
   elif show_ues:
     #Plotting ues configuration over time

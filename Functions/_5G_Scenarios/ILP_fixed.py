@@ -7,7 +7,7 @@ import random
 import geometry as geo
 import numpy as np
 
-def ilp_fixed_users(filename: str, seed: int, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2):
+def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2):
   """This function generates a .ini file to watch users mobility behaviour.
   
   The simulation configured with the resulting file has the purpose of generate the mobility data of the users in time.
@@ -17,13 +17,13 @@ def ilp_fixed_users(filename: str, seed: int, d_height:int =8000, d_width:int =8
   Args:
     filename: string representing the name of the resulting file
     seed: integer used as seed in the distribuition of UEs and the simulation
-	  d_height: y dimension size of considered region in meters
-    d_width: x dimension size of considered region in meters
-    d_region: sides size of square sectors in meters
+	  size_y: y dimension size of considered region in meters
+    size_x: x dimension size of considered region in meters
+    size_sector: sides size of square sectors in meters
     n_macros: number of macrocells considered to distribute the UEs on the map
   """
 
-  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed)
+  scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed)
   scen.placeUEs(type= "Random", n_macros= n_macros)#Full = 4320 UEs
 
   ues_coords = scen.getUEsPositionList()
@@ -32,7 +32,7 @@ def ilp_fixed_users(filename: str, seed: int, d_height:int =8000, d_width:int =8
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_users')
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
@@ -66,9 +66,9 @@ def ilp_fixed_users(filename: str, seed: int, d_height:int =8000, d_width:int =8
     hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
-    hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
 
-def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
+def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
@@ -79,9 +79,9 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
   Args:
     filename: string representing the name of the resulting file
     seed: integer used as seed in the distribuition of ues and the simulation
-	  d_height: y dimension size of considered region in meters
-    d_width: x dimension size of considered region in meters
-    d_region: sides size of square sectors in meters
+	  size_y: y dimension size of considered region in meters
+    size_x: x dimension size of considered region in meters
+    size_sector: sides size of square sectors in meters
     n_macros: number of macrocells considered to distribute the ues on the map
     antennas_regions: list of the sectors where eNBs should be deployed
     min_sinr: number of the minimum sinr value used to generate the eNBs locations (ccop_mv_MILP)
@@ -92,7 +92,7 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
   """
 
-  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+  scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                       enb_tx_power= 30 if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
@@ -106,7 +106,7 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
   num_enbs = len(enbs_coords)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
@@ -147,14 +147,14 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeMultiIniMobility(f,object_name= 'eNB', coordinates= enbs_coords)
-    hp.writeConstraint(f, object_name= 'eNB*', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeConstraint(f, object_name= 'eNB*', maxX=size_x, minX=0, maxY=size_y, minY= 0)
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
     hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
-    hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
     hp.writeComment(f, text= "VoIP UL")
@@ -170,7 +170,7 @@ def ilp_fixed_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_regio
     hp.writeComment(f, text= "Connections")
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
-def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, d_region:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
+def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
@@ -184,9 +184,9 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
   Args:
     filename: string representing the name of the resulting file
     seed: integer used as seed in the distribuition of ues and the simulation
-	  d_height: y dimension size of considered region in meters
-    d_width: x dimension size of considered region in meters
-    d_region: sides size of square sectors in meters
+	  size_y: y dimension size of considered region in meters
+    size_x: x dimension size of considered region in meters
+    size_sector: sides size of square sectors in meters
     n_macros: number of macrocells considered to distribute the ues on the map
     min_sinr: number of the minimum sinr value used to generate the eNBs locations (ccop_mv_MILP)
     repetitions: number of repetitions to be executed in the simulation
@@ -196,7 +196,7 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
   """
 
-  scen = geo.MapChess(d_height, d_width, d_region, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+  scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                       enb_tx_power= 30 if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
 
@@ -223,10 +223,10 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
   num_ues = len(scen.getUEsList())
   num_enbs = len(enbs_coords)
 
-  connections = getUesConnections(optimized, ues_coords, antennas_regions, d_region, d_width, d_height)
+  connections = getUesConnections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, d_height, d_width, d_region, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= 'Config ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
@@ -269,14 +269,14 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "eNodeB")
     hp.writeMultiIniMobility(f,object_name= 'eNB', coordinates= enbs_coords)
-    hp.writeConstraint(f, object_name= 'eNB*', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeConstraint(f, object_name= 'eNB*', maxX=size_x, minX=0, maxY=size_y, minY= 0)
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "LinearMobility", object_name= "ue[*]")
     #hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords, paral_name= iter_slice_name)
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= True, paral_name= iter_slice_name)
-    hp.writeConstraint(f, object_name= 'ue[*]', maxX=d_width, minX=0, maxY=d_height, minY= 0)
+    hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
     hp.writeSeparation(f, "Apps")
     hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
     hp.writeComment(f, text= "VoIP UL")
@@ -284,16 +284,16 @@ def ilp_fixed_sliced_ini(filename, seed, d_height:int =8000, d_width:int =8000, 
     hp.writeComment(f, text= "VoIP DL")
     hp.writeAppVoipDL(f, num_ues, n_app= 1)
 
-def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =8000, image:str =None, n_enbs: int = 2):
+def ilp_fixed_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
   
   The network created include the default and necessary submodules to ensure a correct Simu5G simulation.
 
   Args:
     network: string representing the new network name
-	  d_height: y dimension size of considered region in meters
-    d_width: x dimension size of considered region in meters
-    d_region: sides size of square sectors in meters
+	  size_y: y dimension size of considered region in meters
+    size_x: x dimension size of considered region in meters
+    size_sector: sides size of square sectors in meters
     image: string representing the image path to be used as a background
     n_enbs: the number of eNBs composing the network
   """
@@ -303,7 +303,7 @@ def ilp_fixed_ned(network:str = "ILPFixedNet", d_height:int =8000, d_width:int =
   with open(filename, 'wt') as f:
     hned.writeBaseImports(f, is5g= True, snapshot= True)
     hned.writeNet(f, net_name= network)
-    hned.writeParams(f, bg_x= d_width, bg_y = d_height, bg_image= image)
+    hned.writeParams(f, bg_x= size_x, bg_y = size_y, bg_image= image)
     hned.writeBaseSubmodules(f, is5g= True)
     hned.writeMultiNode(f, quantity= n_enbs)
     hned.writeSubmodule(f, name= "ue[numUe]", type= "Ue", size= "s")
@@ -340,16 +340,16 @@ def parse_results(filename: str, slices_num: int):
 
   return results, enbs
 
-def getUesConnections(result, ues_coords, antennas_regions: List[int], d_region, d_width, d_height):
+def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
   """This function interpretates the result parsed from the solver in to the elements connections.
 
   Args:
     result: List[Dict] containing the parsed solution from the solver
     ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
     antennas_regions: List[int] containing the sectors where eNBs are located
-    d_region: sides size of square sectors in meters
-    d_width: x dimension size of considered region in meters
-    d_height: y dimension size of considered region in meters
+    size_sector: sides size of square sectors in meters
+    size_x: x dimension size of considered region in meters
+    size_y: y dimension size of considered region in meters
 
   Return:
     A 2D Matrix (n X t) with the serving cell number for each UE (n) at each time (t).
@@ -359,7 +359,7 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], d_region,
   for ue in ues_coords:
     connections.append([])
     for s in range(len(ue)):
-      region = geo.coord2Region(ue[s], d_region, d_width, d_height)
+      region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
       #Assume-se que a regiao do UE é servida por alguma das antenas
       connections[-1].append(antennas_regions.index(result[s][region])+1)
 
