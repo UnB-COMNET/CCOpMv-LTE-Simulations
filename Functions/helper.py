@@ -319,7 +319,7 @@ def writeAppVideoDL(f, p_size= 1000):
           ))
   f.write(('**.server.app[*].typename = "UdpVideoStreamServer"\n'
            '**.server.app[*].videoSize = 10MiB\n'
-           '**.server.app[*].localPort = 3088\n'
+           '**.server.app[*].localPort = 3088 + ancestorIndex(0)\n'
            '**.server.app[*].sendInterval = 20ms\n'
            '**.server.app[*].packetLen = {p_size}B\n'
            '**.mtu = 10000B\n'
