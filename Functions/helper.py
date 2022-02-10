@@ -259,53 +259,53 @@ def writeNumApps(f, numUEs: int, directions: int, num_multi: int = 1, multi: boo
     f.write("*.ue[*].numApps = {}\n".format(directions))
     f.write("*.server.numApps = {} * {} * {}\n".format(directions, numUEs, 1))
 
-def writeAppVoipUL(f, numUEs: int, n_app: int = 0, object_name: str = "ue[*]", port: int = 4000):
+def writeAppVoipUL(f, numUEs: int, n_app: int = 0, object_name: str = "ue[*]", port: int = 4000, p_size= 40):
   """Writes the VoIP UL aplication configuration involving objects and a server in a .ini file."""
   f.write(('*.{name}.app[{n}].typename="VoIPSender"\n'
-           '*.{name}.app[{n}].PacketSize = default\n'
+           '*.{name}.app[{n}].PacketSize = {p_size}\n'
            '*.{name}.app[{n}].destAddress = "server"\n'
            '*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue\n'
            '*.{name}.app[{n}].localPort = 4888\n'
-           '*.{name}.app[{n}].startTime = 0.01s\n').format(name = object_name, n = n_app, port = port))
+           '*.{name}.app[{n}].startTime = 0.01s\n').format(name = object_name, n = n_app, port = port, p_size= p_size))
   f.write(('*.server.app[{n}..{f}].typename="VoIPReceiver"\n'
            '*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}\n').format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1, port = port))
 
-def writeMultiAppVoipUL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2):
+def writeMultiAppVoipUL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2, p_size= 40):
   """Writes the VoIP UL application configuration involving multiple UE lists and a server in a .ini file."""
   for m in range(num_multi):
     f.write(('*.{name}.app[{n}].typename="VoIPSender"\n'
-             '*.{name}.app[{n}].PacketSize = default\n'
+             '*.{name}.app[{n}].PacketSize = {p_size}\n'
              '*.{name}.app[{n}].destAddress = "server"\n'
              '*.{name}.app[{n}].destPort = {port} + ancestorIndex(1) #Pega o valor id de ue\n'
              '*.{name}.app[{n}].localPort = 4888\n'
              '*.{name}.app[{n}].startTime = 0.01s\n'
-             ).format(name = "ue"+str(m)+"[*]", n = number_app, port = 4000 + m*numUEs))
+             ).format(name = "ue"+str(m)+"[*]", n = number_app, port = 4000 + m*numUEs, p_size= p_size))
     f.write(('*.server.app[{n}..{f}].typename="VoIPReceiver"\n'
              '*.server.app[{n}..{f}].localPort = {port} + ancestorIndex(0) - {n}\n'
             ).format(n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 4000 + m*numUEs))
 
-def writeAppVoipDL(f, numUEs: int, n_app: int = 0):
+def writeAppVoipDL(f, numUEs: int, n_app: int = 0, p_size= 40):
   """Writes the VoIP DL aplication configuration involving an UE list and a server in a .ini file."""
   f.write(('*.server.app[{n}..{f}].typename="VoIPSender"\n'
-           '*.server.app[{n}..{f}].PacketSize = default\n'
+           '*.server.app[{n}..{f}].PacketSize = {p_size}\n'
            '*.server.app[{n}..{f}].destAddress = "ue[" + string(ancestorIndex(0) - {numUEs}) + "]"\n'
            '*.server.app[{n}..{f}].destPort = 3000\n'
            '*.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)\n'
            '*.server.app[{n}..{f}].startTime = 0.01s\n'
-          ).format(numUEs = numUEs, n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
+          ).format(numUEs = numUEs, n = n_app * numUEs, f = numUEs*(n_app+1) - 1, p_size= p_size))
   f.write(('*.ue[*].app[{n}].typename="VoIPReceiver"\n'
            '*.ue[*].app[{n}].localPort = 3000\n').format(n = n_app))
 
-def writeMultiAppVoipDL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2):
+def writeMultiAppVoipDL(f, numUEs: int, num_multi: int, number_app: int = 0, num_apps: int = 2, p_size= 40):
   """Writes the VoIP DL application configuration involving multiple UE lists and a server in a .ini file."""
   for m in range(num_multi):
     f.write(('*.server.app[{n}..{f}].typename="VoIPSender"\n'
-             '*.server.app[{n}..{f}].PacketSize = default\n'
+             '*.server.app[{n}..{f}].PacketSize = {p_size}\n'
              '*.server.app[{n}..{f}].destAddress = "ue{m}[" + string(ancestorIndex(0) - {n}) + "]"\n'
              '*.server.app[{n}..{f}].destPort = 3000\n'
              '*.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)\n'
              '*.server.app[{n}..{f}].startTime = 0.01s\n'
-            ).format(m = m, n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 3000 + m*numUEs))
+            ).format(m = m, n = (number_app + m*num_apps) * numUEs, f = numUEs*(number_app + m*num_apps + 1) - 1, port = 3000 + m*numUEs, p_size= p_size))
     f.write(('*.{name}.app[{n}].typename="VoIPReceiver"\n'
              '*.{name}.app[{n}].localPort = 3000\n').format(name = "ue"+str(m)+"[*]", n = number_app))
 
