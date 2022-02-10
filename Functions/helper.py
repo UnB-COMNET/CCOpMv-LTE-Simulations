@@ -309,6 +309,23 @@ def writeMultiAppVoipDL(f, numUEs: int, num_multi: int, number_app: int = 0, num
     f.write(('*.{name}.app[{n}].typename="VoIPReceiver"\n'
              '*.{name}.app[{n}].localPort = 3000\n').format(name = "ue"+str(m)+"[*]", n = number_app))
 
+def writeAppVideoDL(f, p_size= 1000):
+  """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
+  f.write(('**.ue[*].app[*].typename = "UdpVideoStreamClient"\n'
+           '**.ue[*].app[*].serverAddress = "server"\n'
+           '**.ue[*].app[*].localPort = 9999\n'
+           '**.ue[*].app[*].serverPort = 3088\n'
+           '**.ue[*].app[*].startTime = 0.01s\n'
+          ))
+  f.write(('**.server.app[*].typename = "UdpVideoStreamServer"\n'
+           '**.server.app[*].videoSize = 10MiB\n'
+           '**.server.app[*].localPort = 3088\n'
+           '**.server.app[*].sendInterval = 20ms\n'
+           '**.server.app[*].packetLen = {p_size}B\n'
+           '**.mtu = 10000B\n'
+          ).format(p_size= p_size))
+  
+
 def writeNumUEs(f, numUEs: int):
   """Writes the number os UEs in a .ini file."""
   f.write("**.numUe = {}\n".format(numUEs))
