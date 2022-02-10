@@ -152,7 +152,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
-    hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
+    hp.writeVarSpeedMobDefault(f, speed_mean= 3000*10/time, std_dev= 1000*10/time, object_name= "ue[*]", update_interval= 1*time/10)
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
