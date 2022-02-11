@@ -69,7 +69,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
 
 def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True, extra_config_name = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -90,6 +90,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     multi_carriers: if True, the eNBs will suport more than one type of carrier
     time: total time of the simulation in seconds
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
+    extra_config_name: string to be added at the end of the configuration name
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -105,10 +106,12 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
   num_ues = len(ues_coords)
   num_enbs = len(enbs_coords)
 
+  config_name = 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
-    hp.makeNewConfig(f, name= 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
+    hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
@@ -171,7 +174,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
 def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, extra_config_name = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -194,6 +197,7 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     multi_carriers: if True, the eNBs will suport more than one type of carrier
     time: total time of the simulation in seconds
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
+    extra_config_name: string to be added at the end of the configuration name
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -225,10 +229,12 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
 
   connections = getUesConnections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
+  config_name = 'Config ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
-    hp.makeNewConfig(f, name= 'Config ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else ''))
+    hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
