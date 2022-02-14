@@ -21,6 +21,8 @@ def main():
   for i in range(len(min_sinrs)):
 
     print("Generating configuration files - Min Snr: {}".format(min_sinrs[i]))
+    ilpf.ilp_fixed_ned(n_enbs= len(enbs[i]))
+
     ini_path = dir_path + 'ilp_fixed.ini'
     config_name = ilpf.ilp_fixed_ini(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions, antennas_regions= enbs[i],
                                      min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO")
