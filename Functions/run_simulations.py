@@ -27,7 +27,7 @@ def main():
 
     ini_path_sliced = dir_path + 'ilp_fixed_sliced.ini'
     config_name_sliced = ilpf.ilp_fixed_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                   min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO", time= 5)
+                                                   min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO", time= 1)
     
     print("Running simulations - Min Snr: {}".format(min_sinrs[i]))
     run_simulation(ini_path= ini_path, config_name= config_name)

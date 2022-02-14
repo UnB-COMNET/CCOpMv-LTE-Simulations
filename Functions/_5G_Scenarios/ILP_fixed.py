@@ -109,10 +109,10 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
   num_ues = len(ues_coords)
   num_enbs = len(enbs_coords)
 
-  config_name = 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+  config_name = 'ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, config_name, filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, "ilp_fixed_ini", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
@@ -245,10 +245,10 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
 
   connections = getUesConnections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
-  config_name = 'Config ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+  config_name = 'ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, config_name, filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, 'ilp_fixed_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')

@@ -22,7 +22,7 @@ def makeNewConfig(f,name, extends = False, extend_name = ''):
   1. *extends*: if True new config will extend another already existing config
   2. *extend_name*: name of the config that will be extended if *extends* if True
   """
-  f.write('\n[{}]\n'.format(name))
+  f.write('\n[Config {}]\n'.format(name))
   if extends:
     f.write('extends = {}\n'.format(extend_name))
 
