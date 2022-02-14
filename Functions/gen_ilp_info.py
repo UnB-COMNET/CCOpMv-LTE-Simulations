@@ -1,12 +1,8 @@
-from math import ceil
 import geometry as geo
-import sinr_comput as sc
-from random import random, seed
 from helper_xml import get_map_ues_time, get_ues_time
 from Solutions.ILP_fixed_in_time import ccop_mv_MILP
 import _5G_Scenarios.ILP_fixed as ilpf
 import subprocess
-import os
 
 def main():
   #Main parameters
@@ -27,12 +23,12 @@ def main():
 
     open(xml_filename, 'w').close()
 
-    oppmake = r"opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)"
+    #oppmake = r"opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)"
     #Running Omnet++
     subprocess.call(r'''cd ../Network_CCOpMv
 opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)
 make
-./Network_CCOpMv '''.format(oppmake) + ini_path + r' -u Cmdenv -c ilp_fixed_users -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src', shell= True)
+./Network_CCOpMv ''' + ini_path + r' -u Cmdenv -c ilp_fixed_users -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src', shell= True)
 
 
   #Determines what the program will show to the user

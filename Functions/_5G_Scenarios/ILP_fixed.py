@@ -174,7 +174,6 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
       hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False)
       hp.writeComment(f, text= "Video Streaming DL")
       hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True)
-      
 
     hp.writeSeparation(f, "Handover")
     hp.writeComment(f, text= "Enable handover")
@@ -184,6 +183,8 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     hp.writeX2Configuration(f, object_name= "eNB*", quantity= num_enbs) #Connections between enbs
     hp.writeComment(f, text= "Connections")
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
+
+  return config_name
 
 def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", extra_config_name = ''):
@@ -310,6 +311,8 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
       hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False)
       hp.writeComment(f, text= "Video Streaming DL")
       hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True)
+
+  return config_name
 
 def ilp_fixed_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
