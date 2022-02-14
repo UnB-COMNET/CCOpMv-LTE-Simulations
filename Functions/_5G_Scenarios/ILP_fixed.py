@@ -69,7 +69,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
 
 def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True, extra_config_name = ''):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip", extra_config_name = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -90,7 +90,12 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     multi_carriers: if True, the eNBs will suport more than one type of carrier
     time: total time of the simulation in seconds
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
+<<<<<<< HEAD
     extra_config_name: string to be added at the end of the configuration name
+=======
+    p_size: size of package used on the VoIP or Video Streaming application (in bytes)
+    app: type of application (voip or video)
+>>>>>>> MacroToMicro
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -154,16 +159,23 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
     hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
-    hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
+    hp.writeVarSpeedMobDefault(f, speed_mean= 3000*10/time, std_dev= 1000*10/time, object_name= "ue[*]", update_interval= 1*time/10)
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
     hp.writeSeparation(f, "Apps")
-    hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
-    hp.writeComment(f, text= "VoIP UL")
-    hp.writeAppVoipUL(f, num_ues, n_app= 0)
-    hp.writeComment(f, text= "VoIP DL")
-    hp.writeAppVoipDL(f, num_ues, n_app= 1)
+    if app.upper() == "VOIP":
+      hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
+      hp.writeComment(f, text= "VoIP UL")
+      hp.writeAppVoipUL(f, num_ues, n_app= 0, p_size= p_size)
+      hp.writeComment(f, text= "VoIP DL")
+      hp.writeAppVoipDL(f, num_ues, n_app= 1, p_size= p_size)
+    elif app.upper() == "VIDEO":
+      hp.writeNumApps(f, numUEs= num_ues, directions= 1, multi= False)
+      hp.writeComment(f, text= "Video Streaming DL")
+      hp.writeAppVideoDL(f, p_size= p_size)
+      
+
     hp.writeSeparation(f, "Handover")
     hp.writeComment(f, text= "Enable handover")
     hp.writeEnableHandover(f, object_name= "eNB*", enable= True, is5G= True)
@@ -174,7 +186,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
 def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, extra_config_name = ''):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", extra_config_name = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -197,7 +209,12 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     multi_carriers: if True, the eNBs will suport more than one type of carrier
     time: total time of the simulation in seconds
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
+<<<<<<< HEAD
     extra_config_name: string to be added at the end of the configuration name
+=======
+    p_size: size of package used on the VoIP or Video Streaming application (in bytes)
+    app: type of application (voip or video)
+>>>>>>> MacroToMicro
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -284,11 +301,16 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= True, paral_name= iter_slice_name)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
     hp.writeSeparation(f, "Apps")
-    hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
-    hp.writeComment(f, text= "VoIP UL")
-    hp.writeAppVoipUL(f, num_ues, n_app= 0)
-    hp.writeComment(f, text= "VoIP DL")
-    hp.writeAppVoipDL(f, num_ues, n_app= 1)
+    if app.upper() == "VOIP":
+      hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
+      hp.writeComment(f, text= "VoIP UL")
+      hp.writeAppVoipUL(f, num_ues, n_app= 0, p_size= p_size)
+      hp.writeComment(f, text= "VoIP DL")
+      hp.writeAppVoipDL(f, num_ues, n_app= 1, p_size= p_size)
+    elif app.upper() == "VIDEO":
+      hp.writeNumApps(f, numUEs= num_ues, directions= 1, multi= False)
+      hp.writeComment(f, text= "Video Streaming DL")
+      hp.writeAppVideoDL(f, p_size= p_size)
 
 def ilp_fixed_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.

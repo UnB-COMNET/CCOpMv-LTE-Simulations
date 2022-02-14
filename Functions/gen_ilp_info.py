@@ -17,7 +17,7 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  min_sinr = 60
+  min_sinr = 100
 
   run_all = False
 
@@ -40,9 +40,11 @@ make
   show_sinr = False
   show_full = False
   show_ues = False
+  is_micro = True
 
   #Initiating scenario
-  scen = geo.MapChess(size_y, size_x, size_sector, chosen_seed= chosen_seed) #100 setores
+  scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+                      enb_tx_power= 30 if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
   if show_full:
     #Placing UEs: Full
