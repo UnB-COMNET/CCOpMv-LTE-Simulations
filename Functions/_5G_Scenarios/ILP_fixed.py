@@ -90,12 +90,9 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     multi_carriers: if True, the eNBs will suport more than one type of carrier
     time: total time of the simulation in seconds
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
-<<<<<<< HEAD
-    extra_config_name: string to be added at the end of the configuration name
-=======
     p_size: size of package used on the VoIP or Video Streaming application (in bytes)
     app: type of application (voip or video)
->>>>>>> MacroToMicro
+    extra_config_name: string to be added at the end of the configuration name
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -171,9 +168,11 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
       hp.writeComment(f, text= "VoIP DL")
       hp.writeAppVoipDL(f, num_ues, n_app= 1, p_size= p_size)
     elif app.upper() == "VIDEO":
-      hp.writeNumApps(f, numUEs= num_ues, directions= 1, multi= False)
+      hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
+      hp.writeComment(f, text= "Video Streaming UL")
+      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0)
       hp.writeComment(f, text= "Video Streaming DL")
-      hp.writeAppVideoDL(f, p_size= p_size)
+      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1)
       
 
     hp.writeSeparation(f, "Handover")
@@ -209,12 +208,9 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     multi_carriers: if True, the eNBs will suport more than one type of carrier
     time: total time of the simulation in seconds
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
-<<<<<<< HEAD
-    extra_config_name: string to be added at the end of the configuration name
-=======
     p_size: size of package used on the VoIP or Video Streaming application (in bytes)
     app: type of application (voip or video)
->>>>>>> MacroToMicro
+    extra_config_name: string to be added at the end of the configuration name
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -308,9 +304,11 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
       hp.writeComment(f, text= "VoIP DL")
       hp.writeAppVoipDL(f, num_ues, n_app= 1, p_size= p_size)
     elif app.upper() == "VIDEO":
-      hp.writeNumApps(f, numUEs= num_ues, directions= 1, multi= False)
+      hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
+      hp.writeComment(f, text= "Video Streaming UL")
+      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0)
       hp.writeComment(f, text= "Video Streaming DL")
-      hp.writeAppVideoDL(f, p_size= p_size)
+      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1)
 
 def ilp_fixed_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
