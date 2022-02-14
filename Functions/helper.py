@@ -309,39 +309,39 @@ def writeMultiAppVoipDL(f, numUEs: int, num_multi: int, number_app: int = 0, num
     f.write(('*.{name}.app[{n}].typename="VoIPReceiver"\n'
              '*.{name}.app[{n}].localPort = 3000\n').format(name = "ue"+str(m)+"[*]", n = number_app))
 
-def writeAppVideoUL(f, numUEs: int, p_size:int = 1000, n_app: int = 0):
+def writeAppVideoUL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool = True):
   """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
   f.write(('**.server.app[{n}..{f}].typename = "UdpVideoStreamClient"\n'
            '**.server.app[{n}..{f}].serverAddress = "ue[" + string(ancestorIndex(0) - {n}) + "]"\n'
-           '**.server.app[{n}..{f}].localPort = 9999\n'
+           '**.server.app[{n}..{f}].localPort = 9000 + ancestorIndex(0)\n'
            '**.server.app[{n}..{f}].serverPort = 4088\n'
            '**.server.app[{n}..{f}].startTime = 0.01s\n'
-           '**.server.app[{n}..{f}].mtu = 10000B\n'
           ).format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
   f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamServer"\n'
            '**.ue[*].app[{n}].videoSize = 10MiB\n'
            '**.ue[*].app[{n}].localPort = 4088\n'
            '**.ue[*].app[{n}].sendInterval = 20ms\n'
            '**.ue[*].app[{n}].packetLen = {p_size}B\n'
-           '**.ue[*].app[{n}].mtu = 10000B\n'
           ).format(p_size= p_size, n = n_app))
+  if mtu:
+    f.write('**.mtu = 10000B\n')
 
-def writeAppVideoDL(f, numUEs: int, p_size:int = 1000, n_app: int = 0):
+def writeAppVideoDL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool= True):
   """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
   f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamClient"\n'
            '**.ue[*].app[{n}].serverAddress = "server"\n'
-           '**.ue[*].app[{n}].localPort = 9999\n'
+           '**.ue[*].app[{n}].localPort = 9000\n'
            '**.ue[*].app[{n}].serverPort = 3088 + ancestorIndex(1) + {g}\n'
            '**.ue[*].app[{n}].startTime = 0.01s\n'
-           '**.ue[*].app[{n}].mtu = 10000B\n'
           ).format(n = n_app, g= numUEs*n_app))
   f.write(('**.server.app[{n}..{f}].typename = "UdpVideoStreamServer"\n'
            '**.server.app[{n}..{f}].videoSize = 10MiB\n'
            '**.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)\n'
            '**.server.app[{n}..{f}].sendInterval = 20ms\n'
            '**.server.app[{n}..{f}].packetLen = {p_size}B\n'
-           '**.server.app[{n}..{f}].mtu = 10000B\n'
           ).format(p_size= p_size, n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
+  if mtu:
+    f.write('**.mtu = 10000B\n')
   
 
 def writeNumUEs(f, numUEs: int):

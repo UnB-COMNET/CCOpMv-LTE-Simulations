@@ -1,3 +1,4 @@
+from mimetypes import MimeTypes
 from typing import Dict, List
 
 import helper as hp
@@ -111,7 +112,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
   config_name = 'Config ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, config_name, filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
@@ -170,9 +171,9 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     elif app.upper() == "VIDEO":
       hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
       hp.writeComment(f, text= "Video Streaming UL")
-      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0)
+      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False)
       hp.writeComment(f, text= "Video Streaming DL")
-      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1)
+      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True)
       
 
     hp.writeSeparation(f, "Handover")
@@ -245,7 +246,7 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
   config_name = 'Config ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, config_name, filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
@@ -306,9 +307,9 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     elif app.upper() == "VIDEO":
       hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
       hp.writeComment(f, text= "Video Streaming UL")
-      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0)
+      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False)
       hp.writeComment(f, text= "Video Streaming DL")
-      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1)
+      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True)
 
 def ilp_fixed_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
