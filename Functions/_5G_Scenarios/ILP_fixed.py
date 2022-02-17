@@ -70,7 +70,8 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
 
 def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip", extra_config_name = ''):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  s_interval:int = 20,
+                  extra_config_name = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -93,6 +94,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
     p_size: size of package used on the VoIP or Video Streaming application (in bytes)
     app: type of application (voip or video)
+    s_interval: interval in ms to send packets, used by the Video Streaming application
     extra_config_name: string to be added at the end of the configuration name
   """
 
@@ -172,9 +174,9 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     elif app.upper() == "VIDEO":
       hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
       hp.writeComment(f, text= "Video Streaming UL")
-      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False)
+      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False, s_interval= s_interval)
       hp.writeComment(f, text= "Video Streaming DL")
-      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True)
+      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True, s_interval= s_interval)
 
     hp.writeSeparation(f, "Handover")
     hp.writeComment(f, text= "Enable handover")
@@ -188,7 +190,8 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
   return config_name
 
 def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", extra_config_name = ''):
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", s_interval:int = 20,
+                  extra_config_name = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -213,6 +216,7 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
     p_size: size of package used on the VoIP or Video Streaming application (in bytes)
     app: type of application (voip or video)
+    s_interval: interval in ms to send packets, used by the Video Streaming application
     extra_config_name: string to be added at the end of the configuration name
   """
 
@@ -310,9 +314,9 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     elif app.upper() == "VIDEO":
       hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
       hp.writeComment(f, text= "Video Streaming UL")
-      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False)
+      hp.writeAppVideoUL(f, numUEs= num_ues, p_size= p_size, n_app= 0, mtu= False, s_interval= s_interval)
       hp.writeComment(f, text= "Video Streaming DL")
-      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True)
+      hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True, s_interval= s_interval)
 
   return config_name
 
