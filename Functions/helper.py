@@ -309,7 +309,7 @@ def writeMultiAppVoipDL(f, numUEs: int, num_multi: int, number_app: int = 0, num
     f.write(('*.{name}.app[{n}].typename="VoIPReceiver"\n'
              '*.{name}.app[{n}].localPort = 3000\n').format(name = "ue"+str(m)+"[*]", n = number_app))
 
-def writeAppVideoUL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool = True):
+def writeAppVideoUL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool = True, s_interval: int = 20):
   """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
   f.write(('**.server.app[{n}..{f}].typename = "UdpVideoStreamClient"\n'
            '**.server.app[{n}..{f}].serverAddress = "ue[" + string(ancestorIndex(0) - {n}) + "]"\n'
@@ -320,13 +320,13 @@ def writeAppVideoUL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool
   f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamServer"\n'
            '**.ue[*].app[{n}].videoSize = 10MiB\n'
            '**.ue[*].app[{n}].localPort = 4088\n'
-           '**.ue[*].app[{n}].sendInterval = 20ms\n'
+           '**.ue[*].app[{n}].sendInterval = {s_interval}ms\n'
            '**.ue[*].app[{n}].packetLen = {p_size}B\n'
-          ).format(p_size= p_size, n = n_app))
+          ).format(p_size= p_size, n = n_app, s_interval= s_interval))
   if mtu:
     f.write('**.mtu = 10000B\n')
 
-def writeAppVideoDL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool= True):
+def writeAppVideoDL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool= True, s_interval: int = 20):
   """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
   f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamClient"\n'
            '**.ue[*].app[{n}].serverAddress = "server"\n'
@@ -337,9 +337,9 @@ def writeAppVideoDL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool
   f.write(('**.server.app[{n}..{f}].typename = "UdpVideoStreamServer"\n'
            '**.server.app[{n}..{f}].videoSize = 10MiB\n'
            '**.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)\n'
-           '**.server.app[{n}..{f}].sendInterval = 20ms\n'
+           '**.server.app[{n}..{f}].sendInterval = {s_interval}ms\n'
            '**.server.app[{n}..{f}].packetLen = {p_size}B\n'
-          ).format(p_size= p_size, n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
+          ).format(p_size= p_size, n = n_app * numUEs, f = numUEs*(n_app+1) - 1, s_interval= s_interval))
   if mtu:
     f.write('**.mtu = 10000B\n')
   

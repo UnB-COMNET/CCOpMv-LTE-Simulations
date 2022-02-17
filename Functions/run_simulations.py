@@ -10,12 +10,12 @@ def main():
   n_macros = 1
   dir_path = '../Network_CCOpMv/_5G/simulations/'
   enbs = [[5, 30, 68, 74], [18, 22, 27, 71, 77], [12, 18, 26, 53, 68, 70, 77, 84], [11, 13, 15, 18, 31, 38, 52, 66, 68, 70, 83, 87]] #The cases must be in the same order of min_sinrs
-  min_sinrs = [5, 10, 40, 100] #Must exist result_*.txt file where * is in min_sinrs (for sliced approach)
-  num_bands = [100]
+  min_sinrs = [5, 40, 100] #Must exist result_*.txt file where * is in min_sinrs (for sliced approach)
+  num_bands = [6, 100]
   repetitions = 5
   multi_carriers = False
   is_micro = True
-  p_size = 1000#40
+  p_size = 4000#40
   app = "video"
 
   for i in range(len(min_sinrs)):

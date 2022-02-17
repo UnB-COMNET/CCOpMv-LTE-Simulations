@@ -109,7 +109,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
   num_ues = len(ues_coords)
   num_enbs = len(enbs_coords)
 
-  config_name = 'ilp_fixed_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+  config_name = 'ilp_fixed_hando_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed_ini", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
