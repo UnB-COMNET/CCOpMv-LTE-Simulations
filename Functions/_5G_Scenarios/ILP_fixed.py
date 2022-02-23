@@ -123,8 +123,10 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
-    hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "*", value= True)
-    hp.writeVectorExtra(f, module= "**.app[*]", statistic= "*", value= True)
+    hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "idRcvdSinr:vector", value= True)
+    hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
+    hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
+    hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
     hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${repetition}-${RBs}")
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
@@ -136,7 +138,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     else:
       hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")
-    hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel" ,tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
+    hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
                            cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
     hp.writeSeparation(f, "Resource Blocks")
@@ -263,8 +265,10 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
-    hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "*", value= True)
-    hp.writeVectorExtra(f, module= "**.app[*]", statistic= "*", value= True)
+    hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "idRcvdSinr:vector", value= True)
+    hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
+    hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
+    hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
     hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
@@ -276,7 +280,7 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     else:
       hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")
-    hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel" ,tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
+    hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
                            cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
