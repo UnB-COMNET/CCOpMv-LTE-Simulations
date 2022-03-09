@@ -304,7 +304,7 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
 
 class MapChess:
     """Represents a scenario that divides the map into multiple square shaped regions (sectors)"""
-    def __init__(self, d_height: int = 1000, d_width: int = 1000, d_region: int = 100,
+    def __init__(self, size_y: int = 1000, size_x: int = 1000, size_sector: int = 100,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20, los: bool = False,
                  carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363*10**-9,
@@ -313,12 +313,12 @@ class MapChess:
                  enb_tx_power: float = 46, ue_tx_power: float = 26, chosen_seed: int = 123) :
         """Initializes the scenario based on multiple parameters"""
 
-        self.d_region = d_region
-        self.d_width = d_width
-        self.d_height = d_height
-        self.n_width = int(d_width/d_region)
-        self.n_height = int(d_height/d_region)
-        self.n_regions = self.n_height*self.n_width
+        self.size_sector = size_sector
+        self.size_x = size_x
+        self.size_y = size_y
+        self.n_sectors_x = int(size_x/size_sector)
+        self.n_sectors_y = int(size_y/size_sector)
+        self.n_sectors = self.n_sectors_y*self.n_sectors_x
         
         self.map_antennas = []
         self.map_ues = []
@@ -346,39 +346,39 @@ class MapChess:
     def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         """Returns the central coordinate of a region (sector)"""
         coord = Coordinate(
-            self.d_region*(region_id%self.n_width)+self.d_region/2,
-            self.d_region*int(region_id/self.n_height)+self.d_region/2,
+            self.size_sector*(region_id%self.n_sectors_x)+self.size_sector/2,
+            self.size_sector*int(region_id/self.n_sectors_y)+self.size_sector/2,
             z)
         return coord
 
     def coord2Region(self, coord: Coordinate) -> int:
         """Returns the number of the region (sector) that contains the informed coordinate"""
-        line = int(coord.y/self.d_region)
-        line = line if line < self.n_width else self.n_width-1
-        column = int(coord.x/self.d_region)
-        column = column if column < self.n_height else self.n_height-1
+        line = int(coord.y/self.size_sector)
+        line = line if line < self.n_sectors_x else self.n_sectors_x-1
+        column = int(coord.x/self.size_sector)
+        column = column if column < self.n_sectors_y else self.n_sectors_y-1
 
-        region_id = line*self.n_width + column
+        region_id = line*self.n_sectors_x + column
         return region_id
 
     def placeTestUEs(self):
         """Places one UE in the center of each region (sector)"""
         #self.map_ues = np.array(
         #                [[Ue(self.region2Coord(m), m)] 
-        #                for m in range(self.n_regions)])
-        self.map_ues = np.empty(self.n_regions, dtype= np.dtype(object))
+        #                for m in range(self.n_sectors)])
+        self.map_ues = np.empty(self.n_sectors, dtype= np.dtype(object))
         self.map_ues.fill([])
-        for m in range(self.n_regions):
+        for m in range(self.n_sectors):
             coord = self.region2Coord(m)
             self.map_ues[m] = [Ue(coord, m)]
 
     def placeUE(self, coord: Coordinate, index, speed, dir):
         """Places one UE at the informed coordinate"""
-        if len(self.map_ues) != self.n_regions:
-            for r in range(self.n_regions):
+        if len(self.map_ues) != self.n_sectors:
+            for r in range(self.n_sectors):
                 self.map_ues.append([])
         
-        self.map_ues[coord2Region(coord,self.d_region,self.d_width,self.d_height)].append(Ue(coord,index,speed,dir))
+        self.map_ues[coord2Region(coord,self.size_sector,self.size_x,self.size_y)].append(Ue(coord,index,speed,dir))
 
     def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60):
         """Places UEs across the map based on the informed type"""
@@ -388,7 +388,7 @@ class MapChess:
         self.map_ues = []
         seed(self.chosen_seed)
 
-        for r in range(self.n_regions):
+        for r in range(self.n_sectors):
             self.map_ues.append([])
 
         if type == "Full":
@@ -400,7 +400,7 @@ class MapChess:
 
         for ue in ues:
             region = self.coord2Region(ue.position)
-            if region < self.n_regions:
+            if region < self.n_sectors:
                 if not fixed:
                     #Defining inital movement of the ues
                     ue.movement.speed = normalvariate(mu= mean_speed, sigma= var_speed)
@@ -410,18 +410,18 @@ class MapChess:
 
     def loadUEs(self, ues: List[Ue]):
         self.map_ues = []
-        for r in range(self.n_regions):
+        for r in range(self.n_sectors):
             self.map_ues.append([])
             
         for ue in ues:
             region = self.coord2Region(ue.position)
-            if region < self.n_regions:
+            if region < self.n_sectors:
                 self.map_ues[region].append(ue)
 
     def placeAntennas(self, list_regions: List[int]) :
         """Places antennas in the center of the regions (sectors) informed"""
         count = 0
-        self.map_antennas = np.empty(self.n_regions, dtype= np.dtype(object))
+        self.map_antennas = np.empty(self.n_sectors, dtype= np.dtype(object))
         self.map_antennas.fill(None)
         for m in list_regions:
             if m < self.map_antennas.size:
@@ -446,7 +446,7 @@ class MapChess:
         tmp_mcs: List[Macrocell] = []
 
         for i in range(n_macros):
-            tmp_mcs.append(Macrocell(Coordinate(random()*(self.d_width - 2*margin)+margin, random()*(self.d_height - 2*margin)+margin)))
+            tmp_mcs.append(Macrocell(Coordinate(random()*(self.size_x - 2*margin)+margin, random()*(self.size_y - 2*margin)+margin)))
             for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
                     tmp_smc.append(Smallcell(pos_small))
@@ -476,10 +476,10 @@ class MapChess:
         d_x = d_macromacro*cos(1*pi/6)
         d_y = d_macromacro*sin(1*pi/6)
         
-        coord_x = self.d_region/2
-        while(coord_x < self.d_width):
-            coord_y = self.d_region/2
-            while(coord_y < self.d_height):
+        coord_x = self.size_sector/2
+        while(coord_x < self.size_x):
+            coord_y = self.size_sector/2
+            while(coord_y < self.size_y):
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
                 for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
@@ -488,10 +488,10 @@ class MapChess:
                 coord_y += d_macromacro
             coord_x += 2*d_x
 
-        coord_x = self.d_region/2+d_x
-        while(coord_x < self.d_width):
-            coord_y = self.d_region/2+d_y
-            while(coord_y < self.d_height):
+        coord_x = self.size_sector/2+d_x
+        while(coord_x < self.size_x):
+            coord_y = self.size_sector/2+d_y
+            while(coord_y < self.size_y):
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
                 for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
@@ -541,12 +541,12 @@ class MapChess:
         """Verifies if the coordinate is within the delimited map"""
         if (coord.x < 0):
             coord.x = 0
-        if (coord.x > self.d_width):
-            coord.x = self.d_width
+        if (coord.x > self.size_x):
+            coord.x = self.size_x
         if (coord.y < 0):
             coord.y = 0
-        if (coord.y > self.d_height):
-            coord.y = self.d_height
+        if (coord.y > self.size_y):
+            coord.y = self.size_y
         return coord
 
     def plotUes(self, external: bool = False, ues_positions: List[Coordinate] = None):
@@ -562,7 +562,7 @@ class MapChess:
     def getRegionsCentersList(self) -> List[Coordinate]:
         """Returns the coordinates of each region (sector) center."""
         list_coordinate = []
-        for m in range(self.n_regions):
+        for m in range(self.n_sectors):
             coord = self.region2Coord(m)
             list_coordinate.append(coord)
         
@@ -613,7 +613,7 @@ class MapChess:
         sinr_map = []
         seed(self.chosen_seed+1)
 
-        for enb_region in range(self.n_regions):
+        for enb_region in range(self.n_sectors):
             sinr_map.append([])
             enb_coord = self.region2Coord(enb_region)
             for ue_coord in regions_centers:
@@ -666,22 +666,22 @@ class Centroid:
 def exportMap():
     None
 
-def region2Coord( region_id: int, d_region: float, d_width: float, d_height: float, z: float = 0) -> Coordinate:
-    n_width = int(d_width/d_region)
-    n_height = int(d_height/d_region)
+def region2Coord( region_id: int, size_sector: float, size_x: float, size_y: float, z: float = 0) -> Coordinate:
+    n_sectors_x = int(size_x/size_sector)
+    n_sectors_y = int(size_y/size_sector)
     coord = Coordinate(
-        d_region*(region_id%n_width)+d_region/2,
-        d_region*int(region_id/n_height)+d_region/2,
+        size_sector*(region_id%n_sectors_x)+size_sector/2,
+        size_sector*int(region_id/n_sectors_y)+size_sector/2,
         z)
     return coord
 
-def coord2Region( coord: Coordinate, d_region: float, d_width: float, d_height: float,) -> int:
-    n_width = int(d_width/d_region)
-    n_height = int(d_height/d_region)
-    line = int(coord.y/d_region)
-    line = line if line < n_width else n_width-1
-    column = int(coord.x/d_region)
-    column = column if column < n_height else n_height-1
+def coord2Region( coord: Coordinate, size_sector: float, size_x: float, size_y: float,) -> int:
+    n_sectors_x = int(size_x/size_sector)
+    n_sectors_y = int(size_y/size_sector)
+    line = int(coord.y/size_sector)
+    line = line if line < n_sectors_x else n_sectors_x-1
+    column = int(coord.x/size_sector)
+    column = column if column < n_sectors_y else n_sectors_y-1
 
-    region_id = line*n_width + column
+    region_id = line*n_sectors_x + column
     return region_id
