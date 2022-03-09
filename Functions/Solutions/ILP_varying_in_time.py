@@ -10,7 +10,10 @@ def ccop_mv_MILP(
     antenasmap_m, 
     snr_map_mn, 
     MIN_SNR_m,
-    MIN_TIME=2):
+    distance_mn,
+    MIN_TIME=2,
+    MIN_DIS=2,
+    result_dir = '.'):
     
     M = Max_Space
     T = Max_Time
@@ -32,37 +35,53 @@ def ccop_mv_MILP(
     for t in range(0,T):
         for m in range(0, M):
             for n in range(0,M):
-                ct = solver.Constraint(-solver.infinity(), snr_map_mn[m][n])
-                ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[n])
+                if users_t_m[t][n] > 0:
+                    ct = solver.Constraint(-solver.infinity(), snr_map_mn[m][n])
+                    ct.SetCoefficient(ytmn[t][m][n], MIN_SNR_m[n])
+
     # Antenas m support a max number of users connected
     for t in range(0,T):
         for m in range(0,M):
             ct = solver.Constraint(-solver.infinity(), MAX_USER_PER_ANTENNA_m[m])
             for n in range(0,M):
                 ct.SetCoefficient(ytmn[t][m][n], users_t_m[t][n])
+    
     # A sector n will be only connected to a single antenna in sector m
     for t in range(0,T):
         for n in range(0,M):
-            if (users_t_m[t][n] > 0):
+            if users_t_m[t][n] > 0:
                 ct = solver.Constraint(1,1)
                 for m in range(0,M):
                     ct.SetCoefficient(ytmn[t][m][n], 1)
 
+    # An antenna must be connected to the backhaul
+    for t in range(1,T):
+        for m in range(0,M):
+            ct=solver.Constraint(-solver.infinity(),0)
+            ct.SetCoefficient(xtm[t][m], 1)
+            for n in range(0, M):
+                if distance_mn[m][n] <= MIN_DIS :
+                    ct.SetCoefficient(xtm[t][n], -1)
+
     # Create near past variable
-    for t in range(delta+1, T):
+    for t in range(delta, T):
         for m in range(0,M):
             ct=solver.Constraint(0,0)
             ct.SetCoefficient(past_xtm[t][m], -1)
-            for j in range(t-delta-1, t-1):
-                ct.SetCoefficient(xtm[t][m], 1)
+            for j in range(t-delta, t):
+                ct.SetCoefficient(xtm[j][m], 1)
 
     # Determine the temporal relationship
-    LARGE_NUM=delta+1
     for m in range(0,M):
-        for t in range(delta+1, T):
-            ct=solver.Constraint(delta-LARGE_NUM, solver.infinity())
-            ct.SetCoefficient(xtm[t][m], LARGE_NUM) # We can always install a new antenna
-            ct.SetCoefficient(xtm[t-1][m], -LARGE_NUM) # In case the near past is 0 the present can also be 0
+        for t in range(0, delta):
+            ct=solver.Constraint(0, 1)
+            ct.SetCoefficient(xtm[t][m], 1) 
+            ct.SetCoefficient(xtm[t-1][m], -1) # In case the near past is 0 the present can also be 0
+            
+        for t in range(delta, T):
+            ct=solver.Constraint(0, solver.infinity())
+            ct.SetCoefficient(xtm[t][m], delta) # We can always install a new antenna
+            ct.SetCoefficient(xtm[t-1][m], -delta) # In case the near past is 0 the present can also be 0
             ct.SetCoefficient(past_xtm[t][m], 1) # In case the near past is 1, 
 
 
@@ -70,15 +89,16 @@ def ccop_mv_MILP(
     for t in range(0, T):
         for m in range(0,M):
             for n in range(0,M):
-                ct = solver.Constraint(-solver.infinity(),0)
-                ct.SetCoefficient(ytmn[t][m][n], 1)
-                ct.SetCoefficient(xtm[t][m], -1)
-
+                if m != n:
+                    ct = solver.Constraint(-solver.infinity(),0)
+                    ct.SetCoefficient(ytmn[t][m][n], 1)
+                    ct.SetCoefficient(xtm[t][m], -1)
                 # Constraint - if antenna in m then serve m
-                if m == n:
+                else:
                     ct = solver.Constraint(0,0)
                     ct.SetCoefficient(ytmn[t][m][n], 1)
                     ct.SetCoefficient(xtm[t][m], -1)
+                    
     objective = solver.Objective()
     for t in range(0, T):
         for m in range(0,M):
@@ -87,23 +107,25 @@ def ccop_mv_MILP(
 
     status = solver.Solve()
     if status == pywraplp.Solver.OPTIMAL:
-        print(objective.Value()/T)
-        for t in range(0,T):
-            print("t=%d"%t)
-            for m in range(0,M):
-                print(xtm[t][m],"=", xtm[t][m].solution_value())
-                if xtm[t][m].solution_value() > 0:
-                    users=0
-                    snr_medio=0
-                    contador=0
-                    for n in range(0,M):
-                        if ytmn[t][m][n].solution_value() > 0 :
-                            contador+=1
-                            snr_medio+=snr_map_mn[m][n]
-                            print("\t",ytmn[t][m][n], "=",snr_map_mn[m][n],"dB")
-                            users+=users_t_m[t][n]
-                    print("\t\tSNR medio:", snr_medio/contador)
-                    print("\t\tUsuarios totais:", users)
+        with open(result_dir + "/result_varying_"+ str(MIN_SNR_m[0])+".txt", "w") as f:
+            print(objective.Value()/T)
+            for t in range(0,T):
+                print("t=%d"%t)
+                for m in range(0,M):
+                    if xtm[t][m].solution_value() > 0:
+                        print(xtm[t][m],"=", xtm[t][m].solution_value())
+                        #users=0
+                        #snr_medio=0
+                        #contador=0
+                        for n in range(0,M):
+                            if ytmn[t][m][n].solution_value() > 0 :
+                                #contador+=1
+                                #snr_medio+=snr_map_mn[m][n]
+                                #print("\t",ytmn[t][m][n], "=",snr_map_mn[m][n],"dB")
+                                f.write("{t} {m} {n}\n".format(t= t, m= m, n= n))
+                                #users+=users_t_m[t][n]
+                        #print("\t\tSNR medio:", snr_medio/contador)
+                        #print("\t\tUsuarios totais:", users)
 
 
 
