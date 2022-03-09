@@ -195,7 +195,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
 
 def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name = ''):
+                  extra_config_name = '', result_dir = '.'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -222,6 +222,7 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     app: type of application (voip or video)
     target_f: target throughput considered to compute sendInterval, used by the Video Streaming application
     extra_config_name: string to be added at the end of the configuration name
+    result_dir: directory with the solver results in .txt files
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -234,7 +235,7 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
 
-  optimized, antennas_regions = parse_results("result_"+ str(min_sinr)+".txt", num_slices)
+  optimized, antennas_regions = parse_results(result_dir + "/result_fixed_"+ str(min_sinr)+".txt", num_slices)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
