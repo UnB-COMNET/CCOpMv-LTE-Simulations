@@ -14,8 +14,8 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  min_sinr = 5
-  result_dir = "Solutions/Results"
+  min_sinr = 40
+  result_dir = "Solutions"
 
   run_all = False
 
@@ -78,8 +78,7 @@ make
     antennas_map_m = [1 for i in range(scen.n_sectors)]
     min_snr_m = [min_sinr for i in range(scen.n_sectors)]
     distance_mn = scen.getRegionsDistanceMatrix()
-    min_dis = 600 #Fibra do CCopMv
-    print(distance_mn[75][76])
+    min_dis = 600 #Fibra do CCopMv (500)
 
     #Generating ues time map
     print("-------------Generating ues map")
