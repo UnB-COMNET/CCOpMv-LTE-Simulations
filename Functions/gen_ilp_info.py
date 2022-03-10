@@ -4,8 +4,10 @@ from Solutions.ILP_fixed_in_time import ccop_mv_MILP as solver_fixed
 from Solutions.ILP_varying_in_time import ccop_mv_MILP as solver_varying
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
+import time
 
 def main():
+  start_time = time.time()
   #Main parameters
   chosen_seed = 123
   size_y = 4000
@@ -17,6 +19,7 @@ def main():
   min_sinr = 10
   result_dir = "Solutions"
   varying = False
+  min_dis = 600 #Fibra do CCopMv (500)
 
   run_all = False
 
@@ -78,7 +81,6 @@ make
     antennas_map_m = [1 for i in range(scen.n_sectors)]
     min_snr_m = [min_sinr for i in range(scen.n_sectors)]
     distance_mn = scen.getRegionsDistanceMatrix()
-    min_dis = 600 #Fibra do CCopMv (500)
 
     #Generating ues time map
     print("-------------Generating ues map")
@@ -86,6 +88,7 @@ make
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
+    print(f"+++++++++++++++++++Min Sinr: {min_sinr} mW ({'varying' if varying else 'fixed'})")
     if varying:
       min_time= 2
       solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
@@ -100,6 +103,8 @@ make
     for t_ues in ues_coords:
       scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
   #print(map_ues_time)
+
+  print(f"--- Done after {time.time() - start_time} seconds. ---")
 
 if __name__ == "__main__":
   main()
