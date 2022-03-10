@@ -1,5 +1,5 @@
 from distutils.command.config import config
-import _5G_Scenarios.ILP_fixed as ilpf
+import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 
 def main():
@@ -19,20 +19,21 @@ def main():
   p_size = 1428#40
   app = "video"
   target_f= 10 #Mbps
+  varying = True
 
   for i in range(len(min_sinrs)):
 
     print("Generating configuration files - Min Snr: {}".format(min_sinrs[i]))
-    ilpf.ilp_fixed_ned(n_enbs= len(enbs[i]))
+    ilpc.ilp_fixed_ned(n_enbs= len(enbs[i]))
 
     ini_path = dir_path + 'ilp_fixed.ini'
-    config_name = ilpf.ilp_fixed_ini(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions, antennas_regions= enbs[i],
+    config_name = ilpc.ilp_fixed_ini(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions, antennas_regions= enbs[i],
                                      min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO", target_f= target_f)
 
     ini_path_sliced = dir_path + 'ilp_fixed_sliced.ini'
-    config_name_sliced = ilpf.ilp_fixed_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions, min_sinr= min_sinrs[i],
-                                                   num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO", time= 1, target_f= target_f,
-                                                   result_dir= result_dir)
+    config_name_sliced = ilpc.ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions, min_sinr= min_sinrs[i],
+                                             num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO", time= 1, target_f= target_f,
+                                             result_dir= result_dir, varying = varying)
     
     print("Running simulations - Min Snr: {}".format(min_sinrs[i]))
     run_simulation(ini_path= ini_path, config_name= config_name)

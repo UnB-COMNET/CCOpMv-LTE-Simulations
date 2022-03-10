@@ -1,7 +1,8 @@
 import geometry as geo
 from helper_xml import get_map_ues_time, get_ues_time
-from Solutions.ILP_fixed_in_time import ccop_mv_MILP
-import _5G_Scenarios.ILP_fixed as ilpf
+from Solutions.ILP_fixed_in_time import ccop_mv_MILP as solver_fixed
+from Solutions.ILP_varying_in_time import ccop_mv_MILP as solver_varying
+import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 
 def main():
@@ -20,7 +21,7 @@ def main():
 
   if run_all:
     #Genereting .ini file
-    ilpf.ilp_fixed_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
+    ilpc.ilp_fixed_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
 
     open(xml_filename, 'w').close()
 
@@ -38,6 +39,7 @@ make
   show_full = False
   show_ues = False
   is_micro = True
+  varying = True
 
   #Initiating scenario
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -85,8 +87,13 @@ make
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
-    ccop_mv_MILP(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
-                snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir)
+    if varying:
+      solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir)
+    else:
+      min_time= 2
+      solver_fixed(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time)
 
   elif show_ues:
     #Plotting ues configuration over time

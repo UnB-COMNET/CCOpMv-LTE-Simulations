@@ -135,19 +135,19 @@ def ccop_mv_MILP(
         print("Not feasible")
     
 
-Max_Space=6
-Max_Time=6
-users_t_m = [[ math.ceil(random.random()*20) for m in range(0,Max_Space)] for t in range(0,Max_Time)]
-antenasmap_m = [1,1,1,1,0,0]
-MAX_USER_PER_ANTENNA_m=[60,40,60,40,60,40]
-snr_map_mn=[[random.random()*50 for n in range(0,Max_Space)] for m in range(0,Max_Space)]
-MIN_SNR_m=[20,30,10,25,20,15]
+#Max_Space=6
+#Max_Time=6
+#users_t_m = [[ math.ceil(random.random()*20) for m in range(0,Max_Space)] for t in range(0,Max_Time)]
+#antenasmap_m = [1,1,1,1,0,0]
+#MAX_USER_PER_ANTENNA_m=[60,40,60,40,60,40]
+#snr_map_mn=[[random.random()*50 for n in range(0,Max_Space)] for m in range(0,Max_Space)]
+#MIN_SNR_m=[20,30,10,25,20,15]
 
 
-ccop_mv_MILP(Max_Space,
-    Max_Time, 
-    users_t_m, 
-    MAX_USER_PER_ANTENNA_m, 
-    antenasmap_m, 
-    snr_map_mn, 
-    MIN_SNR_m)
+#ccop_mv_MILP(Max_Space,
+#    Max_Time, 
+#    users_t_m, 
+#    MAX_USER_PER_ANTENNA_m, 
+#    antenasmap_m, 
+#    snr_map_mn, 
+#    MIN_SNR_m)
