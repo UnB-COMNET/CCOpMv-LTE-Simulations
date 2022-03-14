@@ -13,6 +13,7 @@ def ccop_mv_MILP(
     distance_mn,
     MIN_TIME=2,
     MIN_DIS=2,
+    FIRST_ANTENNA=1,
     result_dir = '.'):
     
     M = Max_Space
@@ -31,6 +32,12 @@ def ccop_mv_MILP(
     ytmn = [[[solver.BoolVar("$y_{%d,%d,%d}$"%(t,m,n)) for n in range(0,M)] for m in range(0,M)] for t in range(0, T)]
 
     ## Constraints
+    #The first antenna must be in place at time 0
+    t=0
+    m=FIRST_ANTENNA
+    ct=solver.Constraint(1, 1)
+    ct.SetCoefficient(xtm[t][m], 1)
+
     # Antennas must serve n areas only if the signal meet a minimum SNR omega
     for t in range(0,T):
         for m in range(0, M):
@@ -60,7 +67,7 @@ def ccop_mv_MILP(
             ct=solver.Constraint(-solver.infinity(),0)
             ct.SetCoefficient(xtm[t][m], 1)
             for n in range(0, M):
-                if distance_mn[m][n] <= MIN_DIS :
+                if distance_mn[m][n] <= MIN_DIS and m != n:
                     ct.SetCoefficient(xtm[t][n], -1)
 
     # Create near past variable
@@ -133,21 +140,3 @@ def ccop_mv_MILP(
 
     else:
         print("Not feasible")
-    
-
-#Max_Space=6
-#Max_Time=6
-#users_t_m = [[ math.ceil(random.random()*20) for m in range(0,Max_Space)] for t in range(0,Max_Time)]
-#antenasmap_m = [1,1,1,1,0,0]
-#MAX_USER_PER_ANTENNA_m=[60,40,60,40,60,40]
-#snr_map_mn=[[random.random()*50 for n in range(0,Max_Space)] for m in range(0,Max_Space)]
-#MIN_SNR_m=[20,30,10,25,20,15]
-
-
-#ccop_mv_MILP(Max_Space,
-#    Max_Time, 
-#    users_t_m, 
-#    MAX_USER_PER_ANTENNA_m, 
-#    antenasmap_m, 
-#    snr_map_mn, 
-#    MIN_SNR_m)

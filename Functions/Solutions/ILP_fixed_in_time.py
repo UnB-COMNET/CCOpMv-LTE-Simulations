@@ -13,6 +13,7 @@ def ccop_mv_MILP(
     MIN_SNR_m,#Minimo SNR dado pela antena de local m Watts
     distance_mn,
     MIN_DIS=2,
+    FIRST_ANTENNA=1,
     result_dir = '.'):
 
     M = Max_Space
@@ -29,6 +30,13 @@ def ccop_mv_MILP(
     ytmn = [[[solver.BoolVar("$y_{%d,%d,%d}$"%(t,m,n)) for n in range(0,M)] for m in range(0,M)] for t in range(0, T)]
 
     ## Constraints
+    #The first antenna must be in place at time 0
+    t=0
+    m=FIRST_ANTENNA
+    ct=solver.Constraint(1, 1)
+    ct.SetCoefficient(xtm[t][m], 1)
+
+
     # Antennas must serve n areas only if the signal meet a minimum SNR omega
     for t in range(0,T):
         for m in range(0, M):
@@ -58,7 +66,7 @@ def ccop_mv_MILP(
             ct=solver.Constraint(-solver.infinity(),0)
             ct.SetCoefficient(xtm[t][m], 1)
             for n in range(0, M):
-                if distance_mn[m][n] <= MIN_DIS :
+                if distance_mn[m][n] <= MIN_DIS and m != n:
                     ct.SetCoefficient(xtm[t][n], -1)
 
     # After installed an antenna can never be removed

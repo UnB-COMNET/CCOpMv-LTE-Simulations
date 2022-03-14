@@ -16,10 +16,11 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  min_sinr = 10
+  min_sinr = 40
   result_dir = "Solutions"
-  varying = False
-  min_dis = 600 #Fibra do CCopMv (500)
+  varying = True
+  min_dis = 2000 #Fibra do CCopMv (500)
+  first_antenna_region = 1
 
   run_all = False
 
@@ -92,14 +93,14 @@ make
     if varying:
       min_time= 2
       solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
-                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time)
+                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time, FIRST_ANTENNA= first_antenna_region)
     else:
       solver_fixed(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
-                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir)
+                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, FIRST_ANTENNA= first_antenna_region)
 
   elif show_ues:
     #Plotting ues configuration over time
-    ues_coords = get_ues_time(scen= scen, xml_filename= xml_filename)
+    ues_coords = get_ues_time(ues_list= scen.getUEsList(), xml_filename= xml_filename)
     for t_ues in ues_coords:
       scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
   #print(map_ues_time)
