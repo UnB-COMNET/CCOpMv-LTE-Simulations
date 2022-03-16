@@ -30,7 +30,7 @@ def main():
                                                      min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO",
                                                      target_f= target_f, result_dir= result_dir)
 
-    ini_path_sliced = dir_path + 'ilp_fixed_sliced.ini'
+    ini_path_sliced = dir_path + f'ilp_{"varying" if varying else "fixed"}_sliced.ini'
     config_name_sliced, enbs_sliced_num = ilpc.ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                               min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO",
                                                               time= 1, target_f= target_f, result_dir= result_dir, varying = varying)

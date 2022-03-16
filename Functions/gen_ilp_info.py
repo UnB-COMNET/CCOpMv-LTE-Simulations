@@ -90,6 +90,7 @@ make
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
     print(f"+++++++++++++++++++Min Sinr: {min_sinr} mW ({'varying' if varying else 'fixed'})")
+    #print(f"+++++++++++++++++++With backhaul constraint")
     if varying:
       min_time= 2
       solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
@@ -105,7 +106,7 @@ make
       scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
   #print(map_ues_time)
 
-  print(f"--- Done after {time.time() - start_time} seconds. ---")
+  print(f"--- Done after {(time.time() - start_time)/(60*60)} hours. ---")
 
 if __name__ == "__main__":
   main()
