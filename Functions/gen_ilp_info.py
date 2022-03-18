@@ -4,10 +4,11 @@ from Solutions.ILP_fixed_in_time import ccop_mv_MILP as solver_fixed
 from Solutions.ILP_varying_in_time import ccop_mv_MILP as solver_varying
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
-import time
+from time import time, localtime, mktime
+from datetime import datetime
 
 def main():
-  start_time = time.time()
+  start_time = time()
   #Main parameters
   chosen_seed = 123
   size_y = 4000
@@ -16,7 +17,7 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  min_sinr = 40
+  min_sinr = 100
   result_dir = "Solutions"
   varying = True
   min_dis = 2000 #Fibra do CCopMv (500)
@@ -90,7 +91,8 @@ make
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
     print(f"+++++++++++++++++++Min Sinr: {min_sinr} mW ({'varying' if varying else 'fixed'})")
-    #print(f"+++++++++++++++++++With backhaul constraint")
+    print(f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}")
+    
     if varying:
       min_time= 2
       solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
@@ -106,7 +108,7 @@ make
       scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
   #print(map_ues_time)
 
-  print(f"--- Done after {(time.time() - start_time)/(60*60)} hours. ---")
+  print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
 
 if __name__ == "__main__":
   main()

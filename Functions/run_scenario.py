@@ -11,12 +11,12 @@ def main():
   dir_path = '../Network_CCOpMv/_5G/simulations/'
   enbs = []
   min_sinr = 10
-  num_bands = [6, 100]
+  num_bands = [100]
   multi_carriers = False
   is_micro = True
   p_size = 1428#40
   app = "video"
-  repetitions = 5
+  repetitions = 3
   target_f= 10 #Mbps
   result_dir = "Solutions"
   time_slice = 1
