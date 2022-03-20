@@ -31,7 +31,7 @@ def main():
                                                   min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO",
                                                   time= time_slice, target_f= target_f, result_dir= result_dir, varying= varying)
   #ilpc.ilp_ned(network = "ILPFixedNet", n_enbs= enbs_hando_num, size_x= size_x, size_y= size_y)                                                
-  ilpc.ilp_ned(network = "ILPVaryingNet", n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y) 
+  ilpc.ilp_ned(network = f"ILP{'Varying' if varying else 'Fixed'}Net", n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y) 
   
 if __name__ == "__main__":
   main()
