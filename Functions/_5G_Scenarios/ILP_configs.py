@@ -69,7 +69,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
 
-def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
+def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
                   extra_config_name: str = '', result_dir: str = '.'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
@@ -109,7 +109,7 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
 
     max_time = len(ues_map)
-    tmp, antennas_regions = parse_results(result_dir + f"/result_fixed_"+ str(min_sinr)+".txt", max_time)
+    tmp, antennas_regions, tmp_2 = parse_results(result_dir + f"/result_fixed_"+ str(min_sinr)+".txt", max_time)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -247,7 +247,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   ilp_type = 'varying' if varying else 'fixed'
 
-  optimized, antennas_regions = parse_results(result_dir + f"/result_{ilp_type}_"+ str(min_sinr)+".txt", num_slices)
+  optimized, antennas_regions, num_enbs_time = parse_results(result_dir + f"/result_{ilp_type}_"+ str(min_sinr)+".txt", num_slices)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -297,6 +297,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
                            cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
+    hp.writeNumEnbs(f, options= num_enbs_time, iter_name= 'NumEnbs', parallel_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
     if is_micro:
@@ -379,23 +380,31 @@ def parse_results(filename: str, max_time: int):
     max_time: Max_Time parameter used in the solver
 
   Return:
-    Two structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
+    Three structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
     The second one is a list with the sectors where the eNBs were located (List[int]).
+    The third is a list with the number of eNBs deployed in each slice
   """
 
   results = []
   enbs = []
+  enbs_time = []
   for i in range(max_time):
     results.append({})
+    enbs_time.append([])
 
   with open(filename, "r") as f:
     for line in f:
       data = [int(x) for x in line.split()]
       results[data[0]][data[2]] = data[1]
+      enbs_time[data[0]].append(data[1])
       enbs.append(data[1])
       enbs = np.unique(enbs).tolist()
 
-  return results, enbs
+  #Get the number of eNBs at each slice
+  for t in range(max_time):
+    enbs_time[t] = np.unique(enbs_time[t]).size
+
+  return results, enbs, enbs_time
 
 def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
   """This function interpretates the result parsed from the solver in to the elements connections.
