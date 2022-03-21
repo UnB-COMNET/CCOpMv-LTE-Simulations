@@ -24,8 +24,6 @@ def ccop_mv_MILP(
     ## Decision variables
     #Placement variables
     xtm = [[solver.NumVar(0, antenasmap_m[m], "$x_{%d,%d}$"%(t,m)) for m in range(0,M)] for t in range(0, T)]
-    #Past of the placement variables
-    past_xtm = [[solver.NumVar(0, solver.infinity(), "$past_x_{%d,%d}$"%(t,m)) for m in range(0,M)] for t in range(0, T)]
     #Connection variables
     ytmn = [[[solver.BoolVar("$y_{%d,%d,%d}$"%(t,m,n)) for n in range(0,M)] for m in range(0,M)] for t in range(0, T)]
 
