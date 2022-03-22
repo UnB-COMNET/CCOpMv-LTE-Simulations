@@ -9,8 +9,8 @@ def main():
   size_sector = 400
   n_macros = 1
   dir_path = '../Network_CCOpMv/_5G/simulations/'
-  enbs = []
-  min_sinr = 10
+  #enbs = []
+  min_sinr = 10 #5, 10, 15
   num_bands = [100]
   multi_carriers = False
   is_micro = True

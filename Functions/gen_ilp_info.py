@@ -1,4 +1,5 @@
 import geometry as geo
+from sinr_comput import db_to_linear
 from helper_xml import get_map_ues_time, get_ues_time
 from Solutions.ILP_fixed_in_time import ccop_mv_MILP as solver_fixed
 from Solutions.ILP_varying_in_time import ccop_mv_MILP as solver_varying
@@ -17,10 +18,10 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  min_sinr = 5
+  min_sinr = 5 #5, 10, 15
   result_dir = "Solutions"
-  varying = False
-  min_dis = 2000 #Fibra do CCopMv (500)
+  varying = True
+  min_dis = 2000 #Enlace de rádio na prática
   first_antenna_region = 1
 
   run_all = False
@@ -81,7 +82,7 @@ make
     #Generating default parameters
     max_user_antenna_m = [60 for i in range(scen.n_sectors)]
     antennas_map_m = [1 for i in range(scen.n_sectors)]
-    min_snr_m = [min_sinr for i in range(scen.n_sectors)]
+    min_snr_m = [db_to_linear(min_sinr) for i in range(scen.n_sectors)]
     distance_mn = scen.getRegionsDistanceMatrix()
 
     #Generating ues time map
@@ -90,7 +91,7 @@ make
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
-    print(f"+++++++++++++++++++Min Sinr: {min_sinr} mW ({'varying' if varying else 'fixed'})")
+    print(f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({'varying' if varying else 'fixed'})")
     print(f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}")
     
     if varying:
