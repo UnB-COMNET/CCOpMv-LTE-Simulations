@@ -24,7 +24,7 @@ def main():
   for i in range(len(min_sinrs)):
     for varying in varyings:
 
-      print("Generating configuration files - Min Snr: {}".format(min_sinrs[i]))
+      print("Generating configuration files - Min Snr: {} - {}".format(min_sinrs[i], "Varying" if varying else "Fixed"))
 
       ini_path_sliced = dir_path + f'ilp_{"varying" if varying else "fixed"}_sliced.ini'
       config_name_sliced, enbs_sliced_num = ilpc.ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
