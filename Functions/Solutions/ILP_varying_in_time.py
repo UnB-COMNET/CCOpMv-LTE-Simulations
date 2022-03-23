@@ -1,5 +1,5 @@
 from ortools.linear_solver import pywraplp
-import random
+from ..sinr_comput import linear_to_db
 import math 
 
 def ccop_mv_MILP(
@@ -132,7 +132,7 @@ def ccop_mv_MILP(
 
     status = solver.Solve()
     if status == pywraplp.Solver.OPTIMAL:
-        with open(result_dir + "/result_varying_"+ str(MIN_SNR_m[0])+".txt", "w") as f:
+        with open(result_dir + "/result_varying_"+ str(int(linear_to_db(MIN_SNR_m[0])))+".txt", "w") as f:
             print("\nMédia de carros:", objective.Value()/T)
             for t in range(0,T):
                 print("t=%d"%t)

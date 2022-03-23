@@ -18,7 +18,7 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  min_sinr = 5 #5, 10, 15
+  min_sinr = 15 #5, 10, 15
   result_dir = "Solutions"
   varying = True
   min_dis = 2000 #Enlace de rádio na prática
