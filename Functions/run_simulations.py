@@ -9,7 +9,7 @@ def main():
   size_sector = 400
   n_macros = 1
   dir_path = '../Network_CCOpMv/_5G/simulations/'
-  result_dir = "Solutions"
+  result_dir = "Solutions/"
   #enbs = []
   min_sinrs = [5, 10, 15] #Must exist result_*.txt file where * is in min_sinrs (for sliced approach)
   num_bands = [100]

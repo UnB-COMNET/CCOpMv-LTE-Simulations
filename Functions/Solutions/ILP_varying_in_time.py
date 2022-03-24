@@ -14,7 +14,7 @@ def ccop_mv_MILP(
     MIN_TIME=2,
     MIN_DIS=2,
     FIRST_ANTENNA=1,
-    result_dir = '.'):
+    result_dir = './'):
     
     M = Max_Space
     T = Max_Time
@@ -132,7 +132,7 @@ def ccop_mv_MILP(
 
     status = solver.Solve()
     if status == pywraplp.Solver.OPTIMAL:
-        with open(result_dir + "/result_varying_"+ str(int(linear_to_db(MIN_SNR_m[0])))+".txt", "w") as f:
+        with open(result_dir + "result_varying_"+ str(int(linear_to_db(MIN_SNR_m[0])))+".txt", "w") as f:
             print("\nMédia de carros:", objective.Value()/T)
             for t in range(0,T):
                 print("t=%d"%t)

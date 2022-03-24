@@ -18,7 +18,7 @@ def main():
   app = "video"
   repetitions = 3
   target_f= 10 #Mbps
-  result_dir = "Solutions"
+  result_dir = "Solutions/"
   time_slice = 1
   varying = True
 

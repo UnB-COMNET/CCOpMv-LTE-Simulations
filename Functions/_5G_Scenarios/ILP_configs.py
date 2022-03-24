@@ -71,7 +71,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
 
 def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
-                  extra_config_name: str = '', result_dir: str = '.'):
+                  extra_config_name: str = '', result_dir: str = './'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -109,7 +109,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
 
     max_time = len(ues_map)
-    tmp, antennas_regions, tmp_2 = parse_results(result_dir + f"/result_fixed_"+ str(min_sinr)+".txt", max_time)
+    tmp, antennas_regions, tmp_2 = parse_results(result_dir + f"result_fixed_"+ str(min_sinr)+".txt", max_time)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -204,7 +204,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name: str = '', result_dir: str = '.', varying: bool = False):
+                  extra_config_name: str = '', result_dir: str = './', varying: bool = False):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -247,7 +247,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   ilp_type = 'varying' if varying else 'fixed'
 
-  optimized, antennas_regions, num_enbs_time = parse_results(result_dir + f"/result_{ilp_type}_"+ str(min_sinr)+".txt", num_slices)
+  optimized, antennas_regions, num_enbs_time = parse_results(result_dir + f"result_{ilp_type}_"+ str(min_sinr)+".txt", num_slices)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
