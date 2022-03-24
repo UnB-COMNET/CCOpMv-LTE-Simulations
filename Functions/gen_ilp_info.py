@@ -121,9 +121,6 @@ def run_all_solvers(ini_path: str, chosen_seed: int, xml_filename: str, size_x: 
     else:
         var = [True, False]
 
-    run_movement_simulation(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector,
-                            n_macros= n_macros, xml_filename= xml_filename)
-
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
               'xml_filename': xml_filename, 'result_dir': result_dir, 'varying': None, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region}
