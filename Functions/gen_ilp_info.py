@@ -18,14 +18,16 @@ def main():
     size_sector = 400
     n_macros = 1
     xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-    #min_sinr = 15 #5, 10, 15s
+    min_sinr = 15 #5, 10, 15s
     min_sinrs = [5, 10, 15]
     result_dir = "Solutions/"
-    #varying = True
+    varying = True
     min_dis = 2000 #Enlace de rádio na prática
     first_antenna_region = 1
-    run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                    xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
+    gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, varying= varying,
+                 xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
+    #run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
+    #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
 
 def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
                  min_sinr: int, result_dir: str, varying: bool, min_dis: int, first_antenna_region: int):
@@ -108,7 +110,7 @@ def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y
                      '\nmake\n'
                      './Network_CCOpMv ' + ini_path + r' -u Cmdenv -c ilp_fixed_users -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
 
-def run_all_solvers(ini_path: str, chosen_seed: int, xml_filename: str, size_x: int, size_y: int, size_sector: int, n_macros: int,
+def run_all_solvers(chosen_seed: int, xml_filename: str, size_x: int, size_y: int, size_sector: int, n_macros: int,
                     min_sinrs: List[int], result_dir: str, min_dis: int, first_antenna_region: int, mode: str = ''):
 
     var = []
@@ -142,9 +144,6 @@ def run_all_solvers(ini_path: str, chosen_seed: int, xml_filename: str, size_x: 
     
     for p in processes:
         p.join()
-
-def pass_minsinr_arg(partial_f, min_sinr):
-    return partial_f(min_sinr= min_sinr)
 
 if __name__ == "__main__":
     main()

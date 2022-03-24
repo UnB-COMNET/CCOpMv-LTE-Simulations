@@ -71,7 +71,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
 
 def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
-                  extra_config_name: str = '', result_dir: str = './'):
+                  extra_config_name: str = '', result_dir: str = './', network_name: str = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -97,6 +97,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     target_f: target throughput considered to compute sendInterval, used by the Video Streaming application
     extra_config_name: string to be added at the end of the configuration name
     result_dir: directory with the solver results in .txt files (used if antennas_regions == [])
+    network_name: if diferent than '' is used as the network of the configuration
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -124,11 +125,14 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
+  network_full_name = f'_5G.networks.ILPFixedNet' if network_name == '' else network_name
+
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed_ini", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
-    hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
+    hp.writeNetwork(f, network= network_full_name)
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
@@ -204,7 +208,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name: str = '', result_dir: str = './', varying: bool = False):
+                  extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = ''):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -233,6 +237,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     extra_config_name: string to be added at the end of the configuration name
     result_dir: directory with the solver results in .txt files
     varying: if true use ILP_varying_in_time results else use ILP_fixed_in_time results
+    network_name: if diferent than '' is used as the network of the configuration
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -270,11 +275,13 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
+  network_full_name = f'_5G.networks.ILP{ilp_type.capitalize()}Net' if network_name == '' else network_name
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, f'ilp_{ilp_type}_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
-    hp.writeNetwork(f, network= f'_5G.networks.ILP{ilp_type.capitalize()}Net')
+    hp.writeNetwork(f, network= network_full_name)
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)

@@ -82,10 +82,10 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         p.join()
 
 def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
-            varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, dir_path: str,
-            num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float,
-            result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
-            extra_config_name: str = ''):
+                varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, dir_path: str,
+                num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float,
+                result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
+                extra_config_name: str = ''):
 
     #Running solver
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
@@ -94,12 +94,15 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {}".format(min_sinr, "Varying" if varying else "Fixed"))
+    
     ini_path_sliced = dir_path + f'ilp_{"varying" if varying else "fixed"}_sliced_{str(min_sinr)}.ini'
+    network_name = f"ILP{'Varying' if varying else 'Fixed'}Net{str(min_sinr)}"
+
     config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                         time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying)
+                                                         time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name)
 
-    ilp_ned(network = f"ILP{'Varying' if varying else 'Fixed'}Net{str(min_sinr)}", n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)
+    ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)
 
     #Running the simulation
     run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced)
