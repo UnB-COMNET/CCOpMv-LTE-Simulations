@@ -1,5 +1,5 @@
 from ortools.linear_solver import pywraplp
-from ..sinr_comput import linear_to_db
+from sinr_comput import linear_to_db
 import math 
 
 def ccop_mv_MILP(
