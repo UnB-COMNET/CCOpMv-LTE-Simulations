@@ -106,7 +106,7 @@ def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y
     subprocess.call(('cd ../Network_CCOpMv\n'
                      r'opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
                      '\nmake\n'
-                     './Network_CCOpMv ') + ini_path + r' -u Cmdenv -c ilp_fixed_users -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src', shell= True)
+                     './Network_CCOpMv ' + ini_path + r' -u Cmdenv -c ilp_fixed_users -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
 
 def run_all_solvers(ini_path: str, chosen_seed: int, xml_filename: str, size_x: int, size_y: int, size_sector: int, n_macros: int,
                     min_sinrs: List[int], result_dir: str, min_dis: int, first_antenna_region: int, mode: str = ''):
@@ -121,8 +121,8 @@ def run_all_solvers(ini_path: str, chosen_seed: int, xml_filename: str, size_x: 
     else:
         var = [True, False]
 
-    #run_movement_simulation(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector,
-    #                        n_macros= n_macros, xml_filename= xml_filename)
+    run_movement_simulation(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector,
+                            n_macros= n_macros, xml_filename= xml_filename)
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,

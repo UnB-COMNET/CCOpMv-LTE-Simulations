@@ -35,7 +35,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
-    hp.makeNewConfig(f, name= 'Config ilp_fixed_users')
+    hp.makeNewConfig(f, name= 'ilp_fixed_users')
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
     hp.writeTime(f, time= 10, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
