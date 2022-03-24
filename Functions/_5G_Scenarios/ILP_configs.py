@@ -69,9 +69,9 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
     hp.writeConstraint(f, object_name= 'ue[*]', maxX=size_x, minX=0, maxY=size_y, minY= 0)
 
-def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
-                  extra_config_name = ''):
+def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
+                  extra_config_name: str = '', result_dir: str = '.'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -96,12 +96,21 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     app: type of application (voip or video)
     target_f: target throughput considered to compute sendInterval, used by the Video Streaming application
     extra_config_name: string to be added at the end of the configuration name
+    result_dir: directory with the solver results in .txt files (used if antennas_regions == [])
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                       enb_tx_power= 30 if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
+
+  if antennas_regions == []:
+    xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
+    ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
+
+    max_time = len(ues_map)
+    tmp, antennas_regions, tmp_2 = parse_results(result_dir + f"/result_fixed_"+ str(min_sinr)+".txt", max_time)
+
   scen.placeAntennas(list_regions= antennas_regions)
 
   ues_coords = scen.getUEsPositionList()
@@ -191,11 +200,11 @@ def ilp_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_secto
     hp.writeComment(f, text= "Connections")
     hp.writeX2Connections(f, object_names = ["eNB"], quantities= [num_enbs], initial_values= [0])
 
-  return config_name
+  return config_name, num_enbs
 
-def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:float = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name = ''):
+def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
+                  num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
+                  extra_config_name: str = '', result_dir: str = '.', varying: bool = False):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -222,6 +231,8 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
     app: type of application (voip or video)
     target_f: target throughput considered to compute sendInterval, used by the Video Streaming application
     extra_config_name: string to be added at the end of the configuration name
+    result_dir: directory with the solver results in .txt files
+    varying: if true use ILP_varying_in_time results else use ILP_fixed_in_time results
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -234,7 +245,9 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
 
-  optimized, antennas_regions = parse_results("result_"+ str(min_sinr)+".txt", num_slices)
+  ilp_type = 'varying' if varying else 'fixed'
+
+  optimized, antennas_regions, num_enbs_time = parse_results(result_dir + f"/result_{ilp_type}_"+ str(min_sinr)+".txt", num_slices)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -253,15 +266,15 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
 
   connections = getUesConnections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
-  config_name = 'ilp_fixed_sliced_{}'.format(min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+  config_name = 'ilp_{}_sliced_{}'.format(ilp_type, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, 'ilp_fixed_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, f'ilp_{ilp_type}_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
-    hp.writeNetwork(f, network= '_5G.networks.ILPFixedNet')
+    hp.writeNetwork(f, network= f'_5G.networks.ILP{ilp_type.capitalize()}Net')
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
@@ -284,6 +297,7 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
                            cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
+    hp.writeNumEnbs(f, options= num_enbs_time, iter_name= 'NumEnbs', parallel_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
     if is_micro:
@@ -326,9 +340,9 @@ def ilp_fixed_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, siz
       hp.writeComment(f, text= "Video Streaming DL")
       hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True, s_interval= s_interval)
 
-  return config_name
+  return config_name, num_enbs
 
-def ilp_fixed_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
+def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
   
   The network created include the default and necessary submodules to ensure a correct Simu5G simulation.
@@ -358,31 +372,39 @@ def ilp_fixed_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =800
     hned.writeX2Connections(f, object_names=["eNB"], quantities= [n_enbs])
     hned.writeEndNet(f)
 
-def parse_results(filename: str, slices_num: int):
+def parse_results(filename: str, max_time: int):
   """This function parses the UEs and eNBs necessary information from the solver (ccop_mv_MILP) resulted solution.
 
   Args:
     filename: string representing the name of the txt file with the solution
-    slices_num: number of slices used
+    max_time: Max_Time parameter used in the solver
 
   Return:
-    Two structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
+    Three structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
     The second one is a list with the sectors where the eNBs were located (List[int]).
+    The third is a list with the number of eNBs deployed in each slice
   """
 
   results = []
   enbs = []
-  for i in range(slices_num):
+  enbs_time = []
+  for i in range(max_time):
     results.append({})
+    enbs_time.append([])
 
   with open(filename, "r") as f:
     for line in f:
       data = [int(x) for x in line.split()]
       results[data[0]][data[2]] = data[1]
+      enbs_time[data[0]].append(data[1])
       enbs.append(data[1])
       enbs = np.unique(enbs).tolist()
 
-  return results, enbs
+  #Get the number of eNBs at each slice
+  for t in range(max_time):
+    enbs_time[t] = np.unique(enbs_time[t]).size
+
+  return results, enbs, enbs_time
 
 def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
   """This function interpretates the result parsed from the solver in to the elements connections.

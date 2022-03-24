@@ -444,6 +444,10 @@ def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
   """Writes the configuration that defines the number of slices used when using MoreInfoChannelModel."""
   f.write('**.cellularNic.channelModel[*].num_slice = {}\n'.format(getOptionsString(values= range(num_slices), name= iter_name)))
 
+def writeNumEnbs(f, options: ty.List[int], iter_name: str = 'Slice', parallel_name: str = ''):
+  """Writes the configuration that informs the number of eNBs used when in each slice using MoreInfoChannelModel."""
+  f.write('**.cellularNic.channelModel[*].num_enbs = {}\n'.format(getOptionsString(values= options, name= iter_name, parallel= parallel_name)))  
+
 def writeNodeIsMicro(f, node_name, micro: bool = True):
   """Writes the configuration that defines a node as a microcell in a .ini file."""
   f.write('**.{}.cellInfo.microCell = {}\n'.format(node_name, "true" if micro else "false"))

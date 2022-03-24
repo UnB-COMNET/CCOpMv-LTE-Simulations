@@ -24,6 +24,7 @@ simple MoreInfoChannelModel extends LteRealisticChannelModel
 {
     parameters:
         int num_slice = default(0);
+        int num_enbs = default(0);
     @class("MoreInfoChannelModel");
     
     // statistics

@@ -1,10 +1,15 @@
 import geometry as geo
+from sinr_comput import db_to_linear
 from helper_xml import get_map_ues_time, get_ues_time
-from Solutions.ILP_fixed_in_time import ccop_mv_MILP
-import _5G_Scenarios.ILP_fixed as ilpf
+from Solutions.ILP_fixed_in_time import ccop_mv_MILP as solver_fixed
+from Solutions.ILP_varying_in_time import ccop_mv_MILP as solver_varying
+import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
+from time import time, localtime, mktime
+from datetime import datetime
 
 def main():
+  start_time = time()
   #Main parameters
   chosen_seed = 123
   size_y = 4000
@@ -13,13 +18,17 @@ def main():
   n_macros = 1
   ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
-  min_sinr = 100
+  min_sinr = 15 #5, 10, 15
+  result_dir = "Solutions"
+  varying = True
+  min_dis = 2000 #Enlace de rádio na prática
+  first_antenna_region = 1
 
   run_all = False
 
   if run_all:
     #Genereting .ini file
-    ilpf.ilp_fixed_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
+    ilpc.ilp_fixed_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
 
     open(xml_filename, 'w').close()
 
@@ -73,7 +82,8 @@ make
     #Generating default parameters
     max_user_antenna_m = [60 for i in range(scen.n_sectors)]
     antennas_map_m = [1 for i in range(scen.n_sectors)]
-    min_snr_m = [min_sinr for i in range(scen.n_sectors)]
+    min_snr_m = [db_to_linear(min_sinr) for i in range(scen.n_sectors)]
+    distance_mn = scen.getRegionsDistanceMatrix()
 
     #Generating ues time map
     print("-------------Generating ues map")
@@ -81,14 +91,25 @@ make
 
     #Calculating Solution
     print("-------------Calculating Solution (this may take a while)")
-    ccop_mv_MILP(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m)
+    print(f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({'varying' if varying else 'fixed'})")
+    print(f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}")
+    
+    if varying:
+      min_time= 2
+      solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time, FIRST_ANTENNA= first_antenna_region)
+    else:
+      solver_fixed(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+                  snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, FIRST_ANTENNA= first_antenna_region)
 
   elif show_ues:
     #Plotting ues configuration over time
-    ues_coords = get_ues_time(scen= scen, xml_filename= xml_filename)
+    ues_coords = get_ues_time(ues_list= scen.getUEsList(), xml_filename= xml_filename)
     for t_ues in ues_coords:
       scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
   #print(map_ues_time)
+
+  print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
 
 if __name__ == "__main__":
   main()

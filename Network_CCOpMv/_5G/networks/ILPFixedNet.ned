@@ -32,7 +32,7 @@ network ILPFixedNet
 {
 	parameters:
 		int numUe= default(1);
-		@display("bgd=8000,8000");
+		@display("bgd=4000,4000");
 	submodules:
 		channelControl: LteChannelControl {
 			@display("p=101,76;is=s");

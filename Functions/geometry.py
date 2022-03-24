@@ -3,7 +3,7 @@ from typing import List, Union, Tuple
 from random import random, seed, normalvariate
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import arctan
+from numpy import arctan, matrix
 from sinr_comput import compute_sinr
 from coordinates import Coordinate, PolarCoordinate
 
@@ -215,7 +215,7 @@ def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordi
 
 def euclidianDistance(a: Coordinate, b: Coordinate) -> float:
     """Computes the euclidian distance between two coordinates"""
-    d = sqrt(pow(a.x - b.x,2) + pow(a.y - b.y,2))
+    d = sqrt(pow(a.x - b.x,2) + pow(a.y - b.y,2) + pow(a.z - b.z,2))
     return d
 
 def polar2rect(r, phi) -> Tuple[float, float]:
@@ -567,6 +567,17 @@ class MapChess:
             list_coordinate.append(coord)
         
         return list_coordinate
+
+    def getRegionsDistanceMatrix(self) -> List[List[float]]:
+        """Returns the distance between every region."""
+        matrix_distances: List[List[float]] = []
+        list_coordinates = self.getRegionsCentersList()
+        for a in list_coordinates:
+            matrix_distances.append([])
+            for b in list_coordinates:
+                matrix_distances[-1].append(euclidianDistance(a, b))
+
+        return matrix_distances
 
     def getAntennasPositionList(self) -> List[Coordinate]:
         """Returns the coordinates of all antennas."""
