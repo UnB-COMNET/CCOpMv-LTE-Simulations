@@ -125,7 +125,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
-  network_full_name = f'_5G.networks.ILPFixedNet' if network_name == '' else network_name
+  network_full_name = network_full_name = '_5G.networks.' + ('ILPFixedNet' if network_name == '' else network_name)
 
 
   with open(filename, 'wt') as f:
@@ -275,7 +275,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
-  network_full_name = f'_5G.networks.ILP{ilp_type.capitalize()}Net' if network_name == '' else network_name
+  network_full_name = '_5G.networks.' + (f'ILP{ilp_type.capitalize()}Net' if network_name == '' else network_name)
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, f'ilp_{ilp_type}_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
