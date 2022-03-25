@@ -1,9 +1,11 @@
+from concurrent.futures.process import EXTRA_QUEUED_CALLS
 from typing import List
 from gen_ilp_info import run_movement_simulation, gen_ilp_info
 from multiprocessing import Process, cpu_count
 from sys import stdout
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned
 from run_simulations import run_simulation
+import subprocess
 
 def main():
     #General configs
@@ -81,6 +83,9 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     for p in processes:
         p.join()
 
+    for varying in var:
+        get_csv(varying= varying, dir_path= dir_path, extra_config_name= extra_config_name)
+
 def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
                 varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, dir_path: str,
                 num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float,
@@ -106,6 +111,19 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     #Running the simulation
     run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced)
+
+def get_csv(varying: bool, dir_path: str, extra_config_name: str = ''):
+
+    mode = 'varying' if varying else 'fixed'
+    result_dir = dir_path + 'results/'
+    if extra_config_name != '':
+        extra_config_name = '_' + extra_config_name 
+    path = result_dir + f'ilp_{mode}_sliced_*' + extra_config_name
+    path_csv = result_dir + f'ilp_{mode}_sliced' + extra_config_name
+
+    print(f'Making .csv of {path_csv}.')
+
+    subprocess.call(f'scavetool x -o {path_csv}.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {path}/*-*.sca {path}/*-*.vec', shell= True)
 
 if __name__ == "__main__": 
     main()
