@@ -39,6 +39,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     mode = "varying" if varying else "fixed"
     file_name = f'ilp_{mode}_sliced_{str(min_sinr)}'
+    print("Running Solver - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
 
     #Output config
     out_file = open(f"Solutions/logs/{file_name}.log", 'wb', 0)

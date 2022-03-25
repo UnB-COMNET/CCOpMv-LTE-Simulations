@@ -101,8 +101,6 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     file_name = f'ilp_{mode}_sliced_{str(min_sinr)}'
 
     #Running solver
-    print("Running Solver - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
-
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                  xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
                  first_antenna_region= first_antenna_region, min_time= min_time)
