@@ -78,9 +78,9 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename)
 
         #Calculating Solution
-        print(("-------------Calculating Solution (this may take a while)"
-              f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({'varying' if varying else 'fixed'})"
-              f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}"))
+        print(("-------------Calculating Solution (this may take a while)\n"
+              f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({'varying' if varying else 'fixed'})\n"
+              f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}\n"))
         
         if varying:
             min_time= 2
