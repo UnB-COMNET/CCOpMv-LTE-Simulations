@@ -87,7 +87,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                 extra_config_name: str = ''):
 
-    Running solver
+    #Running solver
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                  xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
                  first_antenna_region= first_antenna_region)
