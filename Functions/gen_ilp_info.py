@@ -9,6 +9,8 @@ import subprocess
 from time import time, localtime, mktime
 from datetime import datetime
 from multiprocessing import Process, cpu_count
+import sys
+import io
 
 def main():
     ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
@@ -24,14 +26,24 @@ def main():
     varying = True
     min_dis = 2000 #Enlace de rádio na prática
     first_antenna_region = 1
-    gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, varying= varying,
-                 xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
+    min_time = 2
+    gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, varying= varying, 
+                 xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region,
+                 min_time= min_time)
     #run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
     #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
 
 def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
-                 min_sinr: int, result_dir: str, varying: bool, min_dis: int, first_antenna_region: int):
+                 min_sinr: int, result_dir: str, varying: bool, min_dis: int, first_antenna_region: int, min_time: int):
   
+
+    mode = "varying" if varying else "fixed"
+    file_name = f'ilp_{mode}_sliced_{str(min_sinr)}'
+
+    #Output config
+    out_file = open(f"Solutions/logs/{file_name}.log", 'wb', 0)
+    sys.stdout = io.TextIOWrapper(out_file, write_through=True)
+
     start_time = time()
 
     #Determines what the program will show to the user
@@ -79,11 +91,10 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
         #Calculating Solution
         print(("-------------Calculating Solution (this may take a while)\n"
-              f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({'varying' if varying else 'fixed'})\n"
+              f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({mode})\n"
               f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}\n"))
         
         if varying:
-            min_time= 2
             solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                            snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time, FIRST_ANTENNA= first_antenna_region)
         else:
@@ -97,6 +108,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
 
     print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
+    sys.stdout = sys.__stdout__
 
 def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str):
     #Genereting .ini file
