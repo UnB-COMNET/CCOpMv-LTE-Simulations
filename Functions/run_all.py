@@ -6,6 +6,8 @@ from sys import stdout
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned
 from run_simulations import run_simulation
 import subprocess
+import sys
+import io
 
 def main():
     #General configs
@@ -92,16 +94,26 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                 extra_config_name: str = ''):
 
+    mode = "varying" if varying else "fixed"
+    file_name = f'ilp_{mode}_sliced_{str(min_sinr)}'
+
     #Running solver
+    print("Running Solver - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
+
+    out_file = open(f"Solutions/logs/{file_name}.log", 'wb', 0)
+    sys.stdout = io.TextIOWrapper(out_file, write_through=True)
+
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                  xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
                  first_antenna_region= first_antenna_region)
 
+    sys.stdout = sys.__stdout__
+
     #Generating config and network files
-    print("Generating configuration files - Min Snr: {} - {}".format(min_sinr, "Varying" if varying else "Fixed"))
+    print("Generating configuration files - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
     
-    ini_path_sliced = dir_path + f'ilp_{"varying" if varying else "fixed"}_sliced_{str(min_sinr)}.ini'
-    network_name = f"ILP{'Varying' if varying else 'Fixed'}Net{str(min_sinr)}"
+    ini_path_sliced = dir_path + f'{file_name}.ini'
+    network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
     config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
