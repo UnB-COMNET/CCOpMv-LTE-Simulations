@@ -22,7 +22,7 @@ def main():
 
     #Solver configs
     ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
-    xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
+    xml_filename = 'ilp_fixed_users-sched=MAXCI--0.sna'
     min_dis = 2000 #Enlace de rádio na prática (m)
     first_antenna_region = 1
 
@@ -36,20 +36,21 @@ def main():
     p_size = 1428 #bytes (for voip = 40)
     app = "video" #video or voip
     extra_config_name= "video"
-    target_f= 10 #Mbps
+    target_f = 10 #Mbps
+    cmdenv_config = True #Redirects cmdenv outputs to a file
 
     run_all(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
             min_sinrs= min_sinrs, mode= mode, result_dir= result_dir, ini_path= ini_path, xml_filename= xml_filename,
             min_dis= min_dis, first_antenna_region= first_antenna_region, dir_path= dir_path, num_bands= num_bands,
             repetitions= repetitions, slice_time= slice_time, p_size= p_size, app= app, target_f= target_f,
-            extra_config_name= extra_config_name)
+            extra_config_name= extra_config_name, cmdenv_config= cmdenv_config)
 
 
 def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
             ini_path: str, xml_filename: str, min_dis: int, first_antenna_region: int, dir_path: str,
             num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, mode: str= '',
             result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
-            extra_config_name: str = ''):
+            extra_config_name: str = '', cmdenv_config: bool= True):
 
     var = []
     processes = []
@@ -68,7 +69,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
               'varying': None, 'xml_filename': xml_filename, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
               'dir_path': dir_path, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
-              'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro}
+              'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config}
 
 
     print(f'Starting computations on {cpu_count()} cores.')
@@ -92,7 +93,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, dir_path: str,
                 num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float,
                 result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
-                extra_config_name: str = ''):
+                extra_config_name: str = '', cmdenv_config: bool = True):
 
     mode = "varying" if varying else "fixed"
     file_name = f'ilp_{mode}_sliced_{str(min_sinr)}'
@@ -117,7 +118,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                         time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name)
+                                                         time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config)
 
     ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)
 

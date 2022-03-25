@@ -71,7 +71,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
 
 def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
-                  extra_config_name: str = '', result_dir: str = './', network_name: str = ''):
+                  extra_config_name: str = '', result_dir: str = './', network_name: str = '', cmdenv_config: bool = False):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -98,6 +98,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     extra_config_name: string to be added at the end of the configuration name
     result_dir: directory with the solver results in .txt files (used if antennas_regions == [])
     network_name: if diferent than '' is used as the network of the configuration
+    cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -135,12 +136,15 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     hp.writeNetwork(f, network= network_full_name)
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
-    hp.nl(f)
+    hp.writeSeparation(f, "Outputs")
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "idRcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
     hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${repetition}-${RBs}")
+    if cmdenv_config:
+      hp.writeSeparation(f, "Cmdenv")
+      hp.writeCmdenvConfig(f, min_sinr= min_sinr, performance_display = False, redirect_output= True)
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
@@ -208,7 +212,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = ''):
+                  extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = '', cmdenv_config: bool = False):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -238,6 +242,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     result_dir: directory with the solver results in .txt files
     varying: if true use ILP_varying_in_time results else use ILP_fixed_in_time results
     network_name: if diferent than '' is used as the network of the configuration
+    cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -284,12 +289,15 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeNetwork(f, network= network_full_name)
     hp.writeTime(f, time= time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
-    hp.nl(f)
+    hp.writeSeparation(f, "Outputs")
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "idRcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
     hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+    if cmdenv_config:
+      hp.writeSeparation(f, "Cmdenv")
+      hp.writeCmdenvConfig(f, min_sinr= min_sinr, performance_display = False, redirect_output= True)
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")

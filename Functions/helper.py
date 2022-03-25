@@ -626,6 +626,16 @@ def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterat
   f.write('**.snapshotter.snapshot = {}\n'.format("true" if snapshot else "false"))
   f.write('**.snapshotter.delay = {}\n'.format(delay))
 
+def writeCmdenvConfig(f, min_sinr: int, output_file_name: str = None, performance_display = False, redirect_output= False):
+  """Writes the cmdenv configuration in a .ini file."""
+  if output_file_name is None:
+    output_file_name = "${resultdir}/${configname}-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}.out"
+
+  f.write(('cmdenv-performance-display = {p_display}\n'
+           'cmdenv-redirect-output = {r_output}\n'
+           'cmdenv-output-file = {file_name}\n'
+           ).format(p_display = 'true' if performance_display else 'false', r_output= 'true' if redirect_output else 'false', file_name= output_file_name))
+
 def defaultGeneral(f, is5g: bool = False):
   """Writes a default General configuration in a .ini file."""
   # General
