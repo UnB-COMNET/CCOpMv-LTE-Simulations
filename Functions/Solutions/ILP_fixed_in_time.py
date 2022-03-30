@@ -1,5 +1,6 @@
 from ortools.linear_solver import pywraplp
 from sinr_comput import linear_to_db
+from _5G_Scenarios.ILP_configs import gen_solver_result_filename
 import math 
 
 def ccop_mv_MILP(
@@ -110,7 +111,7 @@ def ccop_mv_MILP(
 
     status = solver.Solve()
     if status == pywraplp.Solver.OPTIMAL:
-        with open(result_dir + "result_fixed_"+ str(int(linear_to_db(MIN_SNR_m[0])))+".txt", "w") as f:
+        with open(gen_solver_result_filename(result_dir, 'fixed', int(linear_to_db(MIN_SNR_m[0]))), 'w') as f:
             print("\nMédia de carros:", objective.Value()/T)
             for t in range(0,T):
                 print("t=%d"%t)
@@ -138,5 +139,6 @@ def ccop_mv_MILP(
                     for j in found:
                         if i < j :
                             print(f"{i} : {j} = {distance_mn[i][j]}")
+            f.write("--- Done ---\n")
     else:
         print("Not feasible")

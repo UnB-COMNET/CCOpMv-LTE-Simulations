@@ -111,7 +111,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
 
     max_time = len(ues_map)
-    tmp, antennas_regions, tmp_2 = parse_results(result_dir + f"result_fixed_"+ str(min_sinr)+".txt", max_time)
+    tmp, antennas_regions, tmp_2 = parse_results(gen_solver_result_filename(result_dir, 'fixed', min_sinr)+".txt", max_time)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -255,9 +255,9 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
 
-  ilp_type = 'varying' if varying else 'fixed'
+  mode = 'varying' if varying else 'fixed'
 
-  optimized, antennas_regions, num_enbs_time = parse_results(result_dir + f"result_{ilp_type}_"+ str(min_sinr)+".txt", num_slices)
+  optimized, antennas_regions, num_enbs_time = parse_results(gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -276,14 +276,14 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   connections = getUesConnections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
-  config_name = 'ilp_{}_sliced_{}'.format(ilp_type, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+  config_name = 'ilp_{}_sliced_{}'.format(mode, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
-  network_full_name = '_5G.networks.' + (f'ILP{ilp_type.capitalize()}Net' if network_name == '' else network_name)
+  network_full_name = '_5G.networks.' + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, f'ilp_{ilp_type}_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, f'ilp_{mode}_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= network_full_name)
@@ -409,11 +409,12 @@ def parse_results(filename: str, max_time: int):
 
   with open(filename, "r") as f:
     for line in f:
-      data = [int(x) for x in line.split()]
-      results[data[0]][data[2]] = data[1]
-      enbs_time[data[0]].append(data[1])
-      enbs.append(data[1])
-      enbs = np.unique(enbs).tolist()
+      if not line.startswith('---'): 
+        data = [int(x) for x in line.split()]
+        results[data[0]][data[2]] = data[1]
+        enbs_time[data[0]].append(data[1])
+        enbs.append(data[1])
+        enbs = np.unique(enbs).tolist()
 
   #Get the number of eNBs at each slice
   for t in range(max_time):
@@ -446,3 +447,5 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sect
 
   return connections
 
+def gen_solver_result_filename(result_dir: str, mode: str, min_sinr: int):
+  return result_dir + f"result_{mode}_"+ str(min_sinr)+".txt"

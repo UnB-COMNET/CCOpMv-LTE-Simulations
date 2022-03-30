@@ -38,11 +38,11 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
   
 
     mode = "varying" if varying else "fixed"
-    file_name = f'ilp_{mode}_sliced_{str(min_sinr)}'
+    file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
     print("Running Solver - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
 
     #Output config
-    out_file = open(f"Solutions/logs/{file_name}.log", 'wb', 0)
+    out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
     sys.stdout = io.TextIOWrapper(out_file, write_through=True)
 
     start_time = time()
@@ -161,6 +161,13 @@ def run_all_solvers(chosen_seed: int, xml_filename: str, size_x: int, size_y: in
     
     for p in processes:
         p.join()
+
+def gen_file_name(mode: str, min_sinr: int):
+    return f'ilp_{mode}_sliced_{str(min_sinr)}'
+
+#Result_dir must have a 'logs' subdir
+def gen_log_file_name(result_dir: str, file_name: str):
+    return f"{result_dir}logs/{file_name}.log"
 
 if __name__ == "__main__":
     main()

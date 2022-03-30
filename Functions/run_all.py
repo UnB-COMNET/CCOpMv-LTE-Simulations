@@ -1,9 +1,9 @@
 from concurrent.futures.process import EXTRA_QUEUED_CALLS
 from typing import List
-from gen_ilp_info import run_movement_simulation, gen_ilp_info
+from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name, gen_log_file_name
 from multiprocessing import Process, cpu_count
 from sys import stdout
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned, gen_solver_result_filename
 from run_simulations import run_simulation
 import subprocess
 import sys
@@ -64,11 +64,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         var = [True, False]
 
     #Verifying if movement simulation is already done
-    last_line = ''
-    with open(xml_filename, 'r') as f:
-        last_line = f.readlines()[-1]
-
-    if last_line == '<!--Done-->\n':
+    done = compare_last_line(xml_filename, '<!--Done-->\n')
+    if done:
         print(f'Movement profile already simulated. Results in {xml_filename}.')
     # If not done, do it    
     else:
@@ -107,12 +104,18 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2):
 
     mode = "varying" if varying else "fixed"
-    file_name = f'ilp_{mode}_sliced_{str(min_sinr)}'
+    file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
 
-    #Running solver
-    gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                 xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
-                 first_antenna_region= first_antenna_region, min_time= min_time)
+    #Verifying if solver is already done
+    done = compare_last_line(gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
+    if done:
+        print(f'Solver {file_name} already computed.')
+    # If not done, do it    
+    else:
+        #Running solver
+        gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
+                    xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
+                    first_antenna_region= first_antenna_region, min_time= min_time)
 
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
@@ -126,6 +129,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)
 
+    sys.exit()
     #Running the simulation
     run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count())
 
@@ -141,6 +145,13 @@ def get_csv(varying: bool, dir_path: str, extra_config_name: str = ''):
     print(f'Making .csv of {path_csv}.')
 
     subprocess.call(f'scavetool x -o {path_csv}.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {path}/*-*.sca {path}/*-*.vec', shell= True)
+
+def compare_last_line(filename: str, line: str):
+    last_line = ''
+    with open(filename, 'r') as f:
+        last_line = f.readlines()[-1]
+
+    return last_line == line
 
 if __name__ == "__main__": 
     main()
