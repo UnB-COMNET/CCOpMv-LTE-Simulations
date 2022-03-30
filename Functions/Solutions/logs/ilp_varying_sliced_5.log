@@ -1,6 +1,6 @@
 -------------Generating sinr map
 -------------Generating ues map
 -------------Calculating Solution (this may take a while)
-+++++++++++++++++++Min Sinr: 5 dB (fixed)
++++++++++++++++++++Min Sinr: 5 dB (varying)
 +++++++++++++++++++With backhaul constraint. Start: 2022-03-30 15:01:59
 

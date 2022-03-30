@@ -32,7 +32,7 @@ def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
                 coord = Coordinate(x= coords_numbers[0], y= coords_numbers[1], z= coords_numbers[2])
                 map_ues_time[int(root.get('simtime'))][scen.coord2Region(coord)] += 1
                 accumulated_xml = ''
-        else:
+        elif not line.startswith('<!--'):#Not a comment
             accumulated_xml += line
       else:
         root = ET.XML(accumulated_xml)
@@ -82,7 +82,7 @@ def get_ues_time(ues_list, xml_filename: str, time: float = 1) -> List[List[Ue]]
                 ues_time[int(root.get('simtime'))-1][len(ues_time[int(root.get('simtime'))])-1].movement = mov
 
                 accumulated_xml = ''
-        else:
+        elif not line.startswith('<!--'):#Not a comment
             accumulated_xml += line
       else:
         root = ET.XML(accumulated_xml)

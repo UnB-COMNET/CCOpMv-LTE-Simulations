@@ -63,8 +63,17 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     else:
         var = [True, False]
 
-    run_movement_simulation(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
-                            size_sector= size_sector, n_macros= n_macros, xml_filename= xml_filename)
+    #Verifying if movement simulation is already done
+    last_line = ''
+    with open(xml_filename, 'r') as f:
+        last_line = f.readlines()[-1]
+
+    if last_line == '<!--Done-->\n':
+        print(f'Movement profile already simulated. Results in {xml_filename}.')
+    # If not done, do it    
+    else:
+        run_movement_simulation(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
+                                size_sector= size_sector, n_macros= n_macros, xml_filename= xml_filename)
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,

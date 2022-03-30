@@ -28,7 +28,7 @@ import simu5g.nodes.PgwStandard;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import _5G.models.Snapshotter;
 
-network ILPFixedNet5
+network ILPFixedNet15
 {
 	parameters:
 		int numUe= default(1);
@@ -70,6 +70,18 @@ network ILPFixedNet5
 		eNB3: eNodeB {
 			@display("is=l");
 		}
+		eNB4: eNodeB {
+			@display("is=l");
+		}
+		eNB5: eNodeB {
+			@display("is=l");
+		}
+		eNB6: eNodeB {
+			@display("is=l");
+		}
+		eNB7: eNodeB {
+			@display("is=l");
+		}
 		ue[numUe]: Ue {
 			@display("is=s");
 		}
@@ -85,12 +97,38 @@ network ILPFixedNet5
 		eNB1.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB2.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB3.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB4.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB5.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB6.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB7.ppp <--> Eth10G <--> pgw.pppg++;
 
 		//############### X2 Connections ###############
 		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB2.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB3.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB4.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB5.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB6.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB2.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB3.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB4.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB5.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB6.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB3.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB4.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB5.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB6.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB4.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB5.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB6.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB4.x2++ <--> Eth10G <--> eNB5.x2++;
+		eNB4.x2++ <--> Eth10G <--> eNB6.x2++;
+		eNB4.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB5.x2++ <--> Eth10G <--> eNB6.x2++;
+		eNB5.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB6.x2++ <--> Eth10G <--> eNB7.x2++;
 }
