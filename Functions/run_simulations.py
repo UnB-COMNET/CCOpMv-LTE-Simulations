@@ -47,13 +47,13 @@ def main():
     #ilpc.ilp_ned(network = "ILPFixedNet", n_enbs= enbs_hando_num, size_x= size_x, size_y= size_y)
     #run_simulation(ini_path= ini_path, config_name= config_name)
 
-def run_simulation(ini_path: str, config_name: str):
+def run_simulation(ini_path: str, config_name: str, cpu_num: int = 1):
   
   #Running Omnet++
   subprocess.call(('cd ../Network_CCOpMv\n'
                    r'opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
                    '\nmake\n'
-                   './Network_CCOpMv ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
+                   f'opp_runall -j{cpu_num} ./Network_CCOpMv ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
 
 if __name__ == "__main__":
   main()

@@ -118,7 +118,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)
 
     #Running the simulation
-    run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced)
+    run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count())
 
 def get_csv(varying: bool, dir_path: str, extra_config_name: str = ''):
 
