@@ -2,7 +2,7 @@
 -------------Generating ues map
 -------------Calculating Solution (this may take a while)
 +++++++++++++++++++Min Sinr: 5 dB (fixed)
-+++++++++++++++++++With backhaul constraint. Start: 2022-03-30 15:57:40
++++++++++++++++++++With backhaul constraint. Start: 2022-03-31 00:32:34
 
 
 Média de carros: 3.4
@@ -585,4 +585,4 @@ Distances:
 36 : 74 = 1788.8543819998317
 36 : 75 = 1649.2422502470642
 74 : 75 = 400.0
---- Done after 0.07730533175998264 hours. ---
+--- Done after 0.09351970493793488 hours. ---
