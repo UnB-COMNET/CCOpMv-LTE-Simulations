@@ -1,13 +1,10 @@
-from concurrent.futures.process import EXTRA_QUEUED_CALLS
 from typing import List
 from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name, gen_log_file_name
 from multiprocessing import Process, cpu_count
-from sys import stdout
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned, gen_solver_result_filename
 from run_simulations import run_simulation
 import subprocess
 import sys
-import io
 
 def main():
     #General configs
@@ -129,9 +126,13 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)
 
-    sys.exit()
     #Running the simulation
-    run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count())
+    run_numbers = get_missing_simulations(config_name= config_name_sliced, num_bands= num_bands, repetitions= repetitions, dir_path= dir_path,
+                                          min_sinr= min_sinr)
+    if run_numbers == []:
+        print('All simulations are already computed.')
+    else:
+        run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(varying: bool, dir_path: str, extra_config_name: str = ''):
 
@@ -148,10 +149,33 @@ def get_csv(varying: bool, dir_path: str, extra_config_name: str = ''):
 
 def compare_last_line(filename: str, line: str):
     last_line = ''
-    with open(filename, 'r') as f:
-        last_line = f.readlines()[-1]
+    try:
+        with open(filename, 'r') as f:
+            for l in f:
+                last_line = l
 
-    return last_line == line
+    except FileNotFoundError:
+                    return False
+    else:
+        return last_line == line
+
+def get_missing_simulations(config_name: str, num_bands: List[int], repetitions: int, dir_path: str, min_sinr: int):
+    sim_resultdir = f'{dir_path}/results/'
+    num_slices = 10
+    counter = 0
+    missing = []
+    for band in num_bands:
+        for slice in range(num_slices):
+            for repetition in range(repetitions):
+                filename = f'{sim_resultdir}/{config_name}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
+
+                done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
+                if not done:
+                    missing.append(counter)
+
+                counter += 1
+
+    return missing
 
 if __name__ == "__main__": 
     main()
