@@ -1,8 +1,11 @@
 from typing import List
+
+from matplotlib import projections
 from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name, gen_log_file_name
 from multiprocessing import Process, cpu_count
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned, gen_solver_result_filename
 from run_simulations import run_simulation
+from pathlib import Path
 import subprocess
 import sys
 
@@ -14,18 +17,22 @@ def main():
     size_sector = 400
     n_macros = 1
     min_sinrs = [5, 10, 15]
-    mode = ''# varying or fixed else both
+    mode = 'varying'# varying or fixed else both
     result_dir = "Solutions/"
+    micro_power = 30 #dBm
+    project_dir = '../Network_CCOpMv/'
+    sim_dir = '_5G/simulations/'
+    extra_dir = ['micro_power']
 
     #Solver configs
-    ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
+    move_file = "ilp_fixed_users.ini"
     xml_filename = 'ilp_fixed_users-sched=MAXCI--0.sna'
     min_dis = 2000 #Enlace de rádio na prática (m)
     first_antenna_region = 1
     min_time = 2 #Tempo minimo que um antena deve existir ate ser movida
 
     #Simulation configs
-    dir_path = '../Network_CCOpMv/_5G/simulations/'
+    net_dir = '_5G/networks/'
     num_bands = [100]
     repetitions = 3
     slice_time = 1 #s
@@ -38,17 +45,19 @@ def main():
     cmdenv_config = True #Redirects cmdenv outputs to a file
 
     run_all(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-            min_sinrs= min_sinrs, mode= mode, result_dir= result_dir, ini_path= ini_path, xml_filename= xml_filename,
-            min_dis= min_dis, first_antenna_region= first_antenna_region, dir_path= dir_path, num_bands= num_bands,
-            repetitions= repetitions, slice_time= slice_time, p_size= p_size, app= app, target_f= target_f,
-            extra_config_name= extra_config_name, cmdenv_config= cmdenv_config, min_time= min_time)
+            min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, mode= mode, result_dir= result_dir,
+            move_file= move_file, xml_filename= xml_filename, min_dis= min_dis, first_antenna_region= first_antenna_region,
+            net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
+            app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
+            min_time= min_time, micro_power= micro_power, extra_dir= extra_dir)
 
 
 def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
-            ini_path: str, xml_filename: str, min_dis: int, first_antenna_region: int, dir_path: str,
-            num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, mode: str= '',
+            project_dir: str, sim_dir: str, move_file: str, xml_filename: str, min_dis: int, first_antenna_region: int,
+            net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, mode: str= '',
             result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
-            extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2):
+            extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
+            extra_dir: List[str] = []):
 
     var = []
     processes = []
@@ -66,16 +75,24 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         print(f'Movement profile already simulated. Results in {xml_filename}.')
     # If not done, do it    
     else:
-        run_movement_simulation(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
+        move_ini_path = project_dir + sim_dir + move_file
+        run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
                                 size_sector= size_sector, n_macros= n_macros, xml_filename= xml_filename)
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
               'varying': None, 'xml_filename': xml_filename, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
-              'dir_path': dir_path, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
+              'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
-              'min_time': min_time}
+              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir}
 
+    for param in extra_dir:
+        kwargs['result_dir'] += param + f'_{kwargs[param]}/'
+        kwargs['sim_dir'] += param + f'_{kwargs[param]}/'
+        kwargs['net_dir'] += param + f'_{kwargs[param]}/'
+        Path(kwargs['result_dir']).mkdir(parents=True, exist_ok=True)
+        Path(project_dir + kwargs['sim_dir']).mkdir(parents=True, exist_ok=True)
+        Path(project_dir + kwargs['net_dir']).mkdir(parents=True, exist_ok=True)
 
     print(f'Starting computations on {cpu_count()} cores.')
     for varying in var:
@@ -92,16 +109,18 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         p.join()
 
     for varying in var:
-        get_csv(varying= varying, dir_path= dir_path, extra_config_name= extra_config_name)
+        get_csv(varying= varying, sim_path= project_dir + kwargs['sim_dir'], extra_config_name= extra_config_name)
 
 def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
-                varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, dir_path: str,
-                num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float,
-                result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
-                extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2):
+                varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
+                sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
+                target_f: float,result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False,
+                is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
+                micro_power: int= 30):
 
     mode = "varying" if varying else "fixed"
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
+    sim_path = project_dir + sim_dir
 
     #Verifying if solver is already done
     done = compare_last_line(gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
@@ -112,32 +131,33 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         #Running solver
         gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                     xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
-                    first_antenna_region= first_antenna_region, min_time= min_time)
+                    first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power)
 
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
     
-    ini_path_sliced = dir_path + f'{file_name}.ini'
+    ini_path_sliced = sim_path + f'{file_name}.ini'
     network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
     config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                         time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config)
+                                                         time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                         micro_power= micro_power, net_dir= net_dir)
 
-    ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)
+    ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 
     #Running the simulation
-    run_numbers = get_missing_simulations(config_name= config_name_sliced, num_bands= num_bands, repetitions= repetitions, dir_path= dir_path,
+    run_numbers = get_missing_simulations(config_name= config_name_sliced, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
                                           min_sinr= min_sinr)
     if run_numbers == []:
         print('All simulations are already computed.')
     else:
         run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
 
-def get_csv(varying: bool, dir_path: str, extra_config_name: str = ''):
+def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
 
     mode = 'varying' if varying else 'fixed'
-    result_dir = dir_path + 'results/'
+    result_dir = sim_path + 'results/'
     if extra_config_name != '':
         extra_config_name = '_' + extra_config_name 
     path = result_dir + f'ilp_{mode}_sliced_*' + extra_config_name
@@ -159,8 +179,8 @@ def compare_last_line(filename: str, line: str):
     else:
         return last_line == line
 
-def get_missing_simulations(config_name: str, num_bands: List[int], repetitions: int, dir_path: str, min_sinr: int):
-    sim_resultdir = f'{dir_path}/results/'
+def get_missing_simulations(config_name: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int):
+    sim_resultdir = f'{sim_path}/results/'
     num_slices = 10
     counter = 0
     missing = []

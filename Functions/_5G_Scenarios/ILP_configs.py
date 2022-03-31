@@ -212,7 +212,8 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = '', cmdenv_config: bool = False):
+                  extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = '', net_dir: str= '_5G/networks/',
+                  cmdenv_config: bool = False, micro_power: int = 30):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -242,11 +243,13 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     result_dir: directory with the solver results in .txt files
     varying: if true use ILP_varying_in_time results else use ILP_fixed_in_time results
     network_name: if diferent than '' is used as the network of the configuration
+    net_dir: directory containing the network
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
+    micro_power: defines the transmission power used when is_micro is True
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
-                      enb_tx_power= 30 if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
+                      enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
 
   xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
@@ -280,7 +283,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
-  network_full_name = '_5G.networks.' + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
+  network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, f'ilp_{mode}_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
@@ -301,7 +304,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
-    hp.writeTransmissionPower(f, is5G= True)
+    hp.writeTransmissionPower(f, micro_power= micro_power, is5G= True)
     hp.writeSeparation(f, "Channel Control")
     if multi_carriers:
       hp.writeCarrierAggregation5G(f, num_carriers= len(antennas_regions), carriers_frequencies= [scen.carrier_frequency - 0.02*np.max(num_bands)*i/100 for i in range(len(antennas_regions))], eNBs_carriers= True)
@@ -357,7 +360,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   return config_name, num_enbs
 
-def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2):
+def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2, net_dir: str= '_5G/networks/', project_dir: str= '../Network_CCOpMv/'):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
   
   The network created include the default and necessary submodules to ensure a correct Simu5G simulation.
@@ -369,12 +372,14 @@ def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, ima
     size_sector: sides size of square sectors in meters
     image: string representing the image path to be used as a background
     n_enbs: the number of eNBs composing the network
+    net_dir: directory containing the network
+    project_dir: directory of the omnet++ project
   """
 
-  filename = "../Network_CCOpMv/_5G/networks/{}.ned".format(network)
+  filename = f"{project_dir}{net_dir}{network}.ned"
 
   with open(filename, 'wt') as f:
-    hned.writeBaseImports(f, is5g= True, snapshot= True)
+    hned.writeBaseImports(f, is5g= True, snapshot= True, net_dir= net_dir)
     hned.writeNet(f, net_name= network)
     hned.writeParams(f, bg_x= size_x, bg_y = size_y, bg_image= image)
     hned.writeBaseSubmodules(f, is5g= True)

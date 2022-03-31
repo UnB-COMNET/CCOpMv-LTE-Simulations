@@ -9,6 +9,7 @@ import subprocess
 from time import time, localtime, mktime
 from datetime import datetime
 from multiprocessing import Process, cpu_count
+from pathlib import Path
 import sys
 import io
 
@@ -34,7 +35,8 @@ def main():
     #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
 
 def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
-                 min_sinr: int, result_dir: str, varying: bool, min_dis: int, first_antenna_region: int, min_time: int):
+                 min_sinr: int, result_dir: str, varying: bool, min_dis: int, first_antenna_region: int, min_time: int,
+                 micro_power: int = 30):
   
 
     mode = "varying" if varying else "fixed"
@@ -55,7 +57,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     #Initiating scenario
     scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
-                        enb_tx_power= 30 if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
+                        enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
     #Placing UEs
     scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
@@ -167,7 +169,9 @@ def gen_file_name(mode: str, min_sinr: int):
 
 #Result_dir must have a 'logs' subdir
 def gen_log_file_name(result_dir: str, file_name: str):
-    return f"{result_dir}logs/{file_name}.log"
+    log_dir = f"{result_dir}logs/"
+    Path(log_dir).mkdir(parents=False, exist_ok=True)
+    return f"{log_dir}{file_name}.log"
 
 if __name__ == "__main__":
     main()

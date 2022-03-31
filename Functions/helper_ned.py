@@ -53,7 +53,7 @@ def writeComment(f, text):
   """
   f.write("\n\t\t//# {}\n".format(text))
 
-def writeBaseImports(f, is5g: bool= False, snapshot: bool= False):
+def writeBaseImports(f, is5g: bool= False, snapshot: bool= False, net_dir: str= '_5G/networks/'):
   """
   This function writes the default imports used in a .ned file from INET and SimuLTE or Simu5G. 
   
@@ -77,7 +77,7 @@ def writeBaseImports(f, is5g: bool= False, snapshot: bool= False):
            '// You should have received a copy of the GNU Lesser General Public License\n'
            '// along with this program.  If not, see http://www.gnu.org/licenses/.\n'
            '//\n'
-           'package {package}.networks;\n'
+           'package {package};\n'
            '\n'
            'import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;\n'
            'import inet.networklayer.ipv4.RoutingTableRecorder;\n'
@@ -89,7 +89,7 @@ def writeBaseImports(f, is5g: bool= False, snapshot: bool= False):
            'import {prefix}.nodes.Ue;\n'
            'import {prefix}.nodes.eNodeB;\n'
            'import {prefix}.world.radio.LteChannelControl;\n'
-           'import {prefix}.nodes.PgwStandard;\n').format(package = "_5G" if is5g else "LTE", prefix = "simu5g" if is5g else "lte"))
+           'import {prefix}.nodes.PgwStandard;\n').format(package = dir_to_package(net_dir)[:-1], prefix = "simu5g" if is5g else "lte"))
 
   if is5g: f.write("import simu5g.common.carrierAggregation.CarrierAggregation;\n")
 
@@ -203,3 +203,6 @@ def writeMultiNodeConnections(f, object_name: str = "eNB", quantity: int = 1, po
   """
   for i in range(quantity):
     writeConnections(f, port1= object_name+str(i)+".ppp", port2= port2, base= False)
+
+def dir_to_package(net_dir: str):
+  return net_dir.replace('/', '.')
