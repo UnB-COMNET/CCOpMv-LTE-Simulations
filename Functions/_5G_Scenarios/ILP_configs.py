@@ -8,7 +8,7 @@ import random
 import geometry as geo
 import numpy as np
 
-def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2):
+def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, config_name: str= 'ilp_move_users'):
   """This function generates a .ini file to watch users mobility behaviour.
   
   The simulation configured with the resulting file has the purpose of generate the mobility data of the users in time.
@@ -22,6 +22,7 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
     size_x: x dimension size of considered region in meters
     size_sector: sides size of square sectors in meters
     n_macros: number of macrocells considered to distribute the UEs on the map
+    config_name: name of the configuration used in the .ini file
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed)
@@ -33,16 +34,16 @@ def ilp_fixed_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed_users", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, config_name, filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
-    hp.makeNewConfig(f, name= 'ilp_fixed_users')
+    hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
     hp.writeTime(f, time= 10, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-${repetition}.sna", snapshot= True)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + gen_movement_filename(config_name, seed, snapshot= True), snapshot= True)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -454,3 +455,9 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sect
 
 def gen_solver_result_filename(result_dir: str, mode: str, min_sinr: int):
   return result_dir + f"result_{mode}_"+ str(min_sinr)+".txt"
+
+def gen_movement_filename(config_name: str, seed: int, snapshot: bool= True):
+  if snapshot:
+    return config_name + f'-{seed}.sna'
+  else:
+    return config_name + f'-{seed}.ini'

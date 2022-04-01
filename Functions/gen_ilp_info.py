@@ -14,13 +14,13 @@ import sys
 import io
 
 def main():
-    ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini"
+    ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_move_users.ini"
     chosen_seed = 123
     size_y = 4000
     size_x = 4000
     size_sector = 400
     n_macros = 1
-    xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
+    xml_filename = ilpc.gen_snapshot_filename("ilp_move_users", chosen_seed)
     min_sinr = 15 #5, 10, 15s
     min_sinrs = [5, 10, 15]
     result_dir = "Solutions/"
@@ -113,11 +113,11 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
     sys.stdout = sys.__stdout__
 
-def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str):
+def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, config_name: str= 'ilp_move_users'):
     #Genereting .ini file
-    ilpc.ilp_fixed_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
+    snapshot_filename = ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, config_name= config_name)
 
-    open(xml_filename, 'w').close()
+    open(snapshot_filename, 'w').close()
 
     #Running Omnet++
     subprocess.call(('cd ../Network_CCOpMv\n'
@@ -125,7 +125,7 @@ def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y
                      '\nmake\n'
                      './Network_CCOpMv ' + ini_path + r' -u Cmdenv -c ilp_fixed_users -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
 
-    with open(xml_filename, 'a') as f:
+    with open(snapshot_filename, 'a') as f:
         f.write('<!--Done-->\n')
 
 

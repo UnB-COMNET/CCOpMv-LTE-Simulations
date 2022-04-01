@@ -1,9 +1,8 @@
 from typing import List
 
-from matplotlib import projections
-from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name, gen_log_file_name
+from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name
 from multiprocessing import Process, cpu_count
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned, gen_solver_result_filename
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned, gen_solver_result_filename, gen_movement_filename
 from run_simulations import run_simulation
 from pathlib import Path
 import subprocess
@@ -25,8 +24,8 @@ def main():
     extra_dir = ['micro_power']
 
     #Solver configs
-    move_file = "ilp_fixed_users.ini"
-    xml_filename = 'ilp_fixed_users-sched=MAXCI--0.sna'
+    move_file = "ilp_move_users.ini"
+    move_config_name = 'ilp_move_users'
     min_dis = 2000 #Enlace de rádio na prática (m)
     first_antenna_region = 1
     min_time = 2 #Tempo minimo que um antena deve existir ate ser movida
@@ -46,14 +45,14 @@ def main():
 
     run_all(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
             min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, mode= mode, result_dir= result_dir,
-            move_file= move_file, xml_filename= xml_filename, min_dis= min_dis, first_antenna_region= first_antenna_region,
+            move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
             net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
             app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
             min_time= min_time, micro_power= micro_power, extra_dir= extra_dir)
 
 
 def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
-            project_dir: str, sim_dir: str, move_file: str, xml_filename: str, min_dis: int, first_antenna_region: int,
+            project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
             net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, mode: str= '',
             result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
@@ -69,6 +68,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     else:
         var = [True, False]
 
+    move_file = gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
+    xml_filename = gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
     #Verifying if movement simulation is already done
     done = compare_last_line(xml_filename, '<!--Done-->\n')
     if done:
@@ -77,7 +78,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     else:
         move_ini_path = project_dir + sim_dir + move_file
         run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
-                                size_sector= size_sector, n_macros= n_macros, xml_filename= xml_filename)
+                                size_sector= size_sector, n_macros= n_macros, config_name= move_config_name)
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
