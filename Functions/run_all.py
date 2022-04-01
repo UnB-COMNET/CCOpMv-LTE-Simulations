@@ -24,7 +24,6 @@ def main():
     extra_dir = ['micro_power']
 
     #Solver configs
-    move_file = "ilp_move_users.ini"
     move_config_name = 'ilp_move_users'
     min_dis = 2000 #Enlace de rádio na prática (m)
     first_antenna_region = 1
@@ -143,7 +142,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                          time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                         micro_power= micro_power, net_dir= net_dir)
+                                                         micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
     ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 

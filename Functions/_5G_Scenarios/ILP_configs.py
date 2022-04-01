@@ -72,7 +72,7 @@ def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000,
 
 def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
-                  extra_config_name: str = '', result_dir: str = './', network_name: str = '', cmdenv_config: bool = False):
+                  extra_config_name: str = '', result_dir: str = './', network_name: str = '', cmdenv_config: bool = False, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -100,6 +100,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     result_dir: directory with the solver results in .txt files (used if antennas_regions == [])
     network_name: if diferent than '' is used as the network of the configuration
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
+    xml_filename: name of the snapshot file containing the movement caracteristics of the users
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
@@ -108,7 +109,6 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
 
   if antennas_regions == []:
-    xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
     ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
 
     max_time = len(ues_map)
@@ -214,7 +214,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                   extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = '', net_dir: str= '_5G/networks/',
-                  cmdenv_config: bool = False, micro_power: int = 30):
+                  cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -247,13 +247,13 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     net_dir: directory containing the network
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
     micro_power: defines the transmission power used when is_micro is True
+    xml_filename: name of the snapshot file containing the movement caracteristics of the users
   """
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                       enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
 
-  xml_filename= 'ilp_fixed_users-sched=MAXCI--0.sna'
   ues_in_time = hxml.get_ues_time(scen.getUEsList(), xml_filename, time)
 
   iter_slice_name = "Slice"
