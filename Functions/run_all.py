@@ -18,7 +18,7 @@ def main():
     min_sinrs = [5, 10, 15]
     mode = ''# varying or fixed else both
     result_dir = "Solutions/"
-    micro_power = 40 #dBm
+    micro_power = 20 #dBm
     project_dir = '../Network_CCOpMv/'
     sim_dir = '_5G/simulations/'
     extra_dir = ['micro_power']
