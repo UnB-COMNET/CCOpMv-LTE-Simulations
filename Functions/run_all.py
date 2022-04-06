@@ -123,8 +123,6 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         Path(project_dir + kwargs['sim_dir']).mkdir(parents=True, exist_ok=True)
         Path(project_dir + kwargs['net_dir']).mkdir(parents=True, exist_ok=True)
 
-    sys.exit()
-
     print(f'Starting computations on {cpu_count()} cores.')
     for varying in var:
         kwargs['varying'] = varying
