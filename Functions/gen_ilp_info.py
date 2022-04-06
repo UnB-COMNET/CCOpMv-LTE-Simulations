@@ -36,7 +36,7 @@ def main():
 
 def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
                  min_sinr: int, result_dir: str, varying: bool, min_dis: int, first_antenna_region: int, min_time: int,
-                 micro_power: int = 30):
+                 micro_power: int = 30, num_slices: int= 10):
   
 
     mode = "varying" if varying else "fixed"
@@ -98,10 +98,10 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
               f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}\n"))
         
         if varying:
-            solver_varying(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+            solver_varying(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                            snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time, FIRST_ANTENNA= first_antenna_region)
         else:
-            solver_fixed(Max_Space= scen.n_sectors, Max_Time= 10, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+            solver_fixed(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                          snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, FIRST_ANTENNA= first_antenna_region)
 
     elif show_ues:
@@ -113,9 +113,11 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
     sys.stdout = sys.__stdout__
 
-def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, config_name: str= 'ilp_move_users'):
+def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, config_name: str= 'ilp_move_users',
+                            num_slices: int= 10):
     #Genereting .ini file
-    snapshot_filename = ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, config_name= config_name)
+    snapshot_filename = ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros,
+                                            config_name= config_name, num_slices= num_slices)
 
     open(snapshot_filename, 'w').close()
 

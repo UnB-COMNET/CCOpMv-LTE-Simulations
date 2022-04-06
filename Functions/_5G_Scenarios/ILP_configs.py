@@ -1,6 +1,5 @@
-from mimetypes import MimeTypes
-from typing import Dict, List
-
+from turtle import delay
+from typing import List
 import helper as hp
 import helper_ned as hned
 import helper_xml as hxml
@@ -8,7 +7,8 @@ import random
 import geometry as geo
 import numpy as np
 
-def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, config_name: str= 'ilp_move_users'):
+def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, config_name: str= 'ilp_move_users',
+                   num_slices: int= 10):
   """This function generates a .ini file to watch users mobility behaviour.
   
   The simulation configured with the resulting file has the purpose of generate the mobility data of the users in time.
@@ -23,7 +23,11 @@ def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000,
     size_sector: sides size of square sectors in meters
     n_macros: number of macrocells considered to distribute the UEs on the map
     config_name: name of the configuration used in the .ini file
+    num_slices: number of slices in the simulation
   """
+
+  #Dict with the parameters used (must be the first operation in the function)
+  dict_args = locals()
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed)
   scen.placeUEs(type= "Random", n_macros= n_macros)#Full = 4320 UEs
@@ -34,16 +38,16 @@ def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000,
   num_ues = len(ues_coords)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, config_name, filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, "ilp_move_users", dict_args, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
-    hp.writeTime(f, time= 10, repeat= 1)
+    hp.writeTime(f, time= num_slices, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + gen_movement_filename(config_name, seed, snapshot= True), snapshot= True)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + gen_movement_filename(config_name, seed, snapshot= True), snapshot= True, delay= 1)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -103,6 +107,9 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
   """
 
+  #Dict with the parameters used (must be the first operation in the function)
+  dict_args = locals()
+
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                       enb_tx_power= 30 if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
@@ -112,7 +119,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
 
     max_time = len(ues_map)
-    tmp, antennas_regions, tmp_2 = parse_results(gen_solver_result_filename(result_dir, 'fixed', min_sinr)+".txt", max_time)
+    _, antennas_regions, _ = parse_results(gen_solver_result_filename(result_dir, 'fixed', min_sinr)+".txt", max_time)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -131,7 +138,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, "ilp_fixed_ini", filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, "ilp_fixed_ini", dict_args= dict_args, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= network_full_name)
@@ -212,7 +219,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
   return config_name, num_enbs
 
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
-                  num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
+                  num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                   extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = '', net_dir: str= '_5G/networks/',
                   cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
@@ -235,7 +242,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     repetitions: number of repetitions to be executed in the simulation
     num_bands: list of the possible number of resource blocks to be used in the simulation
     multi_carriers: if True, the eNBs will suport more than one type of carrier
-    time: total time of the simulation in seconds
+    slice_time: total time of each slice of the simulation in seconds
     is_micro: if True, the eNBs will be Low Power Nodes and the simulation will use the UrbanMicrocell scenario
     p_size: size of package used on the VoIP or Video Streaming application (in bytes)
     app: type of application (voip or video)
@@ -249,12 +256,14 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     micro_power: defines the transmission power used when is_micro is True
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
   """
+  #Dict with the parameters used (must be the first operation in the function)
+  dict_args = locals()
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                       enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
 
-  ues_in_time = hxml.get_ues_time(scen.getUEsList(), xml_filename, time)
+  ues_in_time = hxml.get_ues_time(scen.getUEsList(), xml_filename, slice_time)
 
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
@@ -287,11 +296,11 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, f'ilp_{mode}_sliced_ini', filename, seed, size_y, size_x, size_sector, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
+    hp.writeCommentConfigILP(f, 'ilp_sliced_ini', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     hp.writeNetwork(f, network= network_full_name)
-    hp.writeTime(f, time= time, repeat= repetitions)
+    hp.writeTime(f, time= slice_time, repeat= repetitions)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.writeSeparation(f, "Outputs")
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "idRcvdSinr:vector", value= True)

@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
-package _5G.networks.micro_power_20;
+package _5G.networks.chosen_seed_123.micro_power_20;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
@@ -28,7 +28,7 @@ import simu5g.nodes.PgwStandard;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import _5G.models.Snapshotter;
 
-network ILPFixedNet5
+network ILPFixedNet10
 {
 	parameters:
 		int numUe= default(1);
@@ -82,6 +82,18 @@ network ILPFixedNet5
 		eNB7: eNodeB {
 			@display("is=l");
 		}
+		eNB8: eNodeB {
+			@display("is=l");
+		}
+		eNB9: eNodeB {
+			@display("is=l");
+		}
+		eNB10: eNodeB {
+			@display("is=l");
+		}
+		eNB11: eNodeB {
+			@display("is=l");
+		}
 		ue[numUe]: Ue {
 			@display("is=s");
 		}
@@ -101,6 +113,10 @@ network ILPFixedNet5
 		eNB5.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB6.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB7.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB8.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB9.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB10.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB11.ppp <--> Eth10G <--> pgw.pppg++;
 
 		//############### X2 Connections ###############
 		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
@@ -110,25 +126,63 @@ network ILPFixedNet5
 		eNB0.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB0.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB2.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB1.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB2.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB3.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB4.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB4.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB4.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB4.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB5.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB5.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB5.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB5.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB7.x2++;
+		eNB6.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB6.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB6.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB6.x2++ <--> Eth10G <--> eNB11.x2++;
+		eNB7.x2++ <--> Eth10G <--> eNB8.x2++;
+		eNB7.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB7.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB7.x2++ <--> Eth10G <--> eNB11.x2++;
+		eNB8.x2++ <--> Eth10G <--> eNB9.x2++;
+		eNB8.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB8.x2++ <--> Eth10G <--> eNB11.x2++;
+		eNB9.x2++ <--> Eth10G <--> eNB10.x2++;
+		eNB9.x2++ <--> Eth10G <--> eNB11.x2++;
+		eNB10.x2++ <--> Eth10G <--> eNB11.x2++;
 }

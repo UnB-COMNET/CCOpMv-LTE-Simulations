@@ -10,18 +10,19 @@ import sys
 
 def main():
     #General configs
-    chosen_seed = 123
+    chosen_seeds = [123]
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
     min_sinrs = [5, 10, 15]
-    mode = ''# varying or fixed else both
+    mode = 'fixed'# varying or fixed else both
     result_dir = "Solutions/"
     micro_power = 20 #dBm
     project_dir = '../Network_CCOpMv/'
     sim_dir = '_5G/simulations/'
     extra_dir = ['micro_power']
+    num_slices = 10
 
     #Solver configs
     move_config_name = 'ilp_move_users'
@@ -42,20 +43,47 @@ def main():
     target_f = 10 #Mbps
     cmdenv_config = True #Redirects cmdenv outputs to a file
 
-    run_all(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-            min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, mode= mode, result_dir= result_dir,
-            move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
-            net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
-            app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
-            min_time= min_time, micro_power= micro_power, extra_dir= extra_dir)
+    run_multiple_seeds(chosen_seeds= chosen_seeds, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
+                       min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, mode= mode, result_dir= result_dir,
+                       move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
+                       net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
+                       app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
+                       min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices)
 
+
+def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
+                       project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
+                       net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, mode: str= '',
+                       result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
+                       extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
+                       extra_dir: List[str] = [], num_slices: int= 10):
+    """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
+    
+    extra_dir = ['chosen_seed'] + extra_dir
+
+    kwargs = {'chosen_seed' : None, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinrs': min_sinrs,
+              'mode': mode, 'move_config_name': move_config_name, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
+              'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
+              'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
+              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices}
+
+    processes = []
+    print(f'Dividing processes by seed.')
+    for chosen_seed in chosen_seeds:
+        kwargs['chosen_seed'] = chosen_seed
+        processes.append(Process(target= run_all, kwargs= kwargs))
+        processes[-1].start()
+    
+    for p in processes:
+        p.join()
 
 def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
             project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
             net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, mode: str= '',
             result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-            extra_dir: List[str] = []):
+            extra_dir: List[str] = [], num_slices: int= 10):
+    """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
 
     var = []
     processes = []
@@ -77,14 +105,15 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     else:
         move_ini_path = project_dir + sim_dir + move_file
         run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
-                                size_sector= size_sector, n_macros= n_macros, config_name= move_config_name)
+                                size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
+                                num_slices= num_slices)
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
               'varying': None, 'xml_filename': xml_filename, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
-              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir}
+              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices}
 
     for param in extra_dir:
         kwargs['result_dir'] += param + f'_{kwargs[param]}/'
@@ -116,7 +145,8 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
                 target_f: float,result_dir: str = './', slice_time: int = 1, multi_carriers: bool= False,
                 is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
-                micro_power: int= 30):
+                micro_power: int= 30, num_slices: int= 10):
+    """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
 
     mode = "varying" if varying else "fixed"
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
@@ -131,7 +161,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         #Running solver
         gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                     xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
-                    first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power)
+                    first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices)
 
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
@@ -141,20 +171,22 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                         time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                         slice_time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
                                                          micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
     ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 
     #Running the simulation
     run_numbers = get_missing_simulations(config_name= config_name_sliced, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                          min_sinr= min_sinr)
+                                          min_sinr= min_sinr, num_slices= num_slices)
     if run_numbers == []:
         print('All simulations are already computed.')
     else:
+        sys.exit()
         run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
+    """This function call a scavetool command to create the necessary .csv files"""
 
     mode = 'varying' if varying else 'fixed'
     result_dir = sim_path + 'results/'
@@ -168,6 +200,8 @@ def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
     subprocess.call(f'scavetool x -o {path_csv}.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {path}/*-*.sca {path}/*-*.vec', shell= True)
 
 def compare_last_line(filename: str, line: str):
+    """This function compare the last line of a file with the informed string."""
+
     last_line = ''
     try:
         with open(filename, 'r') as f:
@@ -179,9 +213,10 @@ def compare_last_line(filename: str, line: str):
     else:
         return last_line == line
 
-def get_missing_simulations(config_name: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int):
+def get_missing_simulations(config_name: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int):
+    """This function returns the simulation runs that were not executed yet"""
+
     sim_resultdir = f'{sim_path}/results/'
-    num_slices = 10
     counter = 0
     missing = []
     for band in num_bands:

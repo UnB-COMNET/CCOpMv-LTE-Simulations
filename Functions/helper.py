@@ -571,7 +571,7 @@ def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int]
 
 def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x, center_y, sites, micro_per_small, small_per_site, seed):
   """Writes a comment with the main parameters of the MapHexagonal scenario used in a .ini file."""
-  f.write(("#Function: {}\n"
+  f.write((f"#Function: {function_name}\n"
            "#Parameters: \n"
            "#  filename = '{}'\n"
            "#  directions = {}\n"
@@ -584,17 +584,15 @@ def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x
            "#  seed = {}\n").format(function_name, filename, directions, num_ues, center_x,
                                     center_y, sites, micro_per_small, small_per_site, seed))
 
-def writeCommentConfigILP(f, function_name, filename, seed, size_y, size_x, size_sectors, extra: str = None):
+def writeCommentConfigILP(f, function_name: str, dict_args: dict, extra: str = None):
   """Writes a comment with the main parameters of the ILP scenario used in a .ini file."""
-  f.write(("#Function: {}\n"
-           "#Parameters: \n"
-           "#  filename = '{}'\n"
-           "#  seed = {}\n"
-           "#  Map height distance = {}\n"
-           "#  Map width distance = {}\n"
-           "#  Region side distance = {}\n").format(function_name, filename, seed, size_y, size_x, size_sectors))
+
+  f.write((f"#Function: {function_name}\n"
+            "#Parameters:\n"))
+  for arg in dict_args:
+    f.write(f"#   {arg}: {dict_args[arg]}\n")
   if extra is not None:
-    f.write('#  Extra = {}\n'.format(extra))
+    f.write('#Extra = {}\n'.format(extra))
 
 def writeScenarioManager(f, xml, doc= True):
   """Writes the configuration of the scenario manager submodule in a .ini file."""
