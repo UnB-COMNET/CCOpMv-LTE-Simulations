@@ -174,9 +174,9 @@ def gen_file_name(mode: str, min_sinr: int):
 
 #Result_dir must have a 'logs' subdir
 def gen_log_file_name(result_dir: str, file_name: str):
-    log_dir = f"{result_dir}logs/"
+    log_dir = f"{result_dir}/logs"
     Path(log_dir).mkdir(parents=False, exist_ok=True)
-    return f"{log_dir}{file_name}.log"
+    return f"{log_dir}/{file_name}.log"
 
 if __name__ == "__main__":
     main()

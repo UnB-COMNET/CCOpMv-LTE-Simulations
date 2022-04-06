@@ -75,7 +75,7 @@ def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000,
 
 def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, antennas_regions: List[int] = [], min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, time:int = 10, is_micro: bool = True, p_size: int = 40, app: str= "voip",  target_f:int = 20,
-                  extra_config_name: str = '', result_dir: str = './', network_name: str = '', cmdenv_config: bool = False, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
+                  extra_config_name: str = '', result_dir: str = '.', network_name: str = '', cmdenv_config: bool = False, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs with handover enabled.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved in the simulation throughout a single simulation.
@@ -219,7 +219,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name: str = '', result_dir: str = './', varying: bool = False, network_name: str = '', net_dir: str= '_5G/networks/',
+                  extra_config_name: str = '', result_dir: str = '.', varying: bool = False, network_name: str = '', net_dir: str= '_5G/networks',
                   cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
@@ -369,7 +369,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   return config_name, num_enbs
 
-def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2, net_dir: str= '_5G/networks/', project_dir: str= '../Network_CCOpMv/'):
+def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2, net_dir: str= '_5G/networks', project_dir: str= '../Network_CCOpMv'):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
   
   The network created include the default and necessary submodules to ensure a correct Simu5G simulation.
@@ -385,7 +385,7 @@ def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, ima
     project_dir: directory of the omnet++ project
   """
 
-  filename = f"{project_dir}{net_dir}{network}.ned"
+  filename = f"{project_dir}/{net_dir}/{network}.ned"
 
   with open(filename, 'wt') as f:
     hned.writeBaseImports(f, is5g= True, snapshot= True, net_dir= net_dir)
@@ -462,7 +462,7 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sect
   return connections
 
 def gen_solver_result_filename(result_dir: str, mode: str, min_sinr: int):
-  return result_dir + f"result_{mode}_"+ str(min_sinr)+".txt"
+  return result_dir + f"/result_{mode}_"+ str(min_sinr)+".txt"
 
 def gen_movement_filename(config_name: str, seed: int, snapshot: bool= True):
   if snapshot:

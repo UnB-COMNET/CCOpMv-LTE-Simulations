@@ -15,7 +15,7 @@ def ccop_mv_MILP(
     distance_mn,
     MIN_DIS=2,
     FIRST_ANTENNA=1,
-    result_dir = './'):
+    result_dir = '.'):
 
     M = Max_Space
     T = Max_Time

@@ -53,7 +53,7 @@ def writeComment(f, text):
   """
   f.write("\n\t\t//# {}\n".format(text))
 
-def writeBaseImports(f, is5g: bool= False, snapshot: bool= False, net_dir: str= '_5G/networks/'):
+def writeBaseImports(f, is5g: bool= False, snapshot: bool= False, net_dir: str= '_5G/networks'):
   """
   This function writes the default imports used in a .ned file from INET and SimuLTE or Simu5G. 
   
@@ -205,4 +205,4 @@ def writeMultiNodeConnections(f, object_name: str = "eNB", quantity: int = 1, po
     writeConnections(f, port1= object_name+str(i)+".ppp", port2= port2, base= False)
 
 def dir_to_package(net_dir: str):
-  return net_dir.replace('/', '.')
+  return net_dir.replace('/', '.') + '.'
