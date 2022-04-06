@@ -1,4 +1,3 @@
-from turtle import delay
 from typing import List
 import helper as hp
 import helper_ned as hned

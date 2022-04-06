@@ -114,10 +114,12 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     sys.stdout = sys.__stdout__
 
 def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, config_name: str= 'ilp_move_users',
-                            num_slices: int= 10):
+                            num_slices: int= 10, cpu_num: int= 1):
     #Genereting .ini file
-    snapshot_filename = ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros,
-                                            config_name= config_name, num_slices= num_slices)
+    ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros,
+                        config_name= config_name, num_slices= num_slices)
+
+    snapshot_filename = ilpc.gen_movement_filename(config_name= config_name, seed= chosen_seed, snapshot= True)
 
     open(snapshot_filename, 'w').close()
 

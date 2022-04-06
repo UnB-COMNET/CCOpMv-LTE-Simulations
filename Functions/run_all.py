@@ -10,7 +10,7 @@ import sys
 
 def main():
     #General configs
-    chosen_seeds = [123]
+    chosen_seeds = [123, 321, 213]
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -106,7 +106,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         move_ini_path = project_dir + sim_dir + move_file
         run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
                                 size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
-                                num_slices= num_slices)
+                                num_slices= num_slices, cpu_num= cpu_count())
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
@@ -122,6 +122,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         Path(kwargs['result_dir']).mkdir(parents=True, exist_ok=True)
         Path(project_dir + kwargs['sim_dir']).mkdir(parents=True, exist_ok=True)
         Path(project_dir + kwargs['net_dir']).mkdir(parents=True, exist_ok=True)
+
+    sys.exit()
 
     print(f'Starting computations on {cpu_count()} cores.')
     for varying in var:
@@ -182,7 +184,6 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     if run_numbers == []:
         print('All simulations are already computed.')
     else:
-        sys.exit()
         run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
@@ -203,10 +204,15 @@ def compare_last_line(filename: str, line: str):
     """This function compare the last line of a file with the informed string."""
 
     last_line = ''
+    count = 0
     try:
         with open(filename, 'r') as f:
             for l in f:
                 last_line = l
+                count += 1
+
+        if count <= 1:
+            return False
 
     except FileNotFoundError:
                     return False
