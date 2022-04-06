@@ -16,9 +16,9 @@ def main():
     size_sector = 400
     n_macros = 1
     min_sinrs = [5, 10, 15]
-    mode = 'fixed'# varying or fixed else both
+    mode = ''# varying or fixed else both
     result_dir = "Solutions/"
-    micro_power = 20 #dBm
+    micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv/'
     sim_dir = '_5G/simulations/'
     extra_dir = ['micro_power']
@@ -155,7 +155,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     #Verifying if solver is already done
     done = compare_last_line(gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
     if done:
-        print(f'Solver {file_name} already computed.')
+        print(f'Solver {file_name} already computed. (Seed :{chosen_seed})')
     # If not done, do it    
     else:
         #Running solver
@@ -164,7 +164,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                     first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices)
 
     #Generating config and network files
-    print("Generating configuration files - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
+    print("Generating configuration files - Min Snr: {} - {} (Seed :{})".format(min_sinr, mode.capitalize(), chosen_seed))
     
     ini_path_sliced = sim_path + f'{file_name}.ini'
     network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
@@ -182,6 +182,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     if run_numbers == []:
         print('All simulations are already computed.')
     else:
+        sys.exit()
         run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
