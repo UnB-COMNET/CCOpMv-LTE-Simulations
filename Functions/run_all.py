@@ -2,7 +2,7 @@ from typing import List
 
 from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name
 from multiprocessing import Process, cpu_count
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned, gen_solver_result_filename, gen_movement_filename
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini2, ilp_ned, gen_solver_result_filename, gen_movement_filename
 from run_simulations import run_simulation
 from pathlib import Path
 import subprocess
@@ -15,8 +15,8 @@ def main():
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5, 10, 15]
-    mode = 'fixed'# varying or fixed else both
+    min_sinrs = [10]
+    mode = 'varying'# varying or fixed else both
     result_dir = "Solutions"
     micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv'
@@ -167,23 +167,38 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
     
     ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
-    network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
+    
 
-    config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+    #config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+    #                                                     min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+    #                                                     slice_time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
+    #                                                     micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+    network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
+    config_name_sliced_list, num_enbs_time = ilp_sliced_ini2(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                          slice_time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
                                                          micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
-    ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
-
+    for slice in range(len(num_enbs_time)):
+        network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
+        ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+    
+    #ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+    print(config_name_sliced_list)
+    print(ini_path_sliced)
+    
     #Running the simulation
-    run_numbers = get_missing_simulations(config_name= config_name_sliced, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                          min_sinr= min_sinr, num_slices= num_slices)
-    if run_numbers == []:
-        print('All simulations are already computed.')
-    else:
-        sys.exit()
-        run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
+    for i in range(len(config_name_sliced_list)):
+        run_numbers = get_missing_simulations(config_name= config_name_sliced_list[i], num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
+                                            min_sinr= min_sinr, num_slices= num_slices)
+        #print(run_numbers)
+        #return        
+        run_numbers = []                            
+        if run_numbers == []:
+            print('All simulations are already computed.')
+        else:
+            #sys.exit()    
+            run_simulation(ini_path= ini_path_sliced, config_name_list= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
     """This function call a scavetool command to create the necessary .csv files"""

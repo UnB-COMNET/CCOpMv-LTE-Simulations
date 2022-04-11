@@ -84,7 +84,7 @@ def writeConnectOptions(f, list_connections: ty.List[ty.Union[ty.List[int], int]
       enb_str = getOptionsString(values= i, parallel= parallel_var)
     else:
       enb_str = i
-    
+    enb_str = enb_str.replace('$',"").replace('{',"").replace('}',"")     # NEW
     f.write('''**.{name}[{number}].macCellId = {enb}
 **.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = enb_str, name = object_name))
     count += 1
@@ -443,6 +443,9 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
 def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
   """Writes the configuration that defines the number of slices used when using MoreInfoChannelModel."""
   f.write('**.cellularNic.channelModel[*].num_slice = {}\n'.format(getOptionsString(values= range(num_slices), name= iter_name)))
+
+def writeSlice(f, slice: int, iter_name: str = 'Slice'):
+  f.write('**.cellularNic.channelModel[*].num_slice = ${' + iter_name + ' = ' + str(slice) + '}\n')
 
 def writeNumEnbs(f, options: ty.List[int], iter_name: str = 'Slice', parallel_name: str = ''):
   """Writes the configuration that informs the number of eNBs used when in each slice using MoreInfoChannelModel."""
