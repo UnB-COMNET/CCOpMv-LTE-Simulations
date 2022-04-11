@@ -41,7 +41,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     mode = "varying" if varying else "fixed"
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
-    print("Running Solver - Min Snr: {} - {}".format(min_sinr, mode.capitalize()))
+    print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize()), chosen_seed)
 
     #Output config
     out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
