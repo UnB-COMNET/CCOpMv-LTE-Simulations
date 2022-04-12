@@ -485,7 +485,7 @@ def ilp_sliced_ini2(filename, seed, size_y:int =8000, size_x:int =8000, size_sec
     hp.writeTransmissionPower(f, micro_power= micro_power, is5G= True)
     hp.writeSeparation(f, "Channel Control")
     if multi_carriers:    ## Consertar
-      hp.writeCarrierAggregation5G(f, num_carriers= len(antennas_regions), carriers_frequencies= [scen.carrier_frequency - 0.02*np.max(num_bands)*i/100 for i in range(len(antennas_regions))], eNBs_carriers= True)
+      hp.writeCarrierAggregation5G(f, num_carriers= len(antennas_regions_byslice), carriers_frequencies= [scen.carrier_frequency - 0.02*np.max(num_bands)*i/100 for i in range(len(antennas_regions))], eNBs_carriers= True)
     else:
       hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")

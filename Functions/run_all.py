@@ -10,7 +10,7 @@ import sys
 
 def main():
     #General configs
-    chosen_seeds = [123]
+    chosen_seeds = [321, 213]
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -18,7 +18,7 @@ def main():
     min_sinrs = [10]
     mode = 'varying'# varying or fixed else both
     result_dir = "Solutions"
-    micro_power = 30 #dBm
+    micro_power = 40 #dBm
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     extra_dir = ['micro_power']
@@ -33,7 +33,7 @@ def main():
     #Simulation configs
     net_dir = '_5G/networks'
     num_bands = [100]
-    repetitions = 3
+    repetitions = 2
     slice_time = 1 #s
     #multi_carriers = False #Keep False
     #is_micro = True #Keep True

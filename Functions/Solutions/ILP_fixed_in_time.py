@@ -48,8 +48,6 @@ def ccop_mv_MILP(
                             if distance_mn[n][m] <= MIN_DIS:
                                 if m != n:
                                     ct.SetCoefficient(xtm[t][n], -1)
-                                else:
-                                    ct.SetCoefficient(xtm[t-1][n], -1)
 
     # Antennas must serve n areas only if the signal meet a minimum SNR omega
     for t in range(0,T):

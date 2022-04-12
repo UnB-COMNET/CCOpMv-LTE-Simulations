@@ -67,7 +67,7 @@ def run_simulation(ini_path: str, config_name_list: List[str], cpu_num: int = 1,
                     '\nmake\n'
                     f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src'), shell= True)
 
-  code.check_returncode()
+  #code.check_returncode()
 
 if __name__ == "__main__":
   main()
