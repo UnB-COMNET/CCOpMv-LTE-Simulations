@@ -1,8 +1,9 @@
+from statistics import multimode
 from typing import List
 
 from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name
 from multiprocessing import Process, cpu_count
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini2, ilp_ned, gen_solver_result_filename, gen_movement_filename
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini2, ilp_ned, gen_solver_result_filename, gen_movement_filename, gen_sliced_config_pattern
 from run_simulations import run_simulation
 from pathlib import Path
 import subprocess
@@ -10,7 +11,7 @@ import sys
 
 def main():
     #General configs
-    chosen_seeds = [321, 213]
+    chosen_seeds = [123]
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -18,7 +19,7 @@ def main():
     min_sinrs = [10]
     mode = 'varying'# varying or fixed else both
     result_dir = "Solutions"
-    micro_power = 40 #dBm
+    micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     extra_dir = ['micro_power']
@@ -141,11 +142,11 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         get_csv(varying= varying, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
 
 def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
-                varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
-                sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
-                target_f: float,result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
-                is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
-                micro_power: int= 30, num_slices: int= 10):
+                 varying: bool, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
+                 sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
+                 target_f: float,result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
+                 is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
+                 micro_power: int= 30, num_slices: int= 10):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
 
     mode = "varying" if varying else "fixed"
@@ -160,8 +161,8 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     else:
         #Running solver
         gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                    xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
-                    first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices)
+                     xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, varying= varying, min_dis= min_dis,
+                     first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices)
 
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
@@ -175,30 +176,27 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     #                                                     micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
     network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
     config_name_sliced_list, num_enbs_time = ilp_sliced_ini2(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                         min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                         slice_time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                         micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+                                                             min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                             slice_time= slice_time, target_f= target_f, result_dir= result_dir, varying = varying, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                             micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
     for slice in range(len(num_enbs_time)):
         network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
         ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
     
     #ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
-    print(config_name_sliced_list)
-    print(ini_path_sliced)
     
     #Running the simulation
-    for i in range(len(config_name_sliced_list)):
-        run_numbers = get_missing_simulations(config_name= config_name_sliced_list[i], num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                            min_sinr= min_sinr, num_slices= num_slices)
-        #print(run_numbers)
-        #return        
-        run_numbers = []                            
-        if run_numbers == []:
-            print('All simulations are already computed.')
-        else:
-            #sys.exit()    
-            run_simulation(ini_path= ini_path_sliced, config_name_list= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
+    run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
+                                          min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
+    #print(run_numbers)
+    #return        
+    run_numbers = []                            
+    if run_numbers == []:
+        print('All simulations are already computed.')
+    else:
+        #sys.exit()    
+        run_simulation(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
     """This function call a scavetool command to create the necessary .csv files"""
@@ -235,16 +233,17 @@ def compare_last_line(filename: str, line: str):
     else:
         return last_line == line
 
-def get_missing_simulations(config_name: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int):
+def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int, multi_carriers: bool, extra_config_name: str):
     """This function returns the simulation runs that were not executed yet"""
 
     sim_resultdir = f'{sim_path}/results'
     counter = 0
     missing = []
+    config_pattern = gen_sliced_config_pattern(min_sinr= min_sinr, mode= mode, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
     for band in num_bands:
         for slice in range(num_slices):
             for repetition in range(repetitions):
-                filename = f'{sim_resultdir}/{config_name}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
+                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
 
                 done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
                 if not done:

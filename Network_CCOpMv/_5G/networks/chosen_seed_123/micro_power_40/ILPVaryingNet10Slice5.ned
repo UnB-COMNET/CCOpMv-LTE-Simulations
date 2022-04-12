@@ -12,7 +12,7 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 //
-package _5G.networks.chosen_seed_123.micro_power_30;
+package _5G.networks.chosen_seed_123.micro_power_40;
 
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
 import inet.networklayer.ipv4.RoutingTableRecorder;
@@ -28,7 +28,7 @@ import simu5g.nodes.PgwStandard;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import _5G.models.Snapshotter;
 
-network ILPVaryingNet10Slice0
+network ILPVaryingNet10Slice5
 {
 	parameters:
 		int numUe= default(1);
@@ -61,6 +61,9 @@ network ILPVaryingNet10Slice0
 		eNB0: eNodeB {
 			@display("is=l");
 		}
+		eNB1: eNodeB {
+			@display("is=l");
+		}
 		ue[numUe]: Ue {
 			@display("is=s");
 		}
@@ -73,6 +76,8 @@ network ILPVaryingNet10Slice0
 		server.pppg++ <--> Eth10G <--> router.pppg++;
 		router.pppg++ <--> Eth10G <--> pgw.filterGate;
 		eNB0.ppp <--> Eth10G <--> pgw.pppg++;
+		eNB1.ppp <--> Eth10G <--> pgw.pppg++;
 
 		//############### X2 Connections ###############
+		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
 }

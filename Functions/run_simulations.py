@@ -1,6 +1,7 @@
 from typing import List
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
+from multiprocessing import Process
 
 def main():
   chosen_seed = 123
@@ -39,7 +40,7 @@ def main():
 
       print("Running simulations - Min Snr: {}".format(min_sinrs[i]))
       #run_simulation(ini_path= ini_path, config_name= config_name)
-      run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced)
+      run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, repetitions= repetitions)
 
     #Handover cases
     #ini_path = dir_path + 'ilp_fixed.ini'
@@ -49,25 +50,41 @@ def main():
     #ilpc.ilp_ned(network = "ILPFixedNet", n_enbs= enbs_hando_num, size_x= size_x, size_y= size_y)
     #run_simulation(ini_path= ini_path, config_name= config_name)
 
-def run_simulation(ini_path: str, config_name_list: List[str], cpu_num: int = 1, run_numbers: List[int] = []):
+def run_simulation(ini_path: str, repetitions: int, config_name_list: List[str], cpu_num: int = 1, run_numbers: List[int] = []):
   
-  runs = ''
+  processes = []
+  runs = ['' for i in range(len(config_name_list))]
 
-  if len(run_numbers) > 0:
-    runs = ' -r '
-    for number in run_numbers:
-      runs += f'{number},'
-    runs = runs[:-1]
+  for number in run_numbers:
+    if runs[number // repetitions] == '':
+      runs[number // repetitions] += ' -r '
+    runs[number // repetitions] += f'{number % repetitions},'
 
   #Running Omnet++
   for i in range(len(config_name_list)):
     print("executando o subprocesso ", i)
-    subprocess.call(('cd ../Network_CCOpMv\n'
+    runs[i] = runs[i][:-1]
+    #code = subprocess.run(('cd ../Network_CCOpMv\n'
+    #                r'opp_makemake -f --deep -O out -KINET4_PROJ=/home/juliano/OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=/home/juliano/OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
+    #                '\nmake\n'
+    #                f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src'), shell= True)
+    #code.check_returncode()
+
+    arg = ('cd ../Network_CCOpMv\n'
                     r'opp_makemake -f --deep -O out -KINET4_PROJ=/home/juliano/OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=/home/juliano/OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
                     '\nmake\n'
-                    f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src'), shell= True)
+                    f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs[i] + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src')
 
-  #code.check_returncode()
+    processes.append(Process(target= run_subprocess_multiprocessing, args= arg, kwargs= {'shell': True}))
+    processes[-1].start()
+
+
+  for p in processes:
+    p.join()
+
+def run_subprocess_multiprocessing(command: str, shell: bool = True):
+  code = subprocess.run(command, shell= shell)
+  code.check_returncode()
 
 if __name__ == "__main__":
   main()

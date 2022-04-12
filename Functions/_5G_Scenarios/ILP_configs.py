@@ -150,12 +150,12 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${repetition}-${RBs}")
+    hp.writeOutput(f, "${resultdir}/" + config_name + "/"+str(min_sinr)+"-${repetition}-${RBs}")
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
       hp.writeCmdenvConfig(f, min_sinr= min_sinr, performance_display = False, redirect_output= True)
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-${iterationvarsf}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/"+ config_name + "-${iterationvarsf}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -290,7 +290,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   connections = getUesConnections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
-  config_name = 'ilp_{}_sliced_{}'.format(mode, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+  config_name = gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
@@ -308,12 +308,12 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
-      hp.writeCmdenvConfig(f, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+      hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True)
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_name + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, micro_power= micro_power, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -469,23 +469,21 @@ def ilp_sliced_ini2(filename, seed, size_y:int =8000, size_x:int =8000, size_sec
   print(antennas_regions_byslice[slice_test])
   print("Ue deve ser conectado ao ENB de indice ", connections_list[slice_test][ue_test])'''
 
-  config_name = 'ilp_{}_sliced_{}'.format(mode, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
+  config_pattern = gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
   config_name_list = []
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
   with open(filename, 'wt') as f:
-    hp.writeCommentConfigILP(f, 'ilp_sliced_ini', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
-    hp.defaultGeneral(f, is5g= True)
-    #hp.makeNewConfig(f, name= config_name)
-    #hp.writeNetwork(f, network= network_full_name)
+    hp.writeCommentConfigILP(f, 'ilp_sliced_ini2', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
+    hp.generalConfig(f)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, micro_power= micro_power, is5G= True)
     hp.writeSeparation(f, "Channel Control")
-    if multi_carriers:    ## Consertar
-      hp.writeCarrierAggregation5G(f, num_carriers= len(antennas_regions_byslice), carriers_frequencies= [scen.carrier_frequency - 0.02*np.max(num_bands)*i/100 for i in range(len(antennas_regions))], eNBs_carriers= True)
+    if multi_carriers:
+      hp.writeCarrierAggregation5G(f, num_carriers= len(antennas_regions_byslice), carriers_frequencies= [scen.carrier_frequency - 0.02*np.max(num_bands)*i/100 for i in range(len(antennas_regions_byslice))], eNBs_carriers= True)
     else:
       hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")
@@ -523,7 +521,7 @@ def ilp_sliced_ini2(filename, seed, size_y:int =8000, size_x:int =8000, size_sec
       hp.writeAppVideoDL(f, numUEs= num_ues, p_size= p_size, n_app= 1, mtu= True, s_interval= s_interval)
     
     for slice in range(num_slices):
-      config_name = 'ilp_{}_sliced_{}'.format(mode, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '') + '_slice{}'.format(slice)
+      config_name = config_pattern  + '_slice{}'.format(slice)
       config_name_list.append(config_name)
       hp.makeNewConfig(f, config_name)
       hp.writeTime(f, time= slice_time, repeat= repetitions)
@@ -532,12 +530,12 @@ def ilp_sliced_ini2(filename, seed, size_y:int =8000, size_x:int =8000, size_sec
       hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-      hp.writeOutput(f, "${resultdir}/${configname}/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
-        hp.writeCmdenvConfig(f, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True)
       hp.writeSeparation(f, "Snapshots")
-      hp.writeSnapshotsConfig(f, filename= "../../../Functions/${configname}-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
+      hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_pattern + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
       hp.writeSlice(f, slice= slice, iter_name= iter_slice_name)
       hp.writeNumEnbs(f, options= [num_enbs_time[slice]], iter_name= 'NumEnbs', parallel_name= '')
       network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name) + f'Slice{slice}'
@@ -747,3 +745,6 @@ def gen_movement_filename(config_name: str, seed: int, snapshot: bool= True):
     return config_name + f'-{seed}.sna'
   else:
     return config_name + f'-{seed}.ini'
+
+def gen_sliced_config_pattern(min_sinr: int, mode: str, multi_carriers: bool, extra_config_name: str):
+  return 'ilp_{}_sliced_{}'.format(mode, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')

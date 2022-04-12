@@ -627,10 +627,10 @@ def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterat
   f.write('**.snapshotter.snapshot = {}\n'.format("true" if snapshot else "false"))
   f.write('**.snapshotter.delay = {}\n'.format(delay))
 
-def writeCmdenvConfig(f, min_sinr: int, output_file_name: str = None, performance_display = False, redirect_output= False):
+def writeCmdenvConfig(f, min_sinr: int, config_name: str, output_file_name: str = None, performance_display = False, redirect_output= False):
   """Writes the cmdenv configuration in a .ini file."""
   if output_file_name is None:
-    output_file_name = "${resultdir}/${configname}-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}.out"
+    output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}.out"
 
   f.write(('cmdenv-performance-display = {p_display}\n'
            'cmdenv-redirect-output = {r_output}\n'
@@ -652,3 +652,7 @@ def defaultGeneral(f, is5g: bool = False):
     writeSeparation(f, "Resource Blocks")
     f.write(('**.numRbDl = 6\n**.numRbUl = 6\n'
              '**.binder.numBands = 6 # this value should be kept equal to the number of RBs\n'))
+
+def generalConfig(f):
+  # General
+  f.write("\n[General]\n")
