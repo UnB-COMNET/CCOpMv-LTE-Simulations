@@ -4,6 +4,7 @@ from sinr_comput import db_to_linear
 from helper_xml import get_map_ues_time, get_ues_time
 from Solutions.ILP_fixed_in_time import ccop_mv_MILP as solver_fixed
 from Solutions.ILP_varying_in_time import ccop_mv_MILP as solver_varying
+from Solutions.ILP_single import ccop_mv_MILP as solver_single
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 from time import time, localtime, mktime
@@ -20,28 +21,33 @@ def main():
     size_x = 4000
     size_sector = 400
     n_macros = 1
-    xml_filename = ilpc.gen_snapshot_filename("ilp_move_users", chosen_seed)
+    xml_filename = ilpc.gen_movement_filename("ilp_move_users", chosen_seed, snapshot= True)
     min_sinr = 15 #5, 10, 15s
     min_sinrs = [5, 10, 15]
-    result_dir = "Solutions/"
     varying = True
+    mode = "single"
     min_dis = 2000 #Enlace de rádio na prática
     first_antenna_region = 1
     min_time = 2
-    gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, varying= varying, 
+    num_slices = 10
+    micro_power = 30#dBm
+    result_dir = f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}"
+
+    gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, mode= mode, 
                  xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region,
-                 min_time= min_time)
+                 min_time= min_time, micro_power= micro_power, num_slices= num_slices)
     #run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
     #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
 
 def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
-                 min_sinr: int, result_dir: str, varying: bool, min_dis: int, first_antenna_region: int, min_time: int,
+                 min_sinr: int, result_dir: str, mode: str, min_dis: int, first_antenna_region: int, min_time: int,
                  micro_power: int = 30, num_slices: int= 10):
   
 
-    mode = "varying" if varying else "fixed"
+    #mode = "varying" if varying else "fixed"
+
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
-    print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize()), chosen_seed)
+    print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
 
     #Output config
     out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
@@ -97,12 +103,15 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
               f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({mode})\n"
               f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}\n"))
         
-        if varying:
+        if mode == "varying":
             solver_varying(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                            snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time, FIRST_ANTENNA= first_antenna_region)
-        else:
+        elif mode == "fixed":
             solver_fixed(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                          snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, FIRST_ANTENNA= first_antenna_region)
+        elif mode == "single":
+            solver_single(Max_Space= scen.n_sectors, users_m= users_t_m[-1], MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+                          snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir= result_dir, FIRST_ANTENNA= first_antenna_region)
 
     elif show_ues:
         #Plotting ues configuration over time
