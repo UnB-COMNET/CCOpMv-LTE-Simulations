@@ -62,7 +62,7 @@ def run_simulation(ini_path: str, repetitions: int, config_name_list: List[str],
     runs[number // repetitions] += f'{number % repetitions},'
 
   code = subprocess.run(('cd ../Network_CCOpMv\n'
-                    r'opp_makemake -f --deep -O out -KINET4_PROJ=/home/juliano/OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=/home/juliano/OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
+                    r'opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
                     '\nmake\n'), shell= True)
   code.check_returncode()
 
@@ -73,7 +73,7 @@ def run_simulation(ini_path: str, repetitions: int, config_name_list: List[str],
     
 
     arg = ('cd ../Network_CCOpMv\n'
-                    f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs[i] + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src')
+          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs[i] + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src')
     processes.append(Process(target= run_subprocess_multiprocessing, args= [arg], kwargs= {'shell': True}))
 
     processes[-1].start()
@@ -82,7 +82,7 @@ def run_simulation(ini_path: str, repetitions: int, config_name_list: List[str],
     print("Adormecendo... zzzzz")
     timeit(60)
     print("DESPERTANDO")
-    #p.join()
+    p.join()
 
 def run_subprocess_multiprocessing(command: str, shell: bool = True):
   code = subprocess.call(command, shell= shell)

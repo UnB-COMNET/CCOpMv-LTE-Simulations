@@ -705,7 +705,7 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sect
 
   return connections
 
-def getUesConnections2(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y, slice):
+def getUesConnections2(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y, slice_):
   """This function interpretates the result parsed from the solver in to the elements connections.
 
   Args:
@@ -726,7 +726,7 @@ def getUesConnections2(result, ues_coords, antennas_regions: List[int], size_sec
   for ue in ues_coords:
     connections.append([])
     #for s in range(len(ue)):
-    region = geo.coord2Region(ue[slice], size_sector, size_x, size_y)
+    region = geo.coord2Region(ue[slice_], size_sector, size_x, size_y)
     #print("ue ", ue[s].x, ue[s].y)
     #print(region)
     #Assume-se que a regiao do UE é servida por alguma das antenas

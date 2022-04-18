@@ -1,3 +1,4 @@
+from asyncio import run
 from statistics import multimode
 from typing import List
 
@@ -16,10 +17,10 @@ def main():
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [10]
+    min_sinrs = [5]
     mode = 'varying'# varying or fixed else both
     result_dir = "Solutions"
-    micro_power = 30 #dBm
+    micro_power = 40 #dBm
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     extra_dir = ['micro_power']
@@ -138,6 +139,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     for p in processes:
         p.join()
 
+    sys.exit()
     for varying in var:
         get_csv(varying= varying, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
 
@@ -191,11 +193,11 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                                           min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
     #print(run_numbers)
     #return        
-    run_numbers = []                            
+    print(run_numbers)                           
     if run_numbers == []:
         print('All simulations are already computed.')
     else:
-        #sys.exit()    
+        sys.exit()    
         run_simulation(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(varying: bool, sim_path: str, extra_config_name: str = ''):
