@@ -10,13 +10,13 @@ from errors import check_mode
 
 def main():
     #General configs
-    chosen_seeds = [123]
+    chosen_seeds = [123, 213, 321]
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
     min_sinrs = [5, 10, 15]
-    modes = ['single']#['varying', 'fixed', 'single'] # varying, fixed or single
+    modes = ['varying', 'fixed', 'single'] # varying, fixed or single
     result_dir = "Solutions"
     micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv'
@@ -34,7 +34,7 @@ def main():
     #Simulation configs
     net_dir = '_5G/networks'
     num_bands = [100]
-    repetitions = 2
+    repetitions = 1
     slice_time = 1 #s
     #multi_carriers = False #Keep False
     #is_micro = True #Keep True
@@ -201,8 +201,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     #Running the simulation
     run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
                                           min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
-    
-    print(run_numbers)                           
+                           
     if run_numbers == []:
         print('All simulations are already computed.')
     else:

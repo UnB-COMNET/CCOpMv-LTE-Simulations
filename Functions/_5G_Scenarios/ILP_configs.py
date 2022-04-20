@@ -327,7 +327,6 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
                            cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
-    print("aquiii: ", num_enbs_time)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
     hp.writeNumEnbs(f, options= num_enbs_time, iter_name= 'NumEnbs', parallel_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
@@ -424,7 +423,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
 
-  check_mode()
+  check_mode(mode= mode)
 
   list_scen = []
   for i in range(num_slices):
