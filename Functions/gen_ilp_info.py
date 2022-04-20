@@ -13,6 +13,7 @@ from multiprocessing import Process, cpu_count
 from pathlib import Path
 import sys
 import io
+from errors import check_mode
 
 def main():
     ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_move_users.ini"
@@ -22,7 +23,7 @@ def main():
     size_sector = 400
     n_macros = 1
     xml_filename = ilpc.gen_movement_filename("ilp_move_users", chosen_seed, snapshot= True)
-    min_sinr = 15 #5, 10, 15s
+    min_sinr = 5 #5, 10, 15s
     min_sinrs = [5, 10, 15]
     varying = True
     mode = "single"
@@ -30,7 +31,7 @@ def main():
     first_antenna_region = 1
     min_time = 2
     num_slices = 10
-    micro_power = 30#dBm
+    micro_power = 40#dBm
     result_dir = f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}"
 
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, mode= mode, 
@@ -103,6 +104,8 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
               f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({mode})\n"
               f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}\n"))
         
+        check_mode(mode= mode)
+
         if mode == "varying":
             solver_varying(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                            snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time, FIRST_ANTENNA= first_antenna_region)
@@ -110,7 +113,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             solver_fixed(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                          snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, FIRST_ANTENNA= first_antenna_region)
         elif mode == "single":
-            solver_single(Max_Space= scen.n_sectors, users_m= users_t_m[-1], MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
+            solver_single(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, valid_time= num_slices,
                           snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir= result_dir, FIRST_ANTENNA= first_antenna_region)
 
     elif show_ues:
@@ -134,9 +137,7 @@ def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y
 
     #Running Omnet++
     code = subprocess.run(('cd ../Network_CCOpMv\n'
-                            r'opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
-                            '\nmake\n'
-                            f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
+                           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
     code.check_returncode()
 
     with open(snapshot_filename, 'a') as f:

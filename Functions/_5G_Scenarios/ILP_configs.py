@@ -5,6 +5,7 @@ import helper_xml as hxml
 import random
 import geometry as geo
 import numpy as np
+from errors import check_mode
 
 def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, config_name: str= 'ilp_move_users',
                    num_slices: int= 10):
@@ -219,7 +220,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
-                  extra_config_name: str = '', result_dir: str = '.', varying: bool = False, network_name: str = '', net_dir: str= '_5G/networks',
+                  extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
                   cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
@@ -248,7 +249,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     target_f: target throughput considered to compute sendInterval, used by the Video Streaming application
     extra_config_name: string to be added at the end of the configuration name
     result_dir: directory with the solver results in .txt files
-    varying: if true use ILP_varying_in_time results else use ILP_fixed_in_time results
+    mode: if varying use ILP_varying_in_time results else if single use ILP_single else if fixed use ILP_fixed_in_time results
     network_name: if diferent than '' is used as the network of the configuration
     net_dir: directory containing the network
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
@@ -267,7 +268,8 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
 
-  mode = 'varying' if varying else 'fixed'
+  check_mode(mode= mode)
+    
 
   optimized, antennas_regions, num_enbs_time = parse_results(gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
 
