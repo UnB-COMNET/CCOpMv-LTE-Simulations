@@ -65,9 +65,6 @@ def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: 
     processes[-1].start()
 
   for p in processes:
-    print("Adormecendo... zzzzz")
-    timeit(60)
-    print("DESPERTANDO")
     p.join()
 
 def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1, run_numbers: List[int] = []):
@@ -88,7 +85,7 @@ def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1,
   code.check_returncode()
 
 def run_subprocess_multiprocessing(command: str, shell: bool = True):
-  code = subprocess.call(command, shell= shell)
+  code = subprocess.run(command, shell= shell)
   print("-----------------------------------------------------")
   #print(code.stderr())
   code.check_returncode()

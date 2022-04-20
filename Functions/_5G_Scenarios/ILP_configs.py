@@ -271,7 +271,6 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
   num_slices = len(ues_in_time)
 
   check_mode(mode= mode)
-    
 
   optimized, antennas_regions, num_enbs_time = parse_results(gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
 
@@ -290,7 +289,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
   num_ues = len(scen.getUEsList())
   num_enbs = len(enbs_coords)
 
-  connections = getUesConnections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
+  connections = get_ues_connections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
   config_name = gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
 
@@ -456,7 +455,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
   for slice in range(num_slices):
     enbs_coords_list[slice] = list_scen[slice].getAntennasPositionList()
     num_enbs_list[slice] = len(enbs_coords_list[slice])
-    connections_list[slice] = getUesConnections2(optimized_byslice[slice], ues_coords, antennas_regions_byslice[slice], size_sector, size_x, size_y, slice)
+    connections_list[slice] = get_ues_connections_per_slice(optimized_byslice[slice], ues_coords, antennas_regions_byslice[slice], size_sector, size_x, size_y, slice)
   
   '''print("Analisando o resultado...")
   ue_test = 3
@@ -536,11 +535,11 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
       hp.writeSeparation(f, "Snapshots")
       hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_pattern + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
       hp.writeSlice(f, slice= slice, iter_name= iter_slice_name)
-      hp.writeNumEnbs(f, options= [num_enbs_time[slice]], iter_name= 'NumEnbs', parallel_name= '')
+      hp.writeNumEnbs(f, options= [num_enbs_time[slice]], iter_name= 'NumEnbs', parallel_name= iter_slice_name)
       network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name) + f'Slice{slice}'
       hp.writeNetwork(f, network= network_full_name)
       hp.writeComment(f, text= "Conecting UEs to eNodeB")
-      hp.writeConnectOptions(f, list_connections= connections_list[slice], parallel_var= '')
+      hp.writeConnectOptions(f, list_connections= connections_list[slice], parallel_var= iter_slice_name)
       if is_micro:
         hp.writeSeparation(f, "eNBs")
         hp.writeMultiMicro(f, num_enbs_list[slice], node_name = "eNB")
@@ -562,10 +561,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
       
       hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates = list_coord_ue, paral_name= '')
       hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= list_mov_ue, fixed_speed= True, paral_name= '')   
-    
-    
-    
-        
+   
 
   return config_name_list, num_enbs_time
 
@@ -646,7 +642,7 @@ def parse_results_per_slice(filename: str, max_time: int):
 
   Return:
     Three structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
-    The second one is a list with the sectors where the eNBs were located (List[int]).
+    The second one is a list of lists (list[t][n]) where t is the time of the simulation and n is the number of the eNB with the sector where each eNB is located at that time (List[List[int]]).
     The third is a list with the number of eNBs deployed in each slice
   """
 
@@ -680,7 +676,7 @@ def parse_results_per_slice(filename: str, max_time: int):
 
   return results_list, enbs_byslice, enbs_time
 
-def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
+def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
   """This function interpretates the result parsed from the solver in to the elements connections.
 
   Args:
@@ -704,35 +700,28 @@ def getUesConnections(result, ues_coords, antennas_regions: List[int], size_sect
 
   return connections
 
-def getUesConnections2(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y, slice_):
+def get_ues_connections_per_slice(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y, slice_):
   """This function interpretates the result parsed from the solver in to the elements connections.
 
   Args:
-    result: List[Dict] containing the parsed solution from the solver
+    result: Dict containing the parsed solution from the solver for a specific time (slice_)
     ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
     antennas_regions: List[int] containing the sectors where eNBs are located
     size_sector: sides size of square sectors in meters
     size_x: x dimension size of considered region in meters
     size_y: y dimension size of considered region in meters
+    slice_: specific time considered
 
   Return:
-    A 2D Matrix (n X t) with the serving cell number for each UE (n) at each time (t).
+    A Array of size n with the serving cell number for each UE (n).
   """
-  #print(result)
-  #print(antennas_regions)
   connections = []
-  #print("{} ues_coords. Cada indice e de um UE e nao de um slice".format(len(ues_coords)))
+  
   for ue in ues_coords:
-    connections.append([])
-    #for s in range(len(ue)):
     region = geo.coord2Region(ue[slice_], size_sector, size_x, size_y)
-    #print("ue ", ue[s].x, ue[s].y)
-    #print(region)
     #Assume-se que a regiao do UE é servida por alguma das antenas
-    connections[-1].append(antennas_regions.index(result[region])+1)
-  #print('------')
-  #print(connections)
-  #print('-------')
+    connections.append(antennas_regions.index(result[region])+1)
+
   return connections
 
 

@@ -84,11 +84,9 @@ def writeConnectOptions(f, list_connections: ty.List[ty.Union[ty.List[int], int]
       enb_str = getOptionsString(values= i, parallel= parallel_var)
     else:
       enb_str = i
-    enb_str = enb_str.replace('$',"").replace('{',"").replace('}',"")     # NEW
     f.write('''**.{name}[{number}].macCellId = {enb}
 **.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = enb_str, name = object_name))
     count += 1
-    pass
 
 def writeComment(f, text):
   """Writes 'text' as a comment in a .ini file."""

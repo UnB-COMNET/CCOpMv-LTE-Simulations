@@ -201,12 +201,12 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     #Running the simulation
     run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
                                           min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
-                           
+                    
     if run_numbers == []:
         print('All simulations are already computed.')
     else:
         if per_slice and mode != 'single':
-            run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
+            run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
         else:
             run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
 
