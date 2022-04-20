@@ -1,6 +1,8 @@
 from typing import List
+from timeit import timeit
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
+from multiprocessing import Process
 
 def main():
   chosen_seed = 123
@@ -34,22 +36,41 @@ def main():
                                                                 min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app,
                                                                 extra_config_name= extra_config_name, slice_time= 1, target_f= target_f, result_dir= result_dir, varying = varying, xml_filename= xml_filename)
       
-      #ilpc.ilp_ned(network = "ILPFixedNet", n_enbs= enbs_hando_num, size_x= size_x, size_y= size_y) 
       ilpc.ilp_ned(network = f"ILP{'Varying' if varying else 'Fixed'}Net", n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y)  
 
       print("Running simulations - Min Snr: {}".format(min_sinrs[i]))
-      #run_simulation(ini_path= ini_path, config_name= config_name)
-      run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced)
 
-    #Handover cases
-    #ini_path = dir_path + 'ilp_fixed.ini'
-    #config_name, enbs_hando_num = ilpc.ilp_fixed_ini(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions, antennas_regions= [],
-    #                                                 min_sinr= min_sinrs[i], num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= "VIDEO",
-    #                                                 target_f= target_f, result_dir= result_dir)
-    #ilpc.ilp_ned(network = "ILPFixedNet", n_enbs= enbs_hando_num, size_x= size_x, size_y= size_y)
-    #run_simulation(ini_path= ini_path, config_name= config_name)
+      run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced)
 
-def run_simulation(ini_path: str, config_name: str, cpu_num: int = 1, run_numbers: List[int] = []):
+def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: List[str], cpu_num: int = 1, run_numbers: List[int] = []):
+  
+  processes = []
+  runs = ['' for i in range(len(config_name_list))]
+
+  for number in run_numbers:
+    if runs[number // repetitions] == '':
+      runs[number // repetitions] += ' -r '
+    runs[number // repetitions] += f'{number % repetitions},'
+
+  #Running Omnet++
+  for i in range(len(config_name_list)):
+    print("executando o subprocesso ", i)
+    runs[i] = runs[i][:-1]
+    
+
+    arg = ('cd ../Network_CCOpMv\n'
+          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs[i] + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src')
+    processes.append(Process(target= run_subprocess_multiprocessing, args= [arg], kwargs= {'shell': True}))
+
+    processes[-1].start()
+
+  for p in processes:
+    print("Adormecendo... zzzzz")
+    timeit(60)
+    print("DESPERTANDO")
+    p.join()
+
+def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1, run_numbers: List[int] = []):
   
   runs = ''
 
@@ -65,6 +86,13 @@ def run_simulation(ini_path: str, config_name: str, cpu_num: int = 1, run_number
                           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
 
   code.check_returncode()
+
+def run_subprocess_multiprocessing(command: str, shell: bool = True):
+  code = subprocess.call(command, shell= shell)
+  print("-----------------------------------------------------")
+  #print(code.stderr())
+  code.check_returncode()
+  print("_____________________________________________________")
 
 def run_make():
     code = subprocess.run(('cd ../Network_CCOpMv\n'

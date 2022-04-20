@@ -28,7 +28,7 @@ import simu5g.nodes.PgwStandard;
 import simu5g.common.carrierAggregation.CarrierAggregation;
 import _5G.models.Snapshotter;
 
-network ILPFixedNet10
+network ILPFixedNet10Slice9
 {
 	parameters:
 		int numUe= default(1);

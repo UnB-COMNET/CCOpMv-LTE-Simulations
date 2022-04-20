@@ -1,9 +1,8 @@
 from typing import List
-
 from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name
 from multiprocessing import Process, cpu_count
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_ned, gen_solver_result_filename, gen_movement_filename
-from run_simulations import run_simulation, run_make
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned, gen_solver_result_filename, gen_movement_filename, gen_sliced_config_pattern
+from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from pathlib import Path
 import subprocess
 import sys
@@ -11,7 +10,7 @@ from errors import check_mode
 
 def main():
     #General configs
-    chosen_seeds = [321, 213]
+    chosen_seeds = [123]
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -24,6 +23,7 @@ def main():
     sim_dir = '_5G/simulations'
     extra_dir = ['micro_power']
     num_slices = 10
+    per_slice = True
 
     #Solver configs
     move_config_name = 'ilp_move_users'
@@ -49,7 +49,7 @@ def main():
                        move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
                        net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
                        app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
-                       min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices)
+                       min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice)
 
 
 def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
@@ -57,7 +57,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
                        net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
                        result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                        extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-                       extra_dir: List[str] = [], num_slices: int= 10):
+                       extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
     
     extra_dir = ['chosen_seed'] + extra_dir
@@ -66,7 +66,8 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'modes': modes, 'move_config_name': move_config_name, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
-              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices}
+              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices,
+              'per_slice': per_slice}
 
     print(f'Running makefile.')
     run_make()
@@ -86,7 +87,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
             result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False):
+            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
 
     verif_modes = []
@@ -122,7 +123,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
               'mode': None, 'xml_filename': xml_filename, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
-              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices}
+              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices, 'per_slice': per_slice}
 
     for param in extra_dir:
         kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
@@ -150,12 +151,14 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
 
 def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
-                mode: str, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
-                sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
-                target_f: float,result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
-                is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
-                micro_power: int= 30, num_slices: int= 10):
+                 mode: str, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
+                 sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
+                 target_f: float,result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
+                 is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
+                 micro_power: int= 30, num_slices: int= 10, per_slice: bool = True):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
+
+    check_mode(mode= mode)
 
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
     sim_path = project_dir + '/' + sim_dir
@@ -177,20 +180,36 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
     network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
-    config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+    if per_slice and mode != 'single':
+        config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+                                                                min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                                slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+
+        for slice in range(len(num_enbs_time)):
+            network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
+            ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+    
+    else:
+        config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                          slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
                                                          micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
-    ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
-
+        ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+    
     #Running the simulation
-    run_numbers = get_missing_simulations(config_name= config_name_sliced, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                          min_sinr= min_sinr, num_slices= num_slices)
+    run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
+                                          min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
+    
+    print(run_numbers)                           
     if run_numbers == []:
         print('All simulations are already computed.')
     else:
-        run_simulation(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
+        if per_slice and mode != 'single':
+            run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
+        else:
+            run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
 
 def get_csv(mode: str, sim_path: str, extra_config_name: str = ''):
     """This function call a scavetool command to create the necessary .csv files"""
@@ -228,16 +247,17 @@ def compare_last_line(filename: str, line: str):
     else:
         return last_line == line
 
-def get_missing_simulations(config_name: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int):
+def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int, multi_carriers: bool, extra_config_name: str):
     """This function returns the simulation runs that were not executed yet"""
 
     sim_resultdir = f'{sim_path}/results'
     counter = 0
     missing = []
+    config_pattern = gen_sliced_config_pattern(min_sinr= min_sinr, mode= mode, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
     for band in num_bands:
         for slice in range(num_slices):
             for repetition in range(repetitions):
-                filename = f'{sim_resultdir}/{config_name}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
+                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
 
                 done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
                 if not done:
