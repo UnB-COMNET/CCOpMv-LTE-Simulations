@@ -2,6 +2,8 @@ from typing import List
 from timeit import timeit
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
+import time
+from joblib import Parallel, delayed, parallel_backend
 from multiprocessing import Process
 
 def main():
@@ -51,7 +53,6 @@ def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: 
     if runs[number // repetitions] == '':
       runs[number // repetitions] += ' -r '
     runs[number // repetitions] += f'{number % repetitions},'
-
   #Running Omnet++
   for i in range(len(config_name_list)):
     print("executando o subprocesso ", i)
@@ -83,6 +84,19 @@ def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1,
                           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
 
   code.check_returncode()
+
+def execute(cpu_num, ini_path,config_name, runs):
+  if runs != []:
+    print('runs', runs)
+    arg = ('cd ../Network_CCOpMv\n'
+                      f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src')
+    print('Executando:   ', arg)
+    ini = time.time()
+    code = subprocess.check_output(arg, shell=True)
+    end = time.time()
+    print('--->',code)      
+    print("Processing time: ", end - ini)            
+    
 
 def run_subprocess_multiprocessing(command: str, shell: bool = True):
   code = subprocess.run(command, shell= shell)
