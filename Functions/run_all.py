@@ -13,6 +13,7 @@ from run_simulations import run_make, run_simulation_all_slices, run_simulation_
 from joblib import Parallel, delayed, parallel_backend
 from pathlib import Path
 import subprocess
+from joblib import Parallel, delayed, parallel_backend
 import sys
 from errors import check_mode
 
@@ -20,7 +21,7 @@ SUCCESS = 'SUCCESS'
 
 def main():
     #General configs
-    chosen_seeds = [123]
+    chosen_seeds = [321]
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -28,7 +29,7 @@ def main():
     min_sinrs = [5, 10]
     modes = ['varying', 'fixed'] # varying, fixed or single
     result_dir = "Solutions"
-    micro_power = 30 #dBm
+    micro_power = 20 #dBm
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     extra_dir = ['micro_power']
@@ -86,7 +87,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     print('Running {} cases simultaneously.'.format(num_cases_simultaneously))
 
     # Generating makefile and compiling OMNeT++ and its frameworks
-    print(f'Running makefile.')
+    print(f'\nRunning makefile.')
     run_make()    
 
     extra_dir = ['chosen_seed'] + extra_dir
@@ -99,11 +100,11 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'per_slice': per_slice}
     
     if per_slice:
-        print('Runnning cases by seeds one by one.')
+        print('\nRunnning cases by seeds one by one.')
         j = 0
         for i in range(len(chosen_seeds)):
             kwargs['chosen_seed'] = chosen_seeds[j]
-            print("CHOSEN SEED: {}".format(chosen_seeds[j]))
+            print("\tCHOSEN SEED: {}".format(chosen_seeds[j]))
             result = run_all(**kwargs)
             if result == SUCCESS:
                 chosen_seeds.remove(chosen_seeds[j])
@@ -189,7 +190,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     sim_dir = kwargs['sim_dir']
     net_dir = kwargs['net_dir']
     print(project_dir, result_dir,sim_dir,net_dir)
-    return
+    
     if per_slice:
         with parallel_backend('loky'):
             result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr,
@@ -206,6 +207,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
                 return_success = False
 
         if return_success:
+            print('\nExporting .CSV files.\n')
             for mode in verif_modes:
                 get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
             return SUCCESS
@@ -250,12 +252,13 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
                  micro_power: int= 30, num_slices: int= 10, per_slice: bool = True):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
-    print("Running case {} {}".format(mode,min_sinr))
+    print("\nRunning case {} {} dB\n".format(mode,min_sinr))
+    print(project_dir, result_dir,sim_dir,net_dir)
+    
     check_mode(mode= mode)
 
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
     sim_path = project_dir + '/' + sim_dir
-
     #Verifying if solver is already done
     done = compare_last_line(gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
     if done:
@@ -352,7 +355,6 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
         for slice in range(num_slices):
             for repetition in range(repetitions):
                 filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
-
                 done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
                 if not done:
                     missing.append(counter)
