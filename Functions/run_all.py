@@ -86,6 +86,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     num_minSinrs = len(min_sinrs)
     num_cases = num_seeds * num_modes * num_minSinrs
     num_totalRuns =  num_cases * num_slices * repetitions
+    num_cases_simultaneously = ceil(cpu_count()/(num_slices*repetitions))
     print("Simulating at most {} cases, hence {} runs. There are {} CPU cores available".format(num_cases, num_totalRuns, cpu_count()))
     
     # Checking for the existence of optimizer solution files and running solver for non-existent ones using parallel computing
@@ -93,12 +94,11 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     run_missing_snapshots(missing_snapshots, size_x, size_y, size_sector, n_macros, project_dir,sim_dir, move_config_name, num_slices)
     
     missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power)
-    run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time,\
-                            micro_power, num_slices)
-    
-    num_cases_simultaneously = ceil(cpu_count()/(num_slices*repetitions))
+    if len(missing_solutions) > num_cases_simultaneously:
+        run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time,\
+                                micro_power, num_slices)
+        
     print('Running {} cases simultaneously.'.format(num_cases_simultaneously))
-
 
     extra_dir = ['chosen_seed'] + extra_dir
 
