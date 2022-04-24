@@ -86,15 +86,16 @@ def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1,
   
   #Running Omnet++
   code = subprocess.run(('cd ../Network_CCOpMv\n'
-                          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
+                          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src'), shell= True)
 
   code.check_returncode()
 
 def execute(cpu_num, ini_path,config_name, runs):
   if runs != []:
     print('runs', runs, config_name)
-    arg = ('cd ../Network_CCOpMv\n'
-                      f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src')
+    arg = ('cd ../../Network_CCOpMv\n'
+                      f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
+    
     ini = time.time()
     code = subprocess.check_output(arg, shell=True)
     end = time.time()
@@ -123,8 +124,8 @@ def run_subprocess_multiprocessing(command: str, shell: bool = True):
 
 def run_make():
     code = subprocess.run(('cd ../Network_CCOpMv\n'
-                   r'opp_makemake -f --deep -O out -KINET4_PROJ=/home/juliano/OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=/home/juliano/OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
-                   '\nmake\n'), shell=	True)
+                            r'opp_makemake -f --deep -O out -KINET4_PROJ=../../../OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=../../../OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
+                            '\nmake\n'), shell=	True)
     code.check_returncode()
 
 if __name__ == "__main__":
