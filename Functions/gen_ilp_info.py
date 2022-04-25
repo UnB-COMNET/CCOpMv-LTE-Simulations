@@ -35,7 +35,7 @@ def main():
     result_dir = f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}"
 
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, mode= mode, 
-                 xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region,
+                 xml_filename = xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region,
                  min_time= min_time, micro_power= micro_power, num_slices= num_slices)
     #run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
     #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
@@ -44,7 +44,6 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  min_sinr: int, result_dir: str, mode: str, min_dis: int, first_antenna_region: int, min_time: int,
                  micro_power: int = 30, num_slices: int= 10):
   
-
     #mode = "varying" if varying else "fixed"
 
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
@@ -134,11 +133,13 @@ def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y
     snapshot_filename = ilpc.gen_movement_filename(config_name= config_name, seed= chosen_seed, snapshot= True)
 
     open(snapshot_filename, 'w').close()
-
+    
     #Running Omnet++
-    code = subprocess.run(('cd ../Network_CCOpMv\n'
-                           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src'), shell= True)
-    code.check_returncode()
+    arg = ('cd ../Network_CCOpMv\n'
+                          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
+
+    code = subprocess.check_output(arg, shell= True)
+    #code.check_returncode()
 
     with open(snapshot_filename, 'a') as f:
         f.write('<!--Done-->\n')

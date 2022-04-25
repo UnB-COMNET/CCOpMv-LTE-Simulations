@@ -109,7 +109,7 @@ def ccop_mv_MILP(
 
     status = solver.Solve()
     if status == pywraplp.Solver.OPTIMAL:
-        with open(gen_solver_result_filename(result_dir, 'fixed', int(linear_to_db(MIN_SNR_m[0]))), 'w') as f:
+        with open(gen_solver_result_filename(result_dir, 'fixed', math.ceil(linear_to_db(MIN_SNR_m[0]))), 'w') as f:
             print("\nMédia de carros:", objective.Value()/T)
             for t in range(0,T):
                 print("t=%d"%t)
