@@ -43,7 +43,7 @@ def main():
       run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced)
 
 def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: List[str], cpu_num: int = 1, run_numbers: List[int] = []):
-  
+  '''Execute all necessary runs of the Omnet++ configuration of each slice.'''
   processes = []
   runs = ['' for i in range(len(config_name_list))]
 
@@ -68,7 +68,7 @@ def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: 
     p.join()
 
 def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1, run_numbers: List[int] = []):
-  
+  '''Execute all necessary runs of one Omnet++ configuration.'''
   runs = ''
 
   if len(run_numbers) > 0:
@@ -92,10 +92,11 @@ def run_subprocess_multiprocessing(command: str, shell: bool = True):
   print("_____________________________________________________")
 
 def run_make():
-    code = subprocess.run(('cd ../Network_CCOpMv\n'
-                            r'opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
-                            '\nmake\n'), shell=	True)
-    code.check_returncode()
+  '''Creates/Updates the makefile of the Omnet++ project.'''
+  code = subprocess.run(('cd ../Network_CCOpMv\n'
+                          r'opp_makemake -f --deep -O out -KINET4_PROJ=../../inet4 -KSIMU5G_1_1_0_PROJ=../../Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
+                          '\nmake\n'), shell=	True)
+  code.check_returncode()
 
 if __name__ == "__main__":
   main()
