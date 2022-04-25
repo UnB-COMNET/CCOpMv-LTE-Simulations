@@ -93,13 +93,13 @@ def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1,
 def execute(cpu_num, ini_path,config_name, runs):
   if runs != []:
     print('runs', runs, config_name)
-    arg = ('cd ../../Network_CCOpMv\n'
+    arg = ('cd ../Network_CCOpMv\n'
                       f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
     
     ini = time.time()
     code = subprocess.check_output(arg, shell=True)
     end = time.time()
-    print('--->',code)      
+      
     print("Processing time ({}): ".format(config_name), end - ini)            
     
 '''

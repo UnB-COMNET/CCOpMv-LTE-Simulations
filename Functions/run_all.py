@@ -1,7 +1,8 @@
 from ast import Pass
 from math import ceil
-from os import remove
+from os import makedirs
 import re
+from statistics import mode
 from tkinter.tix import InputOnly
 from typing import List
 from unittest import result
@@ -22,13 +23,13 @@ SUCCESS = 'SUCCESS'
 
 def main():
     #General configs
-    chosen_seeds = [852,471]#
+    chosen_seeds = [543, 898, 673]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [0, 1, 3]
-    modes = ['varying', 'fixed'] # varying, fixed or single
+    min_sinrs = [15]
+    modes = ['fixed'] # varying, fixed or single
     result_dir = "Solutions"
     micro_power = 20 #dBm
     project_dir = '../Network_CCOpMv'
@@ -89,18 +90,18 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     num_cases_simultaneously = ceil(cpu_count()/(num_slices*repetitions))
     print("Simulating at most {} cases, hence {} runs. There are {} CPU cores available".format(num_cases, num_totalRuns, cpu_count()))
     
+    extra_dir = ['chosen_seed'] + extra_dir
+
     # Checking for the existence of optimizer solution files and running solver for non-existent ones using parallel computing
     missing_snapshots = get_missing_snapshots(chosen_seeds, move_config_name)
     run_missing_snapshots(missing_snapshots, size_x, size_y, size_sector, n_macros, project_dir,sim_dir, move_config_name, num_slices)
     
     missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power)
     if len(missing_solutions) > num_cases_simultaneously:
-        run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time,\
-                                micro_power, num_slices)
-        
+        kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power}
+        run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs)        
+    
     print('Running {} cases simultaneously.'.format(num_cases_simultaneously))
-
-    extra_dir = ['chosen_seed'] + extra_dir
 
     kwargs = {'chosen_seed' : None, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinrs': min_sinrs,
               'modes': modes, 'move_config_name': move_config_name, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
@@ -114,7 +115,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
         j = 0
         for i in range(len(chosen_seeds)):
             kwargs['chosen_seed'] = chosen_seeds[j]
-            print("\tCHOSEN SEED: {}".format(chosen_seeds[j]))
+            print("CHOSEN SEED: {}".format(chosen_seeds[j]))
             result = run_all(**kwargs)
             if result == SUCCESS:
                 chosen_seeds.remove(chosen_seeds[j])
@@ -379,7 +380,7 @@ def get_missing_solutions(chosen_seeds: List[int], min_sinrs: List[int], modes: 
     """ This function returns the solver solutions that were not computed yet"""
     missing = []
     for chosen_seed in chosen_seeds:
-        result_dir = 'Solutions/' + 'chosen_seed' + '_{}'.format(chosen_seed) + '/' + extra_dir[0] + '_{}'.format(micro_power)
+        result_dir = 'Solutions/' + 'chosen_seed' + '_{}'.format(chosen_seed) + '/' + extra_dir[1] + '_{}'.format(micro_power)
         
         for mode in modes:
             for min_sinr in min_sinrs:
@@ -402,17 +403,22 @@ def get_missing_snapshots(chosen_seeds: List[int], move_config_name: str):
         
 def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: int, size_sector: int, n_macros: int,
                  result_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int, min_time: int,
-                 micro_power: int = 30, num_slices: int= 10):
+                 micro_power: int, num_slices: int, extra_dir: List[str], kwargs: dict):
     if missing_solutions != []:
         print("Running solver for {} missing solutions".format(len(missing_solutions)))
+
+        # Making directories
+        for chosen_seed in kwargs['chosen_seed']:
+            kwargs['chosen_seed'] = chosen_seed
+            kwargs['result_dir'] = result_dir
+            for param in extra_dir:
+                kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
+                Path(kwargs['result_dir']).mkdir(parents=True, exist_ok=True)
+          
         with parallel_backend('loky'):
             Parallel(n_jobs=cpu_count())(delayed(gen_ilp_info)(chosen_seed, size_x, size_y, size_sector, n_macros,
-                        gen_movement_filename(move_config_name, chosen_seed, snapshot= True), min_sinr, result_dir, mode, min_dis,
+                        gen_movement_filename(move_config_name, chosen_seed, snapshot= True), min_sinr, f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}", mode, min_dis,
                         first_antenna_region, min_time, micro_power, num_slices) for chosen_seed, mode, min_sinr in missing_solutions)
-
-    #gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-    #                xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
-    #                first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices)
 
 def run_missing_snapshots(missing_snapshots: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, project_dir: str,\
                           sim_dir: str, move_config_name: str, num_slices):

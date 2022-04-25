@@ -133,7 +133,7 @@ def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y
     snapshot_filename = ilpc.gen_movement_filename(config_name= config_name, seed= chosen_seed, snapshot= True)
 
     open(snapshot_filename, 'w').close()
-    print('\nmovimento para seed\n', chosen_seed)
+    
     #Running Omnet++
     arg = ('cd ../Network_CCOpMv\n'
                           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
