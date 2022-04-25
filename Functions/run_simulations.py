@@ -1,5 +1,4 @@
 from typing import List
-from timeit import timeit
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 import time
