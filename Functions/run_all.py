@@ -31,6 +31,7 @@ def main():
     num_slices = 10
     per_slice = True
     allrun_solver = True
+    
     #Solver configs
     move_config_name = 'ilp_move_users'
     min_dis = 2000 #Enlace de rádio na prática (m)
