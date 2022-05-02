@@ -14,6 +14,9 @@ class Coordinate:
         yield self.y
         yield self.z
 
+    def __str__(self):
+        return (f'({self.x}, {self.y}, {self.z})')
+
 class PolarCoordinate:
     def __init__(self, r, phi):
         self.r = r

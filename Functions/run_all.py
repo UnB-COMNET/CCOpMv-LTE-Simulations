@@ -25,7 +25,7 @@ def main():
     micro_power = 20 #dBm
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
-    extra_dir = ['micro_power']
+    extra_dir = ['disaster_percentage','micro_power']
     num_slices = 10
     per_slice = True
 
@@ -34,6 +34,7 @@ def main():
     min_dis = 2000 #Enlace de rádio na prática (m)
     first_antenna_region = 1
     min_time = 2 #Tempo minimo que um antena deve existir ate ser movida
+    disaster_percentage = 0 #Porcentagem do alastramento do desastre
 
     #Simulation configs
     net_dir = '_5G/networks'
@@ -53,7 +54,8 @@ def main():
                        move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
                        net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
                        app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
-                       min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice)
+                       min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice,
+                       disaster_percentage= disaster_percentage)
     
     if result == SUCCESS:
         print('Executions have been successfully.')
@@ -65,7 +67,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
                        net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
                        result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                        extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-                       extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True):
+                       extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True, disaster_percentage: int = 0):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
     
     # Generating makefile and compiling OMNeT++ and its frameworks
@@ -99,7 +101,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'num_cases_simultaneously': num_cases_simultaneously, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices,
-              'per_slice': per_slice}
+              'per_slice': per_slice, 'disaster_percentage': disaster_percentage}
     
     if per_slice:
         print('\nRunnning cases by seeds one by one.')
@@ -133,7 +135,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             net_dir: str, num_bands: List[int], repetitions: int, num_cases_simultaneously: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
             result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True):
+            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
     
     verif_modes = []
@@ -177,7 +179,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
               'mode': None, 'xml_filename': xml_filename, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
-              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices, 'per_slice': per_slice}
+              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices, 'per_slice': per_slice,
+              'disaster_percentage': disaster_percentage}
     
     for param in extra_dir:
         kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
@@ -252,7 +255,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
                  target_f: float,result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
                  is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
-                 micro_power: int= 30, num_slices: int= 10, per_slice: bool = True):
+                 micro_power: int= 30, num_slices: int= 10, per_slice: bool = True, disaster_percentage: int = 0):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
     print("\nRunning case {} {} dB\n".format(mode,min_sinr))
     #print(project_dir, result_dir,sim_dir,net_dir)
@@ -271,7 +274,8 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         #Running solver
         gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                     xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
-                    first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices)
+                    first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
+                    disaster_percentage= disaster_percentage)
     
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))

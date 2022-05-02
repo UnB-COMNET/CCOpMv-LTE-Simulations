@@ -555,7 +555,7 @@ class MapChess:
         else: ues = ues_positions
 
         plt.plot([coord.x for coord in ues], [coord.y for coord in ues], linestyle='', marker='.', color='orange', markersize= 2)
-
+        plt.gca().invert_yaxis()
         plt.show()
         print("Plot")
 
