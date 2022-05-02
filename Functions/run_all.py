@@ -16,21 +16,21 @@ SUCCESS = 'SUCCESS'
 
 def main():
     #General configs
-    chosen_seeds = [543, 898, 673]#
+    chosen_seeds = [543,673,898]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
     min_sinrs = [15]
-    modes = ['fixed'] # varying, fixed or single
+    modes = ['varying'] # varying, fixed or single
     result_dir = "Solutions"
-    micro_power = 20 #dBm
+    micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     extra_dir = ['disaster_percentage','micro_power']
     num_slices = 10
     per_slice = True
-
+    allrun_solver = True
     #Solver configs
     move_config_name = 'ilp_move_users'
     min_dis = 2000 #Enlace de rádio na prática (m)
@@ -57,7 +57,7 @@ def main():
                        net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
                        app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
                        min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice,
-                       disaster_percentage= disaster_percentage)
+                       allrun_solver = allrun_solver, disaster_percentage= disaster_percentage)
     
     if result == SUCCESS:
         print('Executions have been successfully.')
@@ -69,7 +69,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
                        net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
                        result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                        extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-                       extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True, disaster_percentage: int = 0):
+                       extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True, allrun_solver: bool = False, disaster_percentage: int = 0):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
     
     # Generating makefile and compiling OMNeT++ and its frameworks
@@ -91,10 +91,11 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     missing_snapshots = get_missing_snapshots(chosen_seeds, move_config_name)
     run_missing_snapshots(missing_snapshots, size_x, size_y, size_sector, n_macros, project_dir,sim_dir, move_config_name, num_slices)
     
-    missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power)
-    if len(missing_solutions) > num_cases_simultaneously:
-        kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power}
-        run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs)        
+    if allrun_solver is True:
+        missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power)
+        if len(missing_solutions) > num_cases_simultaneously:
+            kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power}
+            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs)        
     
     print('Running {} cases simultaneously.'.format(num_cases_simultaneously))
 
