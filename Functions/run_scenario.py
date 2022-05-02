@@ -22,6 +22,8 @@ def main():
   result_dir = "Solutions/"
   time_slice = 1
   varying = True
+  move_config_name = 'ilp_move_users'
+  xml_filename = ilpc.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
 
   #ilpf.ilp_fixed_info('../Network_CCOpMv/_5G/simulations/ilp_fixed_info.ini', seed)
   #ilpf.ilp_fixed_users('../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini', chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
@@ -30,7 +32,7 @@ def main():
   #                                              extra_config_name= extra_config_name, target_f= target_f, result_dir= result_dir)                                          
   tmp_name, enbs_sliced_num = ilpc.ilp_sliced_ini(dir_path + f'ilp_{"varying" if varying else "fixed"}_sliced.ini', chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                   min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                  time= time_slice, target_f= target_f, result_dir= result_dir, varying= varying)
+                                                  slice_time= time_slice, target_f= target_f, result_dir= result_dir, varying= varying, xml_filename= xml_filename)
   #ilpc.ilp_ned(network = "ILPFixedNet", n_enbs= enbs_hando_num, size_x= size_x, size_y= size_y)                                                
   ilpc.ilp_ned(network = f"ILP{'Varying' if varying else 'Fixed'}Net", n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y) 
   

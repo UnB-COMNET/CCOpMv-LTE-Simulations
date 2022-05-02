@@ -84,11 +84,9 @@ def writeConnectOptions(f, list_connections: ty.List[ty.Union[ty.List[int], int]
       enb_str = getOptionsString(values= i, parallel= parallel_var)
     else:
       enb_str = i
-    
     f.write('''**.{name}[{number}].macCellId = {enb}
 **.{name}[{number}].masterId = {enb}\n'''.format(number = count, enb = enb_str, name = object_name))
     count += 1
-    pass
 
 def writeComment(f, text):
   """Writes 'text' as a comment in a .ini file."""
@@ -444,6 +442,9 @@ def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
   """Writes the configuration that defines the number of slices used when using MoreInfoChannelModel."""
   f.write('**.cellularNic.channelModel[*].num_slice = {}\n'.format(getOptionsString(values= range(num_slices), name= iter_name)))
 
+def writeSlice(f, slice: int, iter_name: str = 'Slice'):
+  f.write('**.cellularNic.channelModel[*].num_slice = ${' + iter_name + ' = ' + str(slice) + '}\n')
+
 def writeNumEnbs(f, options: ty.List[int], iter_name: str = 'Slice', parallel_name: str = ''):
   """Writes the configuration that informs the number of eNBs used when in each slice using MoreInfoChannelModel."""
   f.write('**.cellularNic.channelModel[*].num_enbs = {}\n'.format(getOptionsString(values= options, name= iter_name, parallel= parallel_name)))  
@@ -571,7 +572,7 @@ def writeX2Connections(f, object_names : ty.List[str], quantities : ty.List[int]
 
 def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x, center_y, sites, micro_per_small, small_per_site, seed):
   """Writes a comment with the main parameters of the MapHexagonal scenario used in a .ini file."""
-  f.write(("#Function: {}\n"
+  f.write((f"#Function: {function_name}\n"
            "#Parameters: \n"
            "#  filename = '{}'\n"
            "#  directions = {}\n"
@@ -584,17 +585,15 @@ def writeCommentConfig(f, function_name, filename, directions, num_ues, center_x
            "#  seed = {}\n").format(function_name, filename, directions, num_ues, center_x,
                                     center_y, sites, micro_per_small, small_per_site, seed))
 
-def writeCommentConfigILP(f, function_name, filename, seed, size_y, size_x, size_sectors, extra: str = None):
+def writeCommentConfigILP(f, function_name: str, dict_args: dict, extra: str = None):
   """Writes a comment with the main parameters of the ILP scenario used in a .ini file."""
-  f.write(("#Function: {}\n"
-           "#Parameters: \n"
-           "#  filename = '{}'\n"
-           "#  seed = {}\n"
-           "#  Map height distance = {}\n"
-           "#  Map width distance = {}\n"
-           "#  Region side distance = {}\n").format(function_name, filename, seed, size_y, size_x, size_sectors))
+
+  f.write((f"#Function: {function_name}\n"
+            "#Parameters:\n"))
+  for arg in dict_args:
+    f.write(f"#   {arg}: {dict_args[arg]}\n")
   if extra is not None:
-    f.write('#  Extra = {}\n'.format(extra))
+    f.write('#Extra = {}\n'.format(extra))
 
 def writeScenarioManager(f, xml, doc= True):
   """Writes the configuration of the scenario manager submodule in a .ini file."""
@@ -626,10 +625,10 @@ def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterat
   f.write('**.snapshotter.snapshot = {}\n'.format("true" if snapshot else "false"))
   f.write('**.snapshotter.delay = {}\n'.format(delay))
 
-def writeCmdenvConfig(f, min_sinr: int, output_file_name: str = None, performance_display = False, redirect_output= False):
+def writeCmdenvConfig(f, min_sinr: int, config_name: str, output_file_name: str = None, performance_display = False, redirect_output= False):
   """Writes the cmdenv configuration in a .ini file."""
   if output_file_name is None:
-    output_file_name = "${resultdir}/${configname}-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}.out"
+    output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}.out"
 
   f.write(('cmdenv-performance-display = {p_display}\n'
            'cmdenv-redirect-output = {r_output}\n'
@@ -651,3 +650,7 @@ def defaultGeneral(f, is5g: bool = False):
     writeSeparation(f, "Resource Blocks")
     f.write(('**.numRbDl = 6\n**.numRbUl = 6\n'
              '**.binder.numBands = 6 # this value should be kept equal to the number of RBs\n'))
+
+def generalConfig(f):
+  # General
+  f.write("\n[General]\n")
