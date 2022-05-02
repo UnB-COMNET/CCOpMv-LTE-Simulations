@@ -1,4 +1,3 @@
-from cgitb import handler
 from typing import List
 import geometry as geo
 from sinr_comput import db_to_linear

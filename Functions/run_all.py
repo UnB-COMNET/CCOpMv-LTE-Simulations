@@ -1,7 +1,7 @@
 from math import ceil
 from typing import List
 from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name
-from multiprocessing import cpu_count
+from multiprocessing import cpu_count, Process
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned, gen_solver_result_filename, gen_movement_filename, gen_sliced_config_pattern
 from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from joblib import Parallel, delayed, parallel_backend
@@ -9,6 +9,8 @@ from pathlib import Path
 import subprocess
 import sys
 from errors import check_mode
+#import psutil
+#import time
 
 SUCCESS = 'SUCCESS'
 
@@ -103,25 +105,25 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices,
               'per_slice': per_slice, 'disaster_percentage': disaster_percentage}
     
-    if per_slice:
-        print('\nRunnning cases by seeds one by one.')
-        j = 0
-        for i in range(len(chosen_seeds)):
-            kwargs['chosen_seed'] = chosen_seeds[j]
-            print("CHOSEN SEED: {}".format(chosen_seeds[j]))
-            result = run_all(**kwargs)
-            if result == SUCCESS:
-                chosen_seeds.remove(chosen_seeds[j])
-            else:
-                print('Error in cases with seed {}.'.format(chosen_seeds[j]))
-                j += 1
 
-        if chosen_seeds == []:
-            return SUCCESS
+    print('\nRunnning cases by seeds one by one.')
+    j = 0
+    for i in range(len(chosen_seeds)):
+        kwargs['chosen_seed'] = chosen_seeds[j]
+        print("CHOSEN SEED: {}".format(chosen_seeds[j]))
+        result = run_all(**kwargs)
+        if result == SUCCESS:
+            chosen_seeds.remove(chosen_seeds[j])
         else:
-            return
+            print('Error in cases with seed {}.'.format(chosen_seeds[j]))
+            j += 1
+
+    if chosen_seeds == []:
+        return SUCCESS
+    else:
+        return
     #processes = []
-    #print(f'Dividing processes by cases.')
+    #print('\nRunnning cases by seeds one by one.')
     #for chosen_seed in chosen_seeds:
     #    kwargs['chosen_seed'] = chosen_seed
     #    processes.append(Process(target= run_all, kwargs= kwargs))
@@ -196,28 +198,27 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     net_dir = kwargs['net_dir']
     #print(project_dir, result_dir,sim_dir,net_dir)
     
-    if per_slice:
-        with parallel_backend('loky'):
-            result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr,
-                    mode, xml_filename, min_dis, first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
-                    target_f,result_dir, slice_time, multi_carriers,
-                    is_micro,extra_config_name, cmdenv_config, min_time,
-                    micro_power, num_slices, per_slice) for mode, min_sinr in cases)
-        
-        return_success = True
-        for i in range(len(result)):
-            if result[i] != SUCCESS:
-                mode, min_sinr = cases[i]
-                print('Error in case: mode {} and min SINR {}'.format(mode, min_sinr))
-                return_success = False
+    with parallel_backend('loky'):
+        result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr,
+                mode, xml_filename, min_dis, first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
+                target_f,result_dir, slice_time, multi_carriers,
+                is_micro,extra_config_name, cmdenv_config, min_time,
+                micro_power, num_slices, per_slice) for mode, min_sinr in cases)
+    
+    return_success = True
+    for i in range(len(result)):
+        if result[i] != SUCCESS:
+            mode, min_sinr = cases[i]
+            print('Error in case: mode {} and min SINR {}'.format(mode, min_sinr))
+            return_success = False
 
-        if return_success:
-            print('\nExporting .CSV files.\n')
-            for mode in verif_modes:
-                get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
-            return SUCCESS
-        else:
-            return
+    if return_success:
+        print('\nExporting .CSV files.\n')
+        for mode in verif_modes:
+            get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
+        return SUCCESS
+    else:
+        return
 
             
         '''for i in range(len(cases)): #[0,1,2,3,4,5,6,7,8]
@@ -276,7 +277,11 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                     xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
                     first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
                     disaster_percentage= disaster_percentage)
-    
+
+    #while psutil.virtual_memory().percent > 40:
+    #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
+    #    time.sleep(600)
+
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
     
