@@ -1,21 +1,12 @@
-from ast import Pass
 from math import ceil
-from os import makedirs
-import re
-from statistics import mode
-from tkinter.tix import InputOnly
 from typing import List
-from unittest import result
-
-from numpy import empty
 from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name
-from multiprocessing import Process, cpu_count
+from multiprocessing import cpu_count
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned, gen_solver_result_filename, gen_movement_filename, gen_sliced_config_pattern
 from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from joblib import Parallel, delayed, parallel_backend
 from pathlib import Path
 import subprocess
-from joblib import Parallel, delayed, parallel_backend
 import sys
 from errors import check_mode
 

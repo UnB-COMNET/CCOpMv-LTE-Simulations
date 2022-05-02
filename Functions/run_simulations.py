@@ -1,5 +1,4 @@
 from typing import List
-from timeit import timeit
 import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 import time
@@ -45,7 +44,7 @@ def main():
       run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced)
 
 def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: List[str], cpu_num: int = 1, run_numbers: List[int] = []):
-  
+  '''Execute all necessary runs of the Omnet++ configuration of each slice.'''
   processes = []
   runs = ['' for i in range(len(config_name_list))]
 
@@ -57,24 +56,9 @@ def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: 
   with parallel_backend("loky"):
     Parallel(n_jobs=cpu_num)(delayed(execute)(cpu_num,ini_path,config_name, runs[i]) for i, config_name in enumerate(config_name_list))
   
-  return
-  #Running Omnet++
-  for i in range(len(config_name_list)):
-    print("executando o subprocesso ", i)
-    runs[i] = runs[i][:-1]
-    
-
-    arg = ('cd ../Network_CCOpMv\n'
-          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name_list[i] + runs[i] + r' -n .:../../inet4/src:../../inet4/examples:../../inet4/tutorials:../../inet4/showcases:../../Simu5G-1.1.0/simulations:../../Simu5G-1.1.0/src')
-    processes.append(Process(target= run_subprocess_multiprocessing, args= [arg], kwargs= {'shell': True}))
-
-    processes[-1].start()
-
-  for p in processes:
-    p.join()
 
 def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1, run_numbers: List[int] = []):
-  
+  '''Execute all necessary runs of one Omnet++ configuration.'''
   runs = ''
 
   if len(run_numbers) > 0:
@@ -94,7 +78,7 @@ def execute(cpu_num, ini_path,config_name, runs):
   if runs != []:
     print('runs', runs, config_name)
     arg = ('cd ../Network_CCOpMv\n'
-                      f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
+          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
     
     ini = time.time()
     code = subprocess.check_output(arg, shell=True)
