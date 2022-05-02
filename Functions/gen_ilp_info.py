@@ -37,7 +37,7 @@ def main():
     num_slices = 10
     micro_power = 40#dBm
     result_dir = f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}"
-    disaster_percentage = 5
+    disaster_percentage = 0
 
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, mode= mode, 
                  xml_filename = xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region,
@@ -56,10 +56,10 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     start_time = time()
 
     #Determines what the program will show to the user
-    get_solution = False#True
+    get_solution = True
     show_sinr = False
     show_ues = False
-    show_antennas_map = True
+    show_antennas_map = False
 
     is_micro = True
 
