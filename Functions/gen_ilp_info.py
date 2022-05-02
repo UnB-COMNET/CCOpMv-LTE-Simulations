@@ -14,6 +14,10 @@ from pathlib import Path
 import sys
 import io
 from errors import check_mode
+from random import seed, random
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+import numpy as np
 
 def main():
     ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_move_users.ini"
@@ -33,25 +37,21 @@ def main():
     num_slices = 10
     micro_power = 40#dBm
     result_dir = f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}"
+    disaster_percentage = 0
 
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, mode= mode, 
                  xml_filename = xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region,
-                 min_time= min_time, micro_power= micro_power, num_slices= num_slices)
+                 min_time= min_time, micro_power= micro_power, num_slices= num_slices, disaster_percentage= disaster_percentage)
     #run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
     #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
 
 def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
                  min_sinr: int, result_dir: str, mode: str, min_dis: int, first_antenna_region: int, min_time: int,
-                 micro_power: int = 30, num_slices: int= 10):
+                 micro_power: int = 30, num_slices: int= 10, disaster_percentage: float= 0):
   
     #mode = "varying" if varying else "fixed"
 
     file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
-    print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
-
-    #Output config
-    out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
-    sys.stdout = io.TextIOWrapper(out_file, write_through=True)
 
     start_time = time()
 
@@ -59,6 +59,8 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     get_solution = True
     show_sinr = False
     show_ues = False
+    show_antennas_map = False
+
     is_micro = True
 
     #Initiating scenario
@@ -69,11 +71,12 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
     #scen.plotUes()
 
-    #Generating sinr map
-    print("-------------Generating sinr map")
-    sinr_map = scen.getSinrMap()
-
     if show_sinr:
+
+        #Generating sinr map
+        print("-------------Generating sinr map")
+        sinr_map = scen.getSinrMap()
+
         #Showing sinr in file
         count = 0
         count2 = 0
@@ -88,9 +91,20 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     if get_solution:
 
+        #Generating sinr map
+        print("-------------Generating sinr map")
+        sinr_map = scen.getSinrMap()
+
+        print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
+
+        #Output config
+        out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
+        sys.stdout = io.TextIOWrapper(out_file, write_through=True)
+
         #Generating default parameters
+        seed(chosen_seed)
         max_user_antenna_m = [60 for i in range(scen.n_sectors)]
-        antennas_map_m = [1 for i in range(scen.n_sectors)]
+        antennas_map_m = [(0 if random() < disaster_percentage/100 else 1) for i in range(scen.n_sectors)]
         min_snr_m = [db_to_linear(min_sinr) for i in range(scen.n_sectors)]
         distance_mn = scen.getRegionsDistanceMatrix()
 
@@ -120,6 +134,36 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         ues_coords = get_ues_time(ues_list= scen.getUEsList(), xml_filename= xml_filename)
         for t_ues in ues_coords:
             scen.plotUes(external= True, ues_positions= [u.position for u in t_ues])
+    
+    elif show_antennas_map:
+        seed(chosen_seed)
+        antennas_map_m = [(0 if random() < disaster_percentage/100 else 1) for i in range(scen.n_sectors)]
+
+        nrows = int(size_y/size_sector)
+        ncols = int(size_x/size_sector)
+
+        res = np.array(antennas_map_m).reshape((nrows, ncols)).tolist()
+
+        fig, ax = plt.subplots(figsize=(10, 10))
+
+        ax.imshow(res, cmap='gray')
+
+        plt.xticks(np.arange(-.5, ncols, 1))
+        plt.yticks(np.arange(-.5, nrows, 1))
+        plt.gca().set_xticklabels((np.arange(0, size_x+size_sector, size_sector)))
+        plt.gca().set_yticklabels((np.arange(0, size_y+size_sector, size_sector)))
+        plt.grid()
+        plt.title(f'Antennas Map - {disaster_percentage}% Disaster')
+
+        black_patch = mpatches.Patch(color='black', label='Unavailable')
+        white_patch = mpatches.Patch(color='white', label='Available')
+        plt.legend(handles= [black_patch, white_patch])
+
+        plt.show()
+
+        print("Plot")
+
+
 
     print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
     sys.stdout = sys.__stdout__
