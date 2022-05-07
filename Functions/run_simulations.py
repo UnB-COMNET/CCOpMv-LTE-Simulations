@@ -4,6 +4,7 @@ import subprocess
 import time
 from joblib import Parallel, delayed, parallel_backend
 from multiprocessing import Process
+import general_functions as genf
 
 def main():
   chosen_seed = 123
@@ -25,7 +26,7 @@ def main():
   target_f= 10 #Mbps
   varyings = [True, False]
   move_config_name = 'ilp_move_users'
-  xml_filename = ilpc.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
+  xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
 
   for i in range(len(min_sinrs)):
     for varying in varyings:
@@ -67,18 +68,20 @@ def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1,
       runs += f'{number},'
     runs = runs[:-1]
 
-  
+  frame_path = genf.get_frameworks_path()
+
   #Running Omnet++
   code = subprocess.run(('cd ../Network_CCOpMv\n'
-                          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src'), shell= True)
+                          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + rf' -n .:{frame_path}/inet4/src:{frame_path}/inet4/examples:{frame_path}/inet4/tutorials:{frame_path}/inet4/showcases:{frame_path}/Simu5G-1.1.0/simulations:{frame_path}/Simu5G-1.1.0/src'), shell= True)
 
   code.check_returncode()
 
 def execute(cpu_num, ini_path,config_name, runs):
+  frame_path = genf.get_frameworks_path()
   if runs != []:
     print('runs', runs, config_name)
     arg = ('cd ../Network_CCOpMv\n'
-          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
+          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + rf' -n .:{frame_path}/inet4/src:{frame_path}/inet4/examples:{frame_path}/inet4/tutorials:{frame_path}/inet4/showcases:{frame_path}/Simu5G-1.1.0/simulations:{frame_path}/Simu5G-1.1.0/src')
     
     ini = time.time()
     code = subprocess.check_output(arg, shell=True)
@@ -107,10 +110,11 @@ def run_subprocess_multiprocessing(command: str, shell: bool = True):
   print("_____________________________________________________")
 
 def run_make():
-    code = subprocess.run(('cd ../Network_CCOpMv\n'
-                            r'opp_makemake -f --deep -O out -KINET4_PROJ=../../../OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=../../../OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
-                            '\nmake\n'), shell=	True)
-    code.check_returncode()
+  frame_path = genf.get_frameworks_path()
+  code = subprocess.run(('cd ../Network_CCOpMv\n'
+                          rf'opp_makemake -f --deep -O out -KINET4_PROJ={frame_path}/inet4 -KSIMU5G_1_1_0_PROJ={frame_path}/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'
+                          '\nmake\n'), shell=	True)
+  code.check_returncode()
 
 if __name__ == "__main__":
   main()

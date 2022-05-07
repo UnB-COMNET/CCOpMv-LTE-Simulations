@@ -1,14 +1,15 @@
 from math import ceil
 from typing import List
-from gen_ilp_info import run_movement_simulation, gen_ilp_info, gen_file_name
+from gen_ilp_info import run_movement_simulation, gen_ilp_info
 from multiprocessing import cpu_count, Process
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned, gen_solver_result_filename, gen_movement_filename, gen_sliced_config_pattern
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned
 from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from joblib import Parallel, delayed, parallel_backend
 from pathlib import Path
 import subprocess
 import sys
 from errors import check_mode
+import general_functions as genf
 #import psutil
 #import time
 
@@ -165,8 +166,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     #    print(f'Running makefile.')
     #    run_make()
 
-    move_file = gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
-    xml_filename = gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
+    move_file = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
+    xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
     #Verifying if movement simulation is already done
     done = compare_last_line(xml_filename, '<!--Done-->\n')
     if done:
@@ -265,10 +266,10 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     
     check_mode(mode= mode)
 
-    file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
+    file_name = genf.gen_file_name(mode= mode, min_sinr= min_sinr)
     sim_path = project_dir + '/' + sim_dir
     #Verifying if solver is already done
-    done = compare_last_line(gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
+    done = compare_last_line(genf.gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
     
     if done:
         print(f'Solver {file_name} already computed. (Seed: {chosen_seed})')
@@ -364,7 +365,7 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
     sim_resultdir = f'{sim_path}/results'
     counter = 0
     missing = []
-    config_pattern = gen_sliced_config_pattern(min_sinr= min_sinr, mode= mode, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
+    config_pattern = genf.gen_sliced_config_pattern(min_sinr= min_sinr, mode= mode, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
     for band in num_bands:
         for slice in range(num_slices):
             for repetition in range(repetitions):
@@ -387,7 +388,7 @@ def get_missing_solutions(chosen_seeds: List[int], min_sinrs: List[int], modes: 
         for mode in modes:
             for min_sinr in min_sinrs:
                 # Looking for case: 
-                done = compare_last_line(gen_solver_result_filename(result_dir,mode,min_sinr),'--- Done ---\n')
+                done = compare_last_line(genf.gen_solver_result_filename(result_dir,mode,min_sinr),'--- Done ---\n')
                 if done is not True:
                     missing.append((chosen_seed,mode,min_sinr))
 
@@ -396,8 +397,8 @@ def get_missing_solutions(chosen_seeds: List[int], min_sinrs: List[int], modes: 
 def get_missing_snapshots(chosen_seeds: List[int], move_config_name: str):
     missing = []
     for chosen_seed in chosen_seeds:
-        #move_file = gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
-        xml_filename = gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
+        #move_file = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
+        xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
         done = compare_last_line(xml_filename, '<!--Done-->\n')
         if done is not True:
             missing.append(chosen_seed)
@@ -419,7 +420,7 @@ def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: i
           
         with parallel_backend('loky'):
             Parallel(n_jobs=cpu_count())(delayed(gen_ilp_info)(chosen_seed, size_x, size_y, size_sector, n_macros,
-                        gen_movement_filename(move_config_name, chosen_seed, snapshot= True), min_sinr, f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}", mode, min_dis,
+                        genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True), min_sinr, f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}", mode, min_dis,
                         first_antenna_region, min_time, micro_power, num_slices) for chosen_seed, mode, min_sinr in missing_solutions)
 
 def run_missing_snapshots(missing_snapshots: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, project_dir: str,\
@@ -428,7 +429,7 @@ def run_missing_snapshots(missing_snapshots: List[int], size_x: int, size_y: int
         print("Running movement simulation for {} seeds".format(len(missing_snapshots)))
         with parallel_backend('loky'):
             Parallel(n_jobs=cpu_count())(delayed(run_movement_simulation)(project_dir + '/' + sim_dir + '/' +
-                    gen_movement_filename(move_config_name, chosen_seed, snapshot= False), chosen_seed, size_x, size_y,
+                    genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= False), chosen_seed, size_x, size_y,
                     size_sector, n_macros, move_config_name, num_slices, cpu_count()) for chosen_seed in missing_snapshots)
     
 if __name__ == "__main__": 

@@ -18,6 +18,7 @@ from random import seed, random
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
+import general_functions as genf
 
 def main():
     ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_move_users.ini"
@@ -26,7 +27,7 @@ def main():
     size_x = 4000
     size_sector = 400
     n_macros = 1
-    xml_filename = ilpc.gen_movement_filename("ilp_move_users", chosen_seed, snapshot= True)
+    xml_filename = genf.gen_movement_filename("ilp_move_users", chosen_seed, snapshot= True)
     min_sinr = 5 #5, 10, 15s
     min_sinrs = [5, 10, 15]
     varying = True
@@ -51,7 +52,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
   
     #mode = "varying" if varying else "fixed"
 
-    file_name = gen_file_name(mode= mode, min_sinr= min_sinr)
+    file_name = genf.gen_file_name(mode= mode, min_sinr= min_sinr)
 
     start_time = time()
 
@@ -98,7 +99,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
 
         #Output config
-        out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
+        out_file = open(genf.gen_log_file_name(result_dir, file_name), 'wb', 0)
         sys.stdout = io.TextIOWrapper(out_file, write_through=True)
 
         #Generating default parameters
@@ -174,13 +175,15 @@ def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y
     ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros,
                         config_name= config_name, num_slices= num_slices)
 
-    snapshot_filename = ilpc.gen_movement_filename(config_name= config_name, seed= chosen_seed, snapshot= True)
+    snapshot_filename = genf.gen_movement_filename(config_name= config_name, seed= chosen_seed, snapshot= True)
 
     open(snapshot_filename, 'w').close()
     
+    frame_path = genf.get_frameworks_path()
+
     #Running Omnet++
     arg = ('cd ../Network_CCOpMv\n'
-                          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + r' -n .:../../../OmNET2/inet4/src:../../../OmNET2/inet4/examples:../../../OmNET2/inet4/tutorials:../../../OmNET2/inet4/showcases:../../../OmNET2/Simu5G-1.1.0/simulations:../../../OmNET2/Simu5G-1.1.0/src')
+                          f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + rf' -n .:{frame_path}/inet4/src:{frame_path}/inet4/examples:{frame_path}/inet4/tutorials:{frame_path}/inet4/showcases:{frame_path}/Simu5G-1.1.0/simulations:{frame_path}/Simu5G-1.1.0/src')
 
     code = subprocess.check_output(arg, shell= True)
     #code.check_returncode()
@@ -224,14 +227,6 @@ def run_all_solvers(chosen_seed: int, xml_filename: str, size_x: int, size_y: in
     for p in processes:
         p.join()
 
-def gen_file_name(mode: str, min_sinr: int):
-    return f'ilp_{mode}_sliced_{str(min_sinr)}'
-
-#Result_dir must have a 'logs' subdir
-def gen_log_file_name(result_dir: str, file_name: str):
-    log_dir = f"{result_dir}/logs"
-    Path(log_dir).mkdir(parents=False, exist_ok=True)
-    return f"{log_dir}/{file_name}.log"
 
 if __name__ == "__main__":
     main()

@@ -5,6 +5,7 @@ import helper_xml as hxml
 import geometry as geo
 import numpy as np
 from errors import check_mode
+import general_functions as genf
 
 def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, config_name: str= 'ilp_move_users',
                    num_slices: int= 10):
@@ -46,7 +47,7 @@ def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000,
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
     hp.writeSeparation(f, "Snapshots")
-    hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + gen_movement_filename(config_name, seed, snapshot= True), snapshot= True, delay= 1)
+    hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + genf.gen_movement_filename(config_name, seed, snapshot= True), snapshot= True, delay= 1)
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
@@ -118,7 +119,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
 
     max_time = len(ues_map)
-    _, antennas_regions, _ = parse_results(gen_solver_result_filename(result_dir, 'fixed', min_sinr)+".txt", max_time)
+    _, antennas_regions, _ = parse_results(genf.gen_solver_result_filename(result_dir, 'fixed', min_sinr)+".txt", max_time)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -269,7 +270,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   check_mode(mode= mode)
 
-  optimized, antennas_regions, num_enbs_time = parse_results(gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
+  optimized, antennas_regions, num_enbs_time = parse_results(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -288,7 +289,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   connections = get_ues_connections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
-  config_name = gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
+  config_name = genf.gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
@@ -428,7 +429,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
     tmp_scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
     list_scen.append(tmp_scen)
 
-  optimized_byslice, antennas_regions_byslice, num_enbs_time = parse_results_per_slice(gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
+  optimized_byslice, antennas_regions_byslice, num_enbs_time = parse_results_per_slice(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
   #for i in range(len(optimized_byslice)):
   #  print('----')
   #  print(optimized_byslice[i])
@@ -464,7 +465,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
   print(antennas_regions_byslice[slice_test])
   print("Ue deve ser conectado ao ENB de indice ", connections_list[slice_test][ue_test])'''
 
-  config_pattern = gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
+  config_pattern = genf.gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
   config_name_list = []
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
@@ -720,16 +721,3 @@ def get_ues_connections_per_slice(result, ues_coords, antennas_regions: List[int
     connections.append(antennas_regions.index(result[region])+1)
 
   return connections
-
-
-def gen_solver_result_filename(result_dir: str, mode: str, min_sinr: int):
-  return result_dir + f"/result_{mode}_"+ str(min_sinr)+".txt"
-
-def gen_movement_filename(config_name: str, seed: int, snapshot: bool= True):
-  if snapshot:
-    return config_name + f'-{seed}.sna'
-  else:
-    return config_name + f'-{seed}.ini'
-
-def gen_sliced_config_pattern(min_sinr: int, mode: str, multi_carriers: bool, extra_config_name: str):
-  return 'ilp_{}_sliced_{}'.format(mode, min_sinr) + ('_carriers' if multi_carriers else '') + ('_' + extra_config_name if extra_config_name != '' else '')
