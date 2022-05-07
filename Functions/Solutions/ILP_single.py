@@ -1,6 +1,6 @@
 from ortools.linear_solver import pywraplp
 from sinr_comput import linear_to_db
-from _5G_Scenarios.ILP_configs import gen_solver_result_filename
+from general_functions import gen_solver_result_filename
 import math
 
 def ccop_mv_MILP(
