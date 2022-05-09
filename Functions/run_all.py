@@ -255,6 +255,11 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                                                                 slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
                                                                 micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
+        if config_name_sliced_list == None and num_enbs_time == None:
+            #There was a not feasible solution
+            print("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
+            return None
+
         for slice in range(len(num_enbs_time)):
             network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
             ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
