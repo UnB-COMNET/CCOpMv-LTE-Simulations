@@ -86,19 +86,6 @@ def execute(cpu_num, ini_path,config_name, runs):
       
     print("Processing time ({}): ".format(config_name), end - ini)            
     
-'''
-def execute(cpu_num, ini_path,config_name, runs):
-  if runs != []:
-    print('runs', runs)
-    arg = ('cd ../Network_CCOpMv\n'
-                      f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + r' -n .:/home/juliano/OmNET2/inet4/src:/home/juliano/OmNET2/inet4/examples:/home/juliano/OmNET2/inet4/tutorials:/home/juliano/OmNET2/inet4/showcases:/home/juliano/OmNET2/Simu5G-1.1.0/simulations:/home/juliano/OmNET2/Simu5G-1.1.0/src')
-    ini = time.time()
-    code = subprocess.check_output(arg, shell=True)
-    end = time.time()
-    print('--->',code)      
-    print("Processing time: ", end - ini)            
-    '''
-
 def run_subprocess_multiprocessing(command: str, shell: bool = True):
   code = subprocess.run(command, shell= shell)
   print("-----------------------------------------------------")

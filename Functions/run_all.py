@@ -16,7 +16,7 @@ SUCCESS = 'SUCCESS'
 
 def main():
     #General configs
-    chosen_seeds = [543,673,898]#
+    chosen_seeds = [98]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -37,7 +37,7 @@ def main():
     min_dis = 2000 #Enlace de rádio na prática (m)
     first_antenna_region = 1
     min_time = 2 #Tempo minimo que um antena deve existir ate ser movida
-    disaster_percentage = 0 #Porcentagem do alastramento do desastre
+    disaster_percentage = 50 #Porcentagem do alastramento do desastre (%)
 
     #Simulation configs
     net_dir = '_5G/networks'
@@ -64,6 +64,7 @@ def main():
         print('Executions have been successfully.')
     else:
         print("ERROR!")
+    
 
 def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
                        project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
@@ -86,17 +87,18 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     num_cases_simultaneously = ceil(cpu_count()/(num_slices*repetitions))
     print("Simulating at most {} cases, hence {} runs. There are {} CPU cores available".format(num_cases, num_totalRuns, cpu_count()))
     
-    extra_dir = ['chosen_seed'] + extra_dir
+    # Changing the results directory hierarchy
+    extra_dir = ['chosen_seed'] + extra_dir 
 
     # Checking for the existence of optimizer solution files and running solver for non-existent ones using parallel computing
     missing_snapshots = get_missing_snapshots(chosen_seeds, move_config_name)
     run_missing_snapshots(missing_snapshots, size_x, size_y, size_sector, n_macros, project_dir,sim_dir, move_config_name, num_slices)
     
     if allrun_solver is True:
-        missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power)
+        missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power, disaster_percentage)
         if len(missing_solutions) > num_cases_simultaneously:
-            kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power}
-            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs)        
+            kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power, 'disaster_percentage': disaster_percentage}
+            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, disaster_percentage, num_slices, extra_dir, kwargs)        
     
     print('Running {} cases simultaneously.'.format(num_cases_simultaneously))
 
@@ -124,15 +126,6 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
         return SUCCESS
     else:
         return
-    #processes = []
-    #print('\nRunnning cases by seeds one by one.')
-    #for chosen_seed in chosen_seeds:
-    #    kwargs['chosen_seed'] = chosen_seed
-    #    processes.append(Process(target= run_all, kwargs= kwargs))
-    #    processes[-1].start()
-    
-    #for p in processes:
-    #    p.join()
 
 def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
             project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
@@ -160,13 +153,10 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     for i in range(num_modes):
         for j in range(num_minSinrs):
                 cases.append((verif_modes[i],min_sinrs[j]))
-    
-    #if make:
-    #    print(f'Running makefile.')
-    #    run_make()
 
     move_file = gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
     xml_filename = gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
+    
     #Verifying if movement simulation is already done
     done = compare_last_line(xml_filename, '<!--Done-->\n')
     if done:
@@ -198,14 +188,13 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     result_dir = kwargs['result_dir']
     sim_dir = kwargs['sim_dir']
     net_dir = kwargs['net_dir']
-    #print(project_dir, result_dir,sim_dir,net_dir)
     
     with parallel_backend('loky'):
         result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr,
                 mode, xml_filename, min_dis, first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
                 target_f,result_dir, slice_time, multi_carriers,
                 is_micro,extra_config_name, cmdenv_config, min_time,
-                micro_power, num_slices, per_slice) for mode, min_sinr in cases)
+                micro_power, num_slices, per_slice, disaster_percentage) for mode, min_sinr in cases)
     
     return_success = True
     for i in range(len(result)):
@@ -222,37 +211,6 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     else:
         return
 
-            
-        '''for i in range(len(cases)): #[0,1,2,3,4,5,6,7,8]
-            case.append(cases[i])
-            if len(case) == num_cases_simultaneously or (i >= len(cases) - len(cases)%num_cases_simultaneously):
-                print("Caso: ", case)
-                case = []
-                print("resto: ", len(cases))
-            else:
-                pass
-        
-            
-            #Parallel(n_jobs=cpu_count())(delayed(process_func)(**kwargs,*kwargs['chosen_seed'] = chosen_seed)
-            pass'''
-
-        
-
-    #for mode in verif_modes:
-    #    kwargs['mode'] = mode
-    #
-    #    for min_snr in min_sinrs:
-    #
-    #        kwargs['min_sinr'] = min_snr
-    #
-    #        processes.append(Process(target= process_func, kwargs= kwargs))
-    #        processes[-1].start()
-    
-    #for p in processes:
-    #    p.join()
-
-    
-
 def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
                  mode: str, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
                  sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
@@ -260,8 +218,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
                  micro_power: int= 30, num_slices: int= 10, per_slice: bool = True, disaster_percentage: int = 0):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
-    print("\nRunning case {} {} dB\n".format(mode,min_sinr))
-    #print(project_dir, result_dir,sim_dir,net_dir)
+    print("\nRunning case {} {} dB, seed {}, micro power {}, disaster percentage {}\n".format(mode,min_sinr, chosen_seed, micro_power, disaster_percentage))
     
     check_mode(mode= mode)
 
@@ -378,12 +335,12 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
     return missing
 
 def get_missing_solutions(chosen_seeds: List[int], min_sinrs: List[int], modes: List[str],\
-                          extra_dir: List[str], micro_power: int) -> List[tuple]:
+                          extra_dir: List[str], micro_power: int, disaster_percentage: int) -> List[tuple]:
     """ This function returns the solver solutions that were not computed yet"""
     missing = []
     for chosen_seed in chosen_seeds:
-        result_dir = 'Solutions/' + 'chosen_seed' + '_{}'.format(chosen_seed) + '/' + extra_dir[1] + '_{}'.format(micro_power)
-        
+        result_dir = 'Solutions/' + 'chosen_seed_{}'.format(chosen_seed) +  '/{}_{}'.format(extra_dir[1],disaster_percentage)\
+            + '/{}_{}'.format(extra_dir[2],micro_power)
         for mode in modes:
             for min_sinr in min_sinrs:
                 # Looking for case: 
@@ -405,7 +362,7 @@ def get_missing_snapshots(chosen_seeds: List[int], move_config_name: str):
         
 def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: int, size_sector: int, n_macros: int,
                  result_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int, min_time: int,
-                 micro_power: int, num_slices: int, extra_dir: List[str], kwargs: dict):
+                 micro_power: int, disaster_percentage: int, num_slices: int, extra_dir: List[str], kwargs: dict):
     if missing_solutions != []:
         print("Running solver for {} missing solutions".format(len(missing_solutions)))
 
@@ -419,7 +376,7 @@ def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: i
           
         with parallel_backend('loky'):
             Parallel(n_jobs=cpu_count())(delayed(gen_ilp_info)(chosen_seed, size_x, size_y, size_sector, n_macros,
-                        gen_movement_filename(move_config_name, chosen_seed, snapshot= True), min_sinr, f"Solutions/chosen_seed_{chosen_seed}/micro_power_{micro_power}", mode, min_dis,
+                        gen_movement_filename(move_config_name, chosen_seed, snapshot= True), min_sinr, f"Solutions/chosen_seed_{chosen_seed}/disaster_percentage_{disaster_percentage}/micro_power_{micro_power}", mode, min_dis,
                         first_antenna_region, min_time, micro_power, num_slices) for chosen_seed, mode, min_sinr in missing_solutions)
 
 def run_missing_snapshots(missing_snapshots: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, project_dir: str,\
