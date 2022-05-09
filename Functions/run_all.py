@@ -379,7 +379,7 @@ def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: i
         with parallel_backend('loky'):
             Parallel(n_jobs=cpu_count())(delayed(gen_ilp_info)(chosen_seed, size_x, size_y, size_sector, n_macros,
                         gen_movement_filename(move_config_name, chosen_seed, snapshot= True), min_sinr, f"Solutions/chosen_seed_{chosen_seed}/disaster_percentage_{disaster_percentage}/micro_power_{micro_power}", mode, min_dis,
-                        first_antenna_region, min_time, micro_power, num_slices) for chosen_seed, mode, min_sinr in missing_solutions)
+                        first_antenna_region, min_time, micro_power, num_slices, disaster_percentage) for chosen_seed, mode, min_sinr in missing_solutions)
 
 def run_missing_snapshots(missing_snapshots: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, project_dir: str,\
                           sim_dir: str, move_config_name: str, num_slices):
