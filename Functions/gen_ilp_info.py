@@ -14,7 +14,7 @@ from pathlib import Path
 import sys
 import io
 from errors import check_mode
-from random import seed, random
+from random import randint, seed, random
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
@@ -32,7 +32,7 @@ def main():
     varying = True
     mode = "single"
     min_dis = 2000 #Enlace de rádio na prática
-    first_antenna_region = 1
+    #first_antenna_region = random position
     min_time = 2
     num_slices = 10
     micro_power = 40#dBm
@@ -47,7 +47,7 @@ def main():
 
 def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
                  min_sinr: int, result_dir: str, mode: str, min_dis: int, first_antenna_region: int, min_time: int,
-                 micro_power: int = 30, num_slices: int= 10, disaster_percentage: float= 0):
+                 micro_power: int = 30, num_slices: int= 10, disaster_percentage: int= 0):
   
     #mode = "varying" if varying else "fixed"
 
@@ -97,10 +97,6 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
         print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
 
-        #Output config
-        out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
-        sys.stdout = io.TextIOWrapper(out_file, write_through=True)
-
         #Generating default parameters
         seed(chosen_seed)
         max_user_antenna_m = [60 for i in range(scen.n_sectors)]
@@ -108,9 +104,22 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         min_snr_m = [db_to_linear(min_sinr) for i in range(scen.n_sectors)]
         distance_mn = scen.getRegionsDistanceMatrix()
 
+        #Setting first antenna position
+        while True:
+            done = False
+            first_antenna_region = randint(0, scen.n_sectors - 1)
+            if antennas_map_m[first_antenna_region] == 1:
+                done = True
+            if done:
+                break
+
         #Generating ues time map
         print("-------------Generating ues map")
         users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename)
+
+        #Output config
+        out_file = open(gen_log_file_name(result_dir, file_name), 'wb', 0)
+        sys.stdout = io.TextIOWrapper(out_file, write_through=True)
 
         #Calculating Solution
         print(("-------------Calculating Solution (this may take a while)\n"
@@ -118,6 +127,20 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
               f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}\n"))
         
         check_mode(mode= mode)
+
+        #Printing parameters
+        print('Parameters:')
+        print('- Map with {} sectors'.format(scen.n_sectors))
+        print('- Map {} x {} m'.format(scen.size_x, scen.size_y))
+        print('- Sector has a side of {} m'.format(scen.size_sector))
+        print('- Max time: ', num_slices)
+        print("- users_t_m: ", users_t_m)
+        print('MAX_USER_PER_ANTENNAS_m: ', max_user_antenna_m)
+        print("antennas_map_m: ", antennas_map_m)
+        print("FIRST_ANTENNA: ", first_antenna_region)
+        print("MIN_SNR_m: ", min_snr_m)
+        print("-MIN_DIST: ", min_dis)
+        print("- disaster percentage: ", disaster_percentage)
 
         if mode == "varying":
             solver_varying(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
