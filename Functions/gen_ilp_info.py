@@ -130,6 +130,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
         #Printing parameters
         print('Parameters:')
+        print('- chosen seed {}'.format(chosen_seed))
         print('- Map with {} sectors'.format(scen.n_sectors))
         print('- Map {} x {} m'.format(scen.size_x, scen.size_y))
         print('- Sector has a side of {} m'.format(scen.size_sector))

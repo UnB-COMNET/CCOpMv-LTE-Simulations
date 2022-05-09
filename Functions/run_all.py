@@ -18,13 +18,13 @@ SUCCESS = 'SUCCESS'
 
 def main():
     #General configs
-    chosen_seeds = [98]#
+    chosen_seeds = [352,512,791,854]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [15]
-    modes = ['varying'] # varying, fixed or single
+    min_sinrs = [5,10,15]
+    modes = ['varying','single'] # varying, fixed or single
     result_dir = "Solutions"
     micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv'
@@ -36,7 +36,7 @@ def main():
     
     #Solver configs
     move_config_name = 'ilp_move_users'
-    min_dis = 2000 #Enlace de rádio na prática (m)
+    min_dis = 2000 #Enlace de rÃ¡dio na prÃ¡tica (m)
     first_antenna_region = 1
     min_time = 2 #Tempo minimo que um antena deve existir ate ser movida
     disaster_percentage = 50 #Porcentagem do alastramento do desastre (%)
@@ -98,6 +98,9 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     
     if allrun_solver is True:
         missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power, disaster_percentage)
+        print("There are {} missing solutions.".format(len(missing_solutions)))
+        for i in range(len(missing_solutions)):
+            print(missing_solutions[i])
         if len(missing_solutions) > num_cases_simultaneously:
             kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power, 'disaster_percentage': disaster_percentage}
             run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, disaster_percentage, num_slices, extra_dir, kwargs)        
