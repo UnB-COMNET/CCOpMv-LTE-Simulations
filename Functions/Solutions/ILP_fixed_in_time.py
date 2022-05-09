@@ -78,7 +78,7 @@ def ccop_mv_MILP(
     # After installed an antenna can never be removed
     for t in range(1, T):
         for m in range(0,M):
-            for n in range(0,M):
+            if antenasmap_m[m] != 0:
                 ct = solver.Constraint(-solver.infinity(), 0)
                 ct.SetCoefficient(xtm[t][m], -1)
                 ct.SetCoefficient(xtm[t-1][m], 1)

@@ -565,7 +565,6 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
 
   return config_name_list, num_enbs_time
 
-
 def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2, net_dir: str= '_5G/networks', project_dir: str= '../Network_CCOpMv'):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
   
