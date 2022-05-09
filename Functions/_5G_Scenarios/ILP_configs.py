@@ -430,9 +430,11 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
     list_scen.append(tmp_scen)
 
   optimized_byslice, antennas_regions_byslice, num_enbs_time = parse_results_per_slice(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
-  #for i in range(len(optimized_byslice)):
-  #  print('----')
-  #  print(optimized_byslice[i])
+
+  if optimized_byslice == None and antennas_regions_byslice == None and num_enbs_time == None:
+    #There was a not feasible solution
+    return None, None
+  
   for i in range(len(antennas_regions_byslice)):
     list_scen[i].placeAntennas(list_regions= antennas_regions_byslice[i])
     
@@ -652,15 +654,18 @@ def parse_results_per_slice(filename: str, max_time: int):
     results.append({})
     enbs_time.append([])
     enbs_byslice.append([])
-
-  with open(filename, "r") as f:
-    for line in f:
-      if not line.startswith('---'): 
-        data = [int(x) for x in line.split()]   # data: [t, m, n]
-        results[data[0]][data[2]] = data[1]
-        enbs_time[data[0]].append(data[1])
-        enbs.append(data[1])
-        enbs = np.unique(enbs).tolist()
+  try:
+    with open(filename, "r") as f:
+      for line in f:
+        if not line.startswith('---'): 
+          data = [int(x) for x in line.split()]   # data: [t, m, n]
+          results[data[0]][data[2]] = data[1]
+          enbs_time[data[0]].append(data[1])
+          enbs.append(data[1])
+          enbs = np.unique(enbs).tolist()
+  except FileNotFoundError:
+    print("File {} not found.".format(filename))
+    return None, None, None
 
   #Get the number of eNBs at each slice
   
