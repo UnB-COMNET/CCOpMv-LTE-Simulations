@@ -1,4 +1,4 @@
-# Version 08/05/2022
+# Version 09/05/2022
 
 from math import ceil
 from typing import List
@@ -20,13 +20,13 @@ SUCCESS = 'SUCCESS'
 
 def main():
     #General configs
-    chosen_seeds = [352,512,791,854]#
+    chosen_seeds = list(range(0, 10))#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
     min_sinrs = [5,10,15]
-    modes = ['varying','single'] # varying, fixed or single
+    modes = ['varying','single', 'fixed'] # varying, fixed or single
     result_dir = "Solutions"
     micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv'
@@ -38,10 +38,10 @@ def main():
     
     #Solver configs
     move_config_name = 'ilp_move_users'
-    min_dis = 2000 #Enlace de rÃ¡dio na prÃ¡tica (m)
-    first_antenna_region = 1
+    min_dis = 2000 #Enlace de radio na pratica (m)
+    first_antenna_region = None #Pega uma posição possível aleatória
     min_time = 2 #Tempo minimo que um antena deve existir ate ser movida
-    disaster_percentage = 50 #Porcentagem do alastramento do desastre (%)
+    disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
 
     #Simulation configs
     net_dir = '_5G/networks'
@@ -57,12 +57,12 @@ def main():
     cmdenv_config = True #Redirects cmdenv outputs to a file
 
     result = run_multiple_seeds(chosen_seeds= chosen_seeds, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                       min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, modes= modes, result_dir= result_dir,
-                       move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
-                       net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
-                       app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
-                       min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice,
-                       allrun_solver = allrun_solver, disaster_percentage= disaster_percentage)
+                                min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, modes= modes, result_dir= result_dir,
+                                move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
+                                net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
+                                app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
+                                min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice,
+                                allrun_solver = allrun_solver, disaster_percentage= disaster_percentage)
     
     if result == SUCCESS:
         print('Executions have been successfully.')
@@ -92,7 +92,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     print("Simulating at most {} cases, hence {} runs. There are {} CPU cores available".format(num_cases, num_totalRuns, cpu_count()))
     
     # Changing the results directory hierarchy
-    extra_dir = ['chosen_seed'] + extra_dir 
+    extra_dir = extra_dir + ['chosen_seed'] 
 
     # Checking for the existence of optimizer solution files and running solver for non-existent ones using parallel computing
     missing_snapshots = get_missing_snapshots(chosen_seeds, move_config_name)
@@ -196,12 +196,12 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     net_dir = kwargs['net_dir']
     
     with parallel_backend('loky'):
-        result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr,
-                mode, xml_filename, min_dis, first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
-                target_f,result_dir, slice_time, multi_carriers,
-                is_micro,extra_config_name, cmdenv_config, min_time,
-                micro_power, num_slices, per_slice, disaster_percentage) for mode, min_sinr in cases)
-    
+        result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr, mode, xml_filename, min_dis,
+                                                                                 first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
+                                                                                 target_f,result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config, min_time,
+                                                                                 micro_power, num_slices, per_slice, disaster_percentage)
+                                                                                 for mode, min_sinr in cases)
+            
     return_success = True
     for i in range(len(result)):
         if result[i] != SUCCESS:
@@ -239,9 +239,9 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     else:
         #Running solver
         gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                    xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
-                    first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
-                    disaster_percentage= disaster_percentage)
+                     xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
+                     first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
+                     disaster_percentage= disaster_percentage)
 
     #while psutil.virtual_memory().percent > 40:
     #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
@@ -255,9 +255,9 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     if per_slice and mode != 'single':
         config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                                min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                                slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+                                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                                          slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                                          micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
         if config_name_sliced_list == None and num_enbs_time == None:
             #There was a not feasible solution
@@ -350,14 +350,13 @@ def get_missing_solutions(chosen_seeds: List[int], min_sinrs: List[int], modes: 
     """ This function returns the solver solutions that were not computed yet"""
     missing = []
     for chosen_seed in chosen_seeds:
-        result_dir = 'Solutions/' + 'chosen_seed_{}'.format(chosen_seed) +  '/{}_{}'.format(extra_dir[1],disaster_percentage)\
-            + '/{}_{}'.format(extra_dir[2],micro_power)
+        result_dir = 'Solutions/' + '/{}_{}'.format(extra_dir[0],disaster_percentage) + '/{}_{}'.format(extra_dir[1],micro_power) + 'chosen_seed_{}'.format(chosen_seed)
         for mode in modes:
             for min_sinr in min_sinrs:
                 # Looking for case: 
                 done = compare_last_line(genf.gen_solver_result_filename(result_dir,mode,min_sinr),'--- Done ---\n')
                 if done is not True:
-                    missing.append((chosen_seed,mode,min_sinr))
+                    missing.append((chosen_seed,mode,min_sinr,disaster_percentage))
 
     return missing
 
