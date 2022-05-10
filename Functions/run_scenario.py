@@ -1,5 +1,6 @@
 import LTE_Scenarios.hetnet_base as hetb
 import _5G_Scenarios.ILP_configs as ilpc
+import general_functions as genf
 
 def main():
 
@@ -23,7 +24,7 @@ def main():
   time_slice = 1
   varying = True
   move_config_name = 'ilp_move_users'
-  xml_filename = ilpc.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
+  xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
 
   #ilpf.ilp_fixed_info('../Network_CCOpMv/_5G/simulations/ilp_fixed_info.ini', seed)
   #ilpf.ilp_fixed_users('../Network_CCOpMv/_5G/simulations/ilp_fixed_users.ini', chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros)
