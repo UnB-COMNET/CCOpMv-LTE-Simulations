@@ -105,7 +105,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
             print(missing_solutions[i])
         if len(missing_solutions) > num_cases_simultaneously:
             kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power, 'disaster_percentage': disaster_percentage}
-            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, disaster_percentage, num_slices, extra_dir, kwargs)        
+            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs)        
     
     print('Running {} cases simultaneously.'.format(num_cases_simultaneously))
 
@@ -372,7 +372,7 @@ def get_missing_snapshots(chosen_seeds: List[int], move_config_name: str):
         
 def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: int, size_sector: int, n_macros: int,
                           result_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int, min_time: int,
-                          micro_power: int, disaster_percentage: int, num_slices: int, extra_dir: List[str], kwargs: dict):
+                          micro_power: int, num_slices: int, extra_dir: List[str], kwargs: dict):
     if missing_solutions != []:
         print("Running solver for {} missing solutions".format(len(missing_solutions)))
 
@@ -387,7 +387,7 @@ def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: i
         with parallel_backend('loky'):
             Parallel(n_jobs=cpu_count())(delayed(gen_ilp_info)(chosen_seed, size_x, size_y, size_sector, n_macros, genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True),
                                                                min_sinr, kwargs['result_dir'], mode, min_dis, first_antenna_region, min_time, micro_power, num_slices, disaster_percentage)
-                                                               for chosen_seed, mode, min_sinr in missing_solutions)
+                                                               for chosen_seed, mode, min_sinr, disaster_percentage in missing_solutions)
 
 def run_missing_snapshots(missing_snapshots: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, project_dir: str,\
                           sim_dir: str, move_config_name: str, num_slices):
