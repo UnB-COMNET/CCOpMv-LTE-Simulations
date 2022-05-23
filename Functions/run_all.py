@@ -307,6 +307,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         if run_numbers == []:
             print('All simulations are already computed.')
         else:
+            print("Executing Simulations - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
             if per_slice and mode != 'single':
                 run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
             else:
