@@ -116,7 +116,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'num_cases_simultaneously': num_cases_simultaneously, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices,
-              'per_slice': per_slice, 'disaster_percentage': disaster_percentage}  
+              'per_slice': per_slice, 'disaster_percentage': disaster_percentage, 'num_cpus_sim': cpu_count() if allrun_solver else 1}  
 
     if allrun_solver is True:
         print('\nRunnning cases by seeds one by one.')
@@ -152,7 +152,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             net_dir: str, num_bands: List[int], repetitions: int, num_cases_simultaneously: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
             result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0):
+            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0,
+            num_cpus_sim: int= 1):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
     
     verif_modes = []
@@ -188,7 +189,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             move_ini_path = project_dir + '/' + sim_dir + '/' + move_file
             run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
                                     size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
-                                    num_slices= num_slices, cpu_num= cpu_count())
+                                    num_slices= num_slices, cpu_num= 1)
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
@@ -196,7 +197,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices, 'per_slice': per_slice,
-              'disaster_percentage': disaster_percentage}
+              'disaster_percentage': disaster_percentage, 'num_cpus_sim': num_cpus_sim}
     
     for param in extra_dir:
         kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
@@ -215,7 +216,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr, mode, xml_filename, min_dis,
                                                                                  first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
                                                                                  target_f,result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config, min_time,
-                                                                                 micro_power, num_slices, per_slice, disaster_percentage)
+                                                                                 micro_power, num_slices, per_slice, disaster_percentage, num_cpus_sim)
                                                                                  for mode, min_sinr in cases)
             
     return_success = True
@@ -240,7 +241,8 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
                  target_f: float,result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
                  is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
-                 micro_power: int= 30, num_slices: int= 10, per_slice: bool = True, disaster_percentage: int = 0):
+                 micro_power: int= 30, num_slices: int= 10, per_slice: bool = True, disaster_percentage: int = 0,
+                 num_cpus_sim: int = 1):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
     print("\nRunning case {} {} dB, seed {}, micro power {}, disaster percentage {}\n".format(mode,min_sinr, chosen_seed, micro_power, disaster_percentage))
     
@@ -307,9 +309,9 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             print('All simulations are already computed.')
         else:
             if per_slice and mode != 'single':
-                run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
+                run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= num_cpus_sim, run_numbers= run_numbers)
             else:
-                run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
+                run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= num_cpus_sim, run_numbers= run_numbers)
 
         return SUCCESS
 
