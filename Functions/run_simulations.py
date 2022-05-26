@@ -53,7 +53,7 @@ def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: 
     if runs[number // repetitions] == '':
       runs[number // repetitions] += ' -r '
     runs[number // repetitions] += f'{number % repetitions},'
-  
+
   with parallel_backend("loky"):
     Parallel(n_jobs=cpu_num)(delayed(execute)(cpu_num,ini_path,config_name, runs[i]) for i, config_name in enumerate(config_name_list))
   
