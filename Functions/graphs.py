@@ -6,6 +6,7 @@ Importar as bibliotecas do Pandas, Numpy, Sklearn
 """
 
 import csv
+from turtle import width
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -137,17 +138,20 @@ def gen_ues_data_single(data, num_ues: int, directions: int, multi: bool = False
 
   return new_data
 
-def unite_slices (processed_data, id_info, repetition, dropna = True, slice_op= 'mean'):
+def unite_slices (processed_data, id_info, repetition, inifile= None, dropna = True, slice_op= 'mean'):
 
   data = pd.concat([processed_data, id_info], axis= 1).assign(repetition = repetition)
+  if inifile is not None:
+    data = data.assign(inifile= inifile)
+
   mean_data = pd.DataFrame()
 
   if slice_op == 'mean':
-    mean_data = data.groupby(id_info.columns.tolist() + ["repetition"], dropna = dropna).mean()
+    mean_data = data.groupby(id_info.columns.tolist() + ["repetition"] + (["inifile"] if inifile is not None else []), dropna = dropna).mean()
   elif slice_op == 'sum':
-    mean_data = data.groupby(id_info.columns.tolist() + ["repetition"], dropna = dropna).sum()
+    mean_data = data.groupby(id_info.columns.tolist() + ["repetition"] + (["inifile"] if inifile is not None else []), dropna = dropna).sum()
   elif slice_op == 'std':
-    mean_data = data.groupby(id_info.columns.tolist() + ["repetition"], dropna = dropna).std()
+    mean_data = data.groupby(id_info.columns.tolist() + ["repetition"] +  (["inifile"] if inifile is not None else []), dropna = dropna).std()
 
   return mean_data
 
@@ -172,10 +176,10 @@ def compute_cov (data, columns, dropna: bool = True):
   return new_data
   #return new_data.reset_index(new_data.index.nlevels-1)
 
-def getCOV(data, extra_info, color_column, repetition, dropna: bool = True, sliced: bool = True, slice_op= 'mean'):
+def getCOV(data, extra_info, color_column, preRunattr, dropna: bool = True, unite: bool = True, slice_op= 'mean'):
 
-  if sliced:
-    tmp = unite_slices(data, extra_info, repetition, dropna, slice_op)
+  if unite:
+    tmp = unite_slices(data, extra_info, preRunattr['repetition'], preRunattr['inifile'], dropna, slice_op)
   else:
     tmp = pd.concat([data, extra_info], axis= 1)
 
@@ -250,13 +254,13 @@ def compare_csvs_video(csvs, dict_ids: dict, num_ues, extra= False):
 
     tmp_throughput = get_data_from_vector('throughput:vector', "ue", preVector, num_ues, 1)['vecvalue']
     data_throughput = get_data_vector_mean(tmp_throughput)
-    throughput, _, _ = getCOV(data_throughput, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
+    throughput, _, _ = getCOV(data_throughput, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
 
-    enbs, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
-    enbs_std, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"], slice_op= 'std')
+    enbs, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
+    enbs_std, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, slice_op= 'std')
 
     data_sinr = get_data_from_scalar("rcvdSinr:mean", "ue", preScalar, num_ues, 1)
-    sinr, _, _ = getCOV(data_sinr.fillna(-10), extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
+    sinr, _, _ = getCOV(data_sinr.fillna(-10), extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
     results_sinr.append(sinr)
 
     results_throughput.append(throughput)
@@ -267,17 +271,17 @@ def compare_csvs_video(csvs, dict_ids: dict, num_ues, extra= False):
     if extra:
       tmp_enddelay = get_data_from_vector('endToEndDelay:vector', "ue", preVector, num_ues, 1)['vecvalue']
       data_enddelay = get_data_vector_mean(tmp_enddelay)
-      enddelay, _, _ = getCOV(data_enddelay, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
+      enddelay, _, _ = getCOV(data_enddelay, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
 
       results_enddelay.append(enddelay)
 
       data_rcvd_packets = get_data_from_scalar("packetReceived:count", "ue", preScalar, num_ues, 1)
-      rcvd_packets, _, _ = getCOV(data_rcvd_packets, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+      rcvd_packets, _, _ = getCOV(data_rcvd_packets, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
       results_rcvd_packets.append(rcvd_packets)
 
       data_packets_sent = get_data_from_scalar("packetSent:count", "server", preScalar, num_ues, 1)
-      packets_sent, colors, names = getCOV(data_packets_sent, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+      packets_sent, colors, names = getCOV(data_packets_sent, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
       results_packets_sent.append(packets_sent)
 
@@ -332,7 +336,7 @@ def process_csv(filename, app='video'):
     tmp_throughput_ul = get_data_from_vector('throughput:vector', "server", preVector, num_ues, 1)['vecvalue']
     data_throughput_ul = get_data_vector_mean(tmp_throughput_ul)
 
-    throughput_ul, colors, names = getCOV(data_throughput_ul, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
+    throughput_ul, colors, names = getCOV(data_throughput_ul, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
 
     lines = throughput_ul.index.get_level_values("RBs").tolist()
 
@@ -344,7 +348,7 @@ def process_csv(filename, app='video'):
     tmp_throughput_dl = get_data_from_vector('throughput:vector', "ue", preVector, num_ues, 1)['vecvalue']
     data_throughput_dl = get_data_vector_mean(tmp_throughput_dl)
 
-    throughput_dl, colors, names = getCOV(data_throughput_dl, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
+    throughput_dl, colors, names = getCOV(data_throughput_dl, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
 
     lines = throughput_dl.index.get_level_values("RBs").tolist()
 
@@ -358,8 +362,8 @@ def process_csv(filename, app='video'):
 
     fig.show()
 
-    enbs, colors, names = getCOV(num_enbs, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
-    enbs_std, colors, names = getCOV(num_enbs, extra_info, 'min_snr_used', sliced= True, slice_op='std', repetition = preRunattr["repetition"])
+    enbs, colors, names = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
+    enbs_std, colors, names = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, slice_op='std', preRunattr = preRunattr)
 
     fig = px.bar(enbs, x= colors, y= "Mean", color= colors, labels= {"x" : "Min Snr Used (dB)" ,"color" : "Min Snr Used (dB)", "y": "Mean of Used Enbs"},
                 title= "SLICED: Num Enbs Throughput DL - CDF", hover_name = names, error_y = enbs_std["Mean"])
@@ -370,7 +374,7 @@ def process_csv(filename, app='video'):
     tmp_enddelay_dl = get_data_from_vector('endToEndDelay:vector', "ue", preVector, num_ues, 1)['vecvalue']
     data_enddelay_dl = get_data_vector_mean(tmp_enddelay_dl)
 
-    enddelay_dl, colors, names = getCOV(data_enddelay_dl, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
+    enddelay_dl, colors, names = getCOV(data_enddelay_dl, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
 
     lines = enddelay_dl.index.get_level_values("RBs").tolist()
 
@@ -382,7 +386,7 @@ def process_csv(filename, app='video'):
     tmp_enddelay_ul = get_data_from_vector('endToEndDelay:vector', "server", preVector, num_ues, 1)['vecvalue']
     data_enddelay_ul = get_data_vector_mean(tmp_enddelay_ul)
 
-    enddelay_ul, colors, names = getCOV(data_enddelay_ul, extra_info, 'min_snr_used', sliced= True, repetition = preRunattr["repetition"])
+    enddelay_ul, colors, names = getCOV(data_enddelay_ul, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr)
 
     lines = enddelay_ul.index.get_level_values("RBs").tolist()
 
@@ -395,7 +399,7 @@ def process_csv(filename, app='video'):
 
     data_packets_rcvd_ul = get_data_from_scalar("packetReceived:count", "server", preScalar, num_ues, 1)
 
-    ul_packets_rcvd, colors, names = getCOV(data_packets_rcvd_ul, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    ul_packets_rcvd, colors, names = getCOV(data_packets_rcvd_ul, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = ul_packets_rcvd.index.get_level_values("RBs").tolist()
 
@@ -408,7 +412,7 @@ def process_csv(filename, app='video'):
 
     data_packets_sent_ul = get_data_from_scalar("packetSent:count", "ue", preScalar, num_ues, 1)
 
-    ul_packets_sent, colors, names = getCOV(data_packets_sent_ul, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    ul_packets_sent, colors, names = getCOV(data_packets_sent_ul, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = ul_packets_sent.index.get_level_values("RBs").tolist()
 
@@ -421,7 +425,7 @@ def process_csv(filename, app='video'):
 
     data_packets_dl = get_data_from_scalar("packetReceived:count", "ue", preScalar, num_ues, 1)
 
-    dl_packets, colors, names = getCOV(data_packets_dl, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    dl_packets, colors, names = getCOV(data_packets_dl, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = dl_packets.index.get_level_values("RBs").tolist()
 
@@ -434,7 +438,7 @@ def process_csv(filename, app='video'):
 
     data_packets_sent_dl = get_data_from_scalar("packetSent:count", "server", preScalar, num_ues, 1)
 
-    dl_packets_sent, colors, names = getCOV(data_packets_sent_dl, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    dl_packets_sent, colors, names = getCOV(data_packets_sent_dl, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = dl_packets_sent.index.get_level_values("RBs").tolist()
 
@@ -449,7 +453,7 @@ def process_csv(filename, app='video'):
 
     data_packets_rcvd_ul = get_data_from_scalar("packetReceived:sum(packetBytes)", "server", preScalar, num_ues, 1)
 
-    ul_packets_rcvd, colors, names = getCOV(data_packets_rcvd_ul, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    ul_packets_rcvd, colors, names = getCOV(data_packets_rcvd_ul, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = ul_packets_rcvd.index.get_level_values("RBs").tolist()
 
@@ -462,7 +466,7 @@ def process_csv(filename, app='video'):
 
     data_packets_sent_ul = get_data_from_scalar("packetSent:sum(packetBytes)", "ue", preScalar, num_ues, 1)
 
-    ul_packets_sent, colors, names = getCOV(data_packets_sent_ul, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    ul_packets_sent, colors, names = getCOV(data_packets_sent_ul, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = ul_packets_sent.index.get_level_values("RBs").tolist()
 
@@ -475,7 +479,7 @@ def process_csv(filename, app='video'):
 
     data_packets_dl = get_data_from_scalar("packetReceived:sum(packetBytes)", "ue", preScalar, num_ues, 1)
 
-    dl_packets, colors, names = getCOV(data_packets_dl, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    dl_packets, colors, names = getCOV(data_packets_dl, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = dl_packets.index.get_level_values("RBs").tolist()
 
@@ -488,7 +492,7 @@ def process_csv(filename, app='video'):
 
     data_packets_sent_dl = get_data_from_scalar("packetSent:sum(packetBytes)", "server", preScalar, num_ues, 1)
 
-    dl_packets_sent, colors, names = getCOV(data_packets_sent_dl, extra_info, 'min_snr_used', sliced= True, slice_op= 'sum', repetition = preRunattr["repetition"])
+    dl_packets_sent, colors, names = getCOV(data_packets_sent_dl, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr)
 
     lines = dl_packets_sent.index.get_level_values("RBs").tolist()
 
@@ -508,7 +512,7 @@ def process_csv(filename, app='video'):
 
     data_sinr.isna().sum().sum()
 
-    mean_sinr_dl, colors, names = getCOV(data_sinr.fillna(0), extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_sinr_dl, colors, names = getCOV(data_sinr.fillna(0), extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     lines = mean_sinr_dl.index.get_level_values("RBs").tolist()
 
@@ -526,9 +530,9 @@ def process_csv(filename, app='video'):
 
     """Sinr: aumentou a largura de banda"""
 
-    mean_sinr_dl, colors, names = getCOV(data_sinr, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_sinr_dl, colors, names = getCOV(data_sinr, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
-    dl_thr, colors, names = getCOV(data_throughput_dl, extra_info, 'min_snr_used', dropna = True, repetition = preRunattr["repetition"])
+    dl_thr, colors, names = getCOV(data_throughput_dl, extra_info, 'min_snr_used', dropna = True, preRunattr = preRunattr)
 
     facet = mean_sinr_dl.index.get_level_values("RBs").tolist()
 
@@ -564,7 +568,7 @@ def process_csv(filename, app='video'):
 
     mean_rcvdsinr = mean_rcvdsinr/counter
 
-    mean_sinr_ul, colors, names = getCOV(mean_rcvdsinr, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_sinr_ul, colors, names = getCOV(mean_rcvdsinr, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(mean_sinr_ul, x="Mean", color=colors, labels= {"Mean": "Sinr:Mean (dB)", "color" : "Min Snr Used (dB) (dBm)"}, markers= False, lines= True,
                   title= "SLICED: Uplink Sinr per UE - CDF", hover_data = ["COV"], ecdfmode="reversed", hover_name = names)
@@ -627,7 +631,7 @@ def process_csv(filename, app='video'):
 
     """#### **NaN Results**"""
 
-    tmp_data, colors, names = getCOV(dataUL.isna()*100, extra_info, "min_snr_used" , repetition = preRunattr["repetition"])
+    tmp_data, colors, names = getCOV(dataUL.isna()*100, extra_info, "min_snr_used" , preRunattr = preRunattr)
 
     tmp_data = tmp_data.replace(0, np.nan).dropna()
 
@@ -645,14 +649,14 @@ def process_csv(filename, app='video'):
 
     """#### **Throughput results**"""
 
-    ul_thr, colors, names = getCOV(dataUL.fillna(0), extra_info, 'min_snr_used', dropna= True, repetition = preRunattr["repetition"])
+    ul_thr, colors, names = getCOV(dataUL.fillna(0), extra_info, 'min_snr_used', dropna= True, preRunattr = preRunattr)
 
     fig = px.ecdf(ul_thr, x='Mean', color = colors, labels= {"Mean": "Throughput:Mean (Bps)", "color": "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Throughput UL per UE - CDF", ecdfmode="reversed", hover_name = names)
 
     fig.show()
 
-    dl_thr, colors, names = getCOV(dataDL, extra_info, 'min_snr_used', dropna= True, repetition = preRunattr["repetition"])
+    dl_thr, colors, names = getCOV(dataDL, extra_info, 'min_snr_used', dropna= True, preRunattr = preRunattr)
 
     fig = px.ecdf(dl_thr, x='Mean', color = colors, labels= {"Mean": "Throughput:Mean (Bps)", "color": "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Throughput DL per UE - CDF", ecdfmode="reversed", hover_name = names)
@@ -670,9 +674,9 @@ def process_csv(filename, app='video'):
 
     bandw = 20*10**6
 
-    mean_sinr_dl, colors, names = getCOV(data_sinr, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_sinr_dl, colors, names = getCOV(data_sinr, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
-    dl_thr, colors, names = getCOV(dataDL, extra_info, 'min_snr_used', dropna= True, repetition = preRunattr["repetition"])
+    dl_thr, colors, names = getCOV(dataDL, extra_info, 'min_snr_used', dropna= True, preRunattr = preRunattr)
 
     s_ef = dl_thr * 8 / (bandw / num_ues)
 
@@ -763,21 +767,21 @@ def process_csv(filename, app='video'):
     1.   FrameDelay = ArrivalTime - PayloadTimestamp
     """
 
-    dl_framedelay, colors, names = getCOV(data_frame_delay_dl, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    dl_framedelay, colors, names = getCOV(data_frame_delay_dl, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(dl_framedelay, x="Mean", color=colors, labels= {"Mean": "Delay: Mean (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Frame Delay DL per UE - CDF", hover_data = ["COV"], hover_name = names)
 
     fig.show()
 
-    ul_framedelay, colors, names = getCOV(data_frame_delay_ul, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    ul_framedelay, colors, names = getCOV(data_frame_delay_ul, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(ul_framedelay, x="Mean", color=colors, labels= {"Mean": "Delay: Mean (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Frame Delay UL per UE - CDF", hover_data = ["COV"], hover_name = names)
 
     fig.show()
 
-    dl_delay, colors, names = getCOV(data_delay_dl, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    dl_delay, colors, names = getCOV(data_delay_dl, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(dl_delay, x="Mean", color=colors, labels= {"Mean": "Delay: Mean (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Playout Delay DL per UE - CDF", hover_data = ["COV"], hover_name = names)
@@ -786,7 +790,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO - VER COMO CONSIDERAR
 
-    ul_delay, colors, names = getCOV(data_delay_ul, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    ul_delay, colors, names = getCOV(data_delay_ul, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(ul_delay, x="Mean", color=colors, labels= {"Mean": "Delay: Mean (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Playout Delay UL per UE - CDF", hover_data = ["COV"], hover_name = names)
@@ -795,7 +799,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO - VER COMO CONSIDERAR
 
-    mean_delay, colors, names = getCOV(delay, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_delay, colors, names = getCOV(delay, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(mean_delay, x="Mean", color=colors, labels= {"Mean": "Delay (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   marginal="rug",  title= "SLICED: Playout Delay per UE - CDF", hover_data = ["COV"], hover_name = names)
@@ -814,7 +818,7 @@ def process_csv(filename, app='video'):
 
     """
 
-    ul_loss, colors, names = getCOV(data_loss_ul, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    ul_loss, colors, names = getCOV(data_loss_ul, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(ul_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Loss per UE UL - CDF", hover_data = ["COV"], hover_name = names)
@@ -823,7 +827,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO E PERDAS - VER COMO CONSIDERAR
 
-    dl_loss, colors, names = getCOV(data_loss_dl, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    dl_loss, colors, names = getCOV(data_loss_dl, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(dl_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Loss per UE DL - CDF", hover_data = ["COV"], hover_name = names)
@@ -832,7 +836,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO E PERDAS - VER COMO CONSIDERAR
 
-    ul_frame_loss, colors, names = getCOV(data_frameloss_ul, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    ul_frame_loss, colors, names = getCOV(data_frameloss_ul, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(ul_frame_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Frame Loss per UE UL - CDF", hover_data = ["COV"], hover_name = names)
@@ -841,7 +845,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO E PERDAS - VER COMO CONSIDERAR
 
-    dl_frame_loss, colors, names = getCOV(data_frameloss_dl, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    dl_frame_loss, colors, names = getCOV(data_frameloss_dl, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(dl_frame_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Frame Loss per UE DL - CDF", hover_data = ["COV"], hover_name = names)
@@ -850,7 +854,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO E PERDAS - VER COMO CONSIDERAR
 
-    dl_tail_loss, colors, names = getCOV(data_tailloss_dl, extra_info, 'min_snr_used', dropna= False, repetition = preRunattr["repetition"])
+    dl_tail_loss, colors, names = getCOV(data_tailloss_dl, extra_info, 'min_snr_used', dropna= False, preRunattr = preRunattr)
 
     fig = px.ecdf(dl_tail_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: TailLoss per UE DL - CDF", hover_data = ["COV"], hover_name = names)
@@ -859,7 +863,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO E PERDAS - VER COMO CONSIDERAR
 
-    ul_tail_loss, colors, names = getCOV(data_tailloss_ul, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    ul_tail_loss, colors, names = getCOV(data_tailloss_ul, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(ul_tail_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Tail Loss per UE UL - CDF", hover_data = ["COV"], hover_name = names)
@@ -868,7 +872,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO E PERDAS - VER COMO CONSIDERAR
 
-    dl_play_loss, colors, names = getCOV(data_playloss_dl, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    dl_play_loss, colors, names = getCOV(data_playloss_dl, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(dl_play_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: PlayoutLoss per UE DL - CDF", hover_data = ["COV"], hover_name = names)
@@ -877,7 +881,7 @@ def process_csv(filename, app='video'):
 
     ######## IMPORTANTE: LEMBRAR DE MUDAR PARA NÃO CONSIDERAR NAN COMO 0 NOS CASOS DAS MEDIDAS DE TEMPO E PERDAS - VER COMO CONSIDERAR
 
-    ul_play_loss, colors, names = getCOV(data_playloss_ul, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    ul_play_loss, colors, names = getCOV(data_playloss_ul, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(ul_play_loss, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: PlayoutLoss per UE UL - CDF", hover_data = ["COV"], hover_name = names)
@@ -888,7 +892,7 @@ def process_csv(filename, app='video'):
 
     loss_dl = gen_ues_data_single(data_frameloss_dl, num_ues, directions) + gen_ues_data_single(data_playloss_dl, num_ues, directions) + gen_ues_data_single(data_tailloss_dl, num_ues, directions)
 
-    mean_loss_dl, colors, names = getCOV(loss_dl, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_loss_dl, colors, names = getCOV(loss_dl, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(mean_loss_dl, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Total Loss per UE DL - CDF", hover_data = ["COV"], hover_name = names)
@@ -897,7 +901,7 @@ def process_csv(filename, app='video'):
 
     loss_ul = gen_ues_data_single(data_frameloss_ul, num_ues, directions) + gen_ues_data_single(data_playloss_ul, num_ues, directions) + gen_ues_data_single(data_tailloss_ul, num_ues, directions)
 
-    mean_loss_ul, colors, names = getCOV(loss_ul, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_loss_ul, colors, names = getCOV(loss_ul, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(mean_loss_ul, x="Mean", color=colors, labels= {"Mean": "Loss rate", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Total Loss per UE UL - CDF", hover_data = ["COV"], hover_name = names)
@@ -916,14 +920,14 @@ def process_csv(filename, app='video'):
 
     """**Jitter < 0.4s**"""
 
-    mean_jitter, colors, names = getCOV(jitter, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    mean_jitter, colors, names = getCOV(jitter, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(mean_jitter, x="Mean", color=colors, labels= {"Mean": "Jitter (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   marginal="rug", title= "SLICED: Jitter per UE - CDF", hover_data = ["COV"], hover_name = names)
 
     #fig.show()
 
-    dl_jitter, colors, names = getCOV(data_jitter_dl.fillna(0), extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    dl_jitter, colors, names = getCOV(data_jitter_dl.fillna(0), extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(dl_jitter, x="Mean", color=colors, labels= {"Mean": "Jitter (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Jitter per UE DL - CDF", hover_data = ["COV"], hover_name = names)
@@ -938,7 +942,7 @@ def process_csv(filename, app='video'):
 
     tmp_data_jitter_ul = thr_tmp.notna().replace(False, np.nan).replace(True, 1) * jul_tmp.fillna(0)
 
-    ul_jitter, colors, names = getCOV(tmp_data_jitter_ul, extra_info, 'min_snr_used', dropna= False, repetition = preRunattr["repetition"])
+    ul_jitter, colors, names = getCOV(tmp_data_jitter_ul, extra_info, 'min_snr_used', dropna= False, preRunattr = preRunattr)
 
     fig = px.ecdf(ul_jitter, x="Mean", color=colors, labels= {"Mean": "Jitter (s)", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: Jitter per UE UL - CDF", hover_data = ["COV"], hover_name = names)
@@ -949,7 +953,7 @@ def process_csv(filename, app='video'):
 
     """**MOS:**"""
 
-    dl_mos, colors, names = getCOV(data_mos_dl, extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    dl_mos, colors, names = getCOV(data_mos_dl, extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(dl_mos, x="Mean", color=colors, labels= {"Mean": "MOS", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: MOS per UE DL - CDF", hover_data = ["COV"], hover_name = names)
@@ -963,7 +967,7 @@ def process_csv(filename, app='video'):
 
     fig.show()
 
-    ul_mos, colors, names = getCOV(data_mos_ul.fillna(1), extra_info, 'min_snr_used', repetition = preRunattr["repetition"])
+    ul_mos, colors, names = getCOV(data_mos_ul.fillna(1), extra_info, 'min_snr_used', preRunattr = preRunattr)
 
     fig = px.ecdf(ul_mos, x="Mean", color=colors, labels= {"Mean": "MOS", "color" : "Min Snr Used (dB)"}, markers= False, lines= True,
                   title= "SLICED: MOS per UE UL - CDF", hover_data = ["COV"], hover_name = names)
@@ -977,7 +981,8 @@ def process_csv(filename, app='video'):
 
     fig.show()
       
-def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_dir: str, sim_dir: str, images_dir: str= "Images", extra_config_name: str= '', num_ues= 60, extra_dir: List[str] = [], **kwargs):
+def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_dir: str, sim_dir: str, images_dir: str= "Images", extra_config_name: str= '', num_ues= 60, extra_dir: List[str] = [],
+                            height: int= 500, width: int= 700, **kwargs):
   """## **Comparing**"""
 
   modes = genf.verify_modes(modes)
@@ -986,6 +991,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   for param in extra_dir:
     sim_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
     images_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
+  Path(images_dir).mkdir(parents=True, exist_ok=True)
 
   data_frames = {}
   for mode in modes:
@@ -998,22 +1004,12 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
       print(csv_path)
       data_frames[mode] = pd.concat([data_frames[mode], new_data_frame])
 
-  #fixed_30dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_30/ilp_fixed_sliced_video.csv')
-  #fixed_40dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_40/ilp_fixed_sliced_video.csv')
-  #varying_30dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_30/ilp_varying_sliced_video.csv')
-  #varying_40dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_40/ilp_varying_sliced_video.csv')
-
-  #fixed_20dbm_213 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_213/micro_power_20/ilp_fixed_sliced_video.csv')
-  #fixed_20dbm_321 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_321/micro_power_20/ilp_fixed_sliced_video.csv')
-  #fixed_40dbm_321 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_321/micro_power_40/ilp_fixed_sliced_video.csv')
-
-  #fixed_30dbm_25 = pd.read_csv('C:/Curso/CCOpMv/VBox/etc/ilp_fixed_sliced_video_123_25.csv')
-  #fixed_30dbm_50 = pd.read_csv('C:/Curso/CCOpMv/VBox/etc/ilp_fixed_sliced_video_213_50.csv')
-
   """### Fixed x Varying (Same seed, power 30 dBm)"""
 
   all_throughput, all_sinr, all_enb, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[mode] for mode in modes], {'ILP' : [mode.capitalize() for mode in modes], 'Power': [30, 30]},
                                                                                                            num_ues, extra= True)
+
+  #print(all_throughput.index)                                                                                                         
 
   colors = all_throughput.index.get_level_values("min_snr_used").tolist()
 
@@ -1026,12 +1022,12 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Mean (Bps)", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "UEs Throughput DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"thr_fixedxvarying.svg")
+  fig.write_image(images_dir+"/"+"thr_ilptype2.svg", height= height, width= width)
 
   fig = px.ecdf(all_throughput, x='COV', color = colors, labels= {"COV": "Throughput:Mean COV", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "UEs Throughput COV DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"thr_fixedxvarying_cov.svg")
+  fig.write_image(images_dir+"/"+"thr_ilptype_cov.svg", height= height, width= width)
 
   #median_data = tmp_thr.groupby(["min_snr_used", "ILP", "RBs"], dropna = False).median()
 
@@ -1046,7 +1042,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   fig = px.bar(all_enb, x= colors, y= "Mean", color= colors, labels= {"x" : "Min Snr Used (dB)" ,"color" : "ILP Type", "Mean": "Mean of Used Enbs", "facet_col": "Power", "pattern_shape": "ILP Type"},
               title= "Num Enbs per Slice", hover_name = names, error_y = "Std", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"enb_fixedxvarying_cov.svg")
+  fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height, width= width)
 
   sp = np.sqrt(((30-1)*0.9660918**2 + (30-1)*0.8164966**2)/(30+30-2))
   t = (3.4 - 3)/(sp * np.sqrt(2/30))
@@ -1063,12 +1059,12 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Sinr:Mean (dB)", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "UE Sinr DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"sinr_fixedxvarying.svg")
+  fig.write_image(images_dir+"/"+"sinr_ilptype.svg", height= height, width= width)
 
   fig = px.ecdf(all_sinr, x='COV', color = colors, labels= {"COV": "Sinr:Mean COV", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "UE Sinr DL COV - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"sinr_fixedxvarying_cov.svg")
+  fig.write_image(images_dir+"/"+"sinr_ilptype_cov.svg", height= height, width= width)
 
   colors = all_enddelay.index.get_level_values("min_snr_used").tolist()
 
@@ -1081,12 +1077,12 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   fig = px.ecdf(all_enddelay, x='Mean', color = colors, labels= {"Mean": "Delay (s)", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "End to End Delay of each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"edd_fixedxvarying.svg")
+  fig.write_image(images_dir+"/"+"edd_ilptype.svg", height= height, width= width)
 
   fig = px.ecdf(all_enddelay, x='COV', color = colors, labels= {"COV": "COV", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "End to End Delay COV of each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"edd_fixedxvarying_cov.svg")
+  fig.write_image(images_dir+"/"+"edd_ilptype_cov.svg", height= height, width= width)
 
   colors = all_rcvd_packets.index.get_level_values("min_snr_used").tolist()
 
@@ -1099,7 +1095,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   fig = px.ecdf(all_rcvd_packets, x='Mean', color = colors, labels= {"Mean": "Number of Received Packets", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "Received packets by each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"rcvdpkt_fixedxvarying.svg")
+  fig.write_image(images_dir+"/"+"rcvdpkt_ilptype.svg", height= height, width= width)
 
   colors = all_packets_sent.index.get_level_values("min_snr_used").tolist()
 
@@ -1112,14 +1108,13 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   fig = px.ecdf(all_packets_sent, x='Mean', color = colors, labels= {"Mean": "Number of Packets Sent", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "Packets sent to each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  fig.write_image(images_dir+"pktsent_fixedxvarying.svg")
-
+  return
   """### Power 30 dBm x Power 40 dBm"""
 
   #tmp_throughput_dl_varying_40 = get_data_from_vector('throughput:vector', "ue", preVecDataVarying40, num_ues, 1)['vecvalue']
   #data_throughput_dl_varying_40 = get_data_vector_mean(tmp_throughput_dl_varying_40)
 
-  #throughput_dl_varying_40, colors, names = getCOV(data_throughput_dl_varying_40, extra_info_varying_40, 'min_snr_used', sliced= True, repetition = preRunattrVarying40["repetition"])
+  #throughput_dl_varying_40, colors, names = getCOV(data_throughput_dl_varying_40, extra_info_varying_40, 'min_snr_used', unite= True, preRunattr = preRunattrVarying40)
 
   #tmp_thr = pd.concat([throughput_dl, throughput_dl_varying_40], keys= [30, 40], names = ["Power"])
 
@@ -1296,9 +1291,9 @@ def comparing_voip():
   dataDLPS = get_data_from_scalar("voIPReceivedThroughput:mean", "ue", preScalarPS, num_ues, 1)
   dataDL = get_data_from_scalar("voIPReceivedThroughput:mean", "ue", preScalar, num_ues, 1)
 
-  dl_thr_PS, colorsPS, namesPS = getCOV(dataDLPS, extra_info_ps, 'min_snr_used', True, sliced= True, repetition = preRunattrPS["repetition"])
+  dl_thr_PS, colorsPS, namesPS = getCOV(dataDLPS, extra_info_ps, 'min_snr_used', True, unite= True, preRunattr = preRunattrPS)
 
-  dl_thr, colors, names = getCOV(dataDL, extra_info, 'min_snr_used', True, sliced= True, repetition = preRunattr["repetition"])
+  dl_thr, colors, names = getCOV(dataDL, extra_info, 'min_snr_used', True, unite= True, preRunattr = preRunattr)
 
   tmp_thr = pd.concat([dl_thr, dl_thr_PS], keys= [40, 100], names = ["PS"])
 
@@ -1324,8 +1319,10 @@ if __name__ == "__main__":
   project_dir = '../Network_CCOpMv'
   images_dir = "Images"
   extra_config_name= "video"
+  height= 500
+  width= 1200
   
   comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, images_dir= images_dir,
                           num_ues= num_ues, extra_dir= extra_dir, disaster_percentage= disaster_percentage, micro_power= micro_power,
-                          extra_config_name= extra_config_name)
+                          extra_config_name= extra_config_name, height= height, width= width)
   

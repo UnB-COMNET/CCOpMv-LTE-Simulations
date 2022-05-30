@@ -294,6 +294,10 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
     #    time.sleep(600)
 
+    if not allrun_solver:
+        semaphore_cpucount.release()
+        semaphore_cpucount.acquire()
+
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
     
