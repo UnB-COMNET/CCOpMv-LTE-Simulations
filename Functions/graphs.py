@@ -5,10 +5,14 @@ Importar as bibliotecas do Pandas, Numpy, Sklearn
 
 """
 
+import csv
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import re
+from pathlib import Path
+from typing import Dict, List
+import general_functions as genf
 
 """## Sobre:
 
@@ -973,26 +977,43 @@ def process_csv(filename, app='video'):
 
     fig.show()
       
-def comparing_video(num_ues= 60):
+def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_dir: str, sim_dir: str, images_dir: str= "Images", extra_config_name: str= '', num_ues= 60, extra_dir: List[str] = [], **kwargs):
   """## **Comparing**"""
 
-  fixed_30dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_30/ilp_fixed_sliced_video.csv')
-  fixed_40dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_40/ilp_fixed_sliced_video.csv')
-  varying_30dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_30/ilp_varying_sliced_video.csv')
-  varying_40dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_40/ilp_varying_sliced_video.csv')
+  modes = genf.verify_modes(modes)
 
-  fixed_20dbm_213 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_213/micro_power_20/ilp_fixed_sliced_video.csv')
-  fixed_20dbm_321 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_321/micro_power_20/ilp_fixed_sliced_video.csv')
-  fixed_40dbm_321 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_321/micro_power_40/ilp_fixed_sliced_video.csv')
+  extra_dir = extra_dir
+  for param in extra_dir:
+    sim_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
+    images_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
+
+  data_frames = {}
+  for mode in modes:
+    data_frames[mode] = pd.DataFrame()
+    for chosen_seed in chosen_seeds:
+      sim_dir_full = sim_dir + f'/chosen_seed_{chosen_seed}'
+      sim_path =  project_dir + '/' + sim_dir_full
+      csv_path, _ = genf.gen_csv_path(mode= mode, sim_path= sim_path, extra_config_name= extra_config_name)
+      new_data_frame = pd.read_csv(csv_path)
+      print(csv_path)
+      data_frames[mode] = pd.concat([data_frames[mode], new_data_frame])
+
+  #fixed_30dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_30/ilp_fixed_sliced_video.csv')
+  #fixed_40dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_40/ilp_fixed_sliced_video.csv')
+  #varying_30dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_30/ilp_varying_sliced_video.csv')
+  #varying_40dbm_123 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_123/micro_power_40/ilp_varying_sliced_video.csv')
+
+  #fixed_20dbm_213 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_213/micro_power_20/ilp_fixed_sliced_video.csv')
+  #fixed_20dbm_321 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_321/micro_power_20/ilp_fixed_sliced_video.csv')
+  #fixed_40dbm_321 = pd.read_csv('C:/Curso/CCOpMv/VBox/chosen_seed_321/micro_power_40/ilp_fixed_sliced_video.csv')
 
   #fixed_30dbm_25 = pd.read_csv('C:/Curso/CCOpMv/VBox/etc/ilp_fixed_sliced_video_123_25.csv')
   #fixed_30dbm_50 = pd.read_csv('C:/Curso/CCOpMv/VBox/etc/ilp_fixed_sliced_video_213_50.csv')
 
-  images_dir = "Images/"
-
   """### Fixed x Varying (Same seed, power 30 dBm)"""
 
-  all_throughput, all_sinr, all_enb, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([fixed_30dbm_123, varying_30dbm_123], {'ILP' : ['Fixed', 'Varying'], 'Power': [30, 30]}, num_ues, extra= True)
+  all_throughput, all_sinr, all_enb, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[mode] for mode in modes], {'ILP' : [mode.capitalize() for mode in modes], 'Power': [30, 30]},
+                                                                                                           num_ues, extra= True)
 
   colors = all_throughput.index.get_level_values("min_snr_used").tolist()
 
@@ -1293,4 +1314,18 @@ def comparing_voip():
   fig.show()
 
 if __name__ == "__main__":
-  comparing_video()
+  chosen_seeds = list(range(0, 10))
+  modes = ['single', 'fixed'] 
+  num_ues= 60
+  extra_dir = ['disaster_percentage','micro_power']
+  disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
+  micro_power = 30 #dBm
+  sim_dir = '_5G/simulations'
+  project_dir = '../Network_CCOpMv'
+  images_dir = "Images"
+  extra_config_name= "video"
+  
+  comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, images_dir= images_dir,
+                          num_ues= num_ues, extra_dir= extra_dir, disaster_percentage= disaster_percentage, micro_power= micro_power,
+                          extra_config_name= extra_config_name)
+  

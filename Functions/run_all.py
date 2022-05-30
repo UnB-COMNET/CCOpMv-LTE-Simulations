@@ -15,7 +15,7 @@ import subprocess
 import sys
 from errors import check_mode
 import general_functions as genf
-import psutil
+#import psutil
 #import time
 
 SUCCESS = 'SUCCESS'
@@ -166,15 +166,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             allrun_solver: bool= False, queue: Queue= None):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
     
-    verif_modes = []
-
-    for mode in modes:
-        if mode.lower() == 'varying':
-            verif_modes.append('varying')
-        elif mode.lower() == 'fixed':
-            verif_modes.append('fixed')
-        elif mode.lower() == 'single':
-            verif_modes.append('single')
+    verif_modes = genf.verify_modes(modes)
 
     # Preparing a row of cases for simulation
     num_modes = len(verif_modes)
@@ -359,15 +351,11 @@ def get_csv(mode: str, sim_path: str, extra_config_name: str = ''):
 
     check_mode(mode= mode)
 
-    result_dir = sim_path + '/results'
-    if extra_config_name != '':
-        extra_config_name = '_' + extra_config_name 
-    path = result_dir + f'/ilp_{mode}_sliced_*' + extra_config_name
-    path_csv = result_dir + f'/ilp_{mode}_sliced' + extra_config_name
+    csv_path, sca_vec_dir = genf.gen_csv_path(mode, sim_path, extra_config_name)
 
-    print(f'Making .csv of {path_csv}.')
+    print(f'Making {csv_path}.')
 
-    code = subprocess.run(f'scavetool x -o {path_csv}.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {path}/*-*.sca {path}/*-*.vec', shell= True)
+    code = subprocess.run(f'scavetool x -o {csv_path} -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {sca_vec_dir}/*-*.sca {sca_vec_dir}/*-*.vec', shell= True)
 
     code.check_returncode()
 
