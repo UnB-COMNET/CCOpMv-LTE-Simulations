@@ -3,7 +3,7 @@ import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 import time
 from joblib import Parallel, delayed, parallel_backend
-from multiprocessing import Process
+from multiprocessing import Process, Semaphore
 import general_functions as genf
 
 def main():
@@ -53,7 +53,7 @@ def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: 
     if runs[number // repetitions] == '':
       runs[number // repetitions] += ' -r '
     runs[number // repetitions] += f'{number % repetitions},'
-  
+
   with parallel_backend("loky"):
     Parallel(n_jobs=cpu_num)(delayed(execute)(cpu_num,ini_path,config_name, runs[i]) for i, config_name in enumerate(config_name_list))
   
@@ -84,9 +84,9 @@ def execute(cpu_num, ini_path,config_name, runs):
           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + rf' -n .:{frame_path}/inet4/src:{frame_path}/inet4/examples:{frame_path}/inet4/tutorials:{frame_path}/inet4/showcases:{frame_path}/Simu5G-1.1.0/simulations:{frame_path}/Simu5G-1.1.0/src')
     
     ini = time.time()
-    code = subprocess.check_output(arg, shell=True)
+    subprocess.check_output(arg, shell=True)
     end = time.time()
-      
+    
     print("Processing time ({}): ".format(config_name), end - ini)            
     
 def run_subprocess_multiprocessing(command: str, shell: bool = True):

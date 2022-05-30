@@ -1,10 +1,12 @@
-# Version 09/05/2022
+# Version 23/05/2022
 
+from cmath import e
 from math import ceil
+import queue
 from typing import List
 from unittest import result
 from gen_ilp_info import run_movement_simulation, gen_ilp_info
-from multiprocessing import cpu_count, Process
+from multiprocessing import cpu_count, Process, Semaphore, Manager, Queue
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned
 from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from joblib import Parallel, delayed, parallel_backend
@@ -17,6 +19,8 @@ import general_functions as genf
 #import time
 
 SUCCESS = 'SUCCESS'
+
+semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
@@ -34,7 +38,7 @@ def main():
     extra_dir = ['disaster_percentage','micro_power']
     num_slices = 10
     per_slice = True
-    allrun_solver = True
+    allrun_solver = False
     
     #Solver configs
     move_config_name = 'ilp_move_users'
@@ -94,18 +98,18 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     # Changing the results directory hierarchy
     extra_dir = extra_dir + ['chosen_seed'] 
 
-    # Checking for the existence of optimizer solution files and running solver for non-existent ones using parallel computing
-    missing_snapshots = get_missing_snapshots(chosen_seeds, move_config_name)
-    run_missing_snapshots(missing_snapshots, size_x, size_y, size_sector, n_macros, project_dir,sim_dir, move_config_name, num_slices)
-    
     if allrun_solver is True:
+        # Checking for the existence of optimizer solution files and running solver for non-existent ones using parallel computing
+        missing_snapshots = get_missing_snapshots(chosen_seeds, move_config_name)
+        run_missing_snapshots(missing_snapshots, size_x, size_y, size_sector, n_macros, project_dir,sim_dir, move_config_name, num_slices)
+    
         missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power, disaster_percentage)
         print("There are {} missing solutions.".format(len(missing_solutions)))
         for i in range(len(missing_solutions)):
             print(missing_solutions[i])
         if len(missing_solutions) > num_cases_simultaneously:
-            kwargs = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power, 'disaster_percentage': disaster_percentage}
-            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs)        
+            kwargs_tmp = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power, 'disaster_percentage': disaster_percentage}
+            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs_tmp)        
     
     print('Running {} cases simultaneously.'.format(num_cases_simultaneously))
 
@@ -114,20 +118,39 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'num_cases_simultaneously': num_cases_simultaneously, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices,
-              'per_slice': per_slice, 'disaster_percentage': disaster_percentage}
-    
+              'per_slice': per_slice, 'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver}  
 
-    print('\nRunnning cases by seeds one by one.')
-    j = 0
-    for i in range(len(chosen_seeds)):
-        kwargs['chosen_seed'] = chosen_seeds[j]
-        print("CHOSEN SEED: {}".format(chosen_seeds[j]))
-        result = run_all(**kwargs)
-        if result == SUCCESS:
-            chosen_seeds.remove(chosen_seeds[j])
+    if allrun_solver is True:
+        print('\nRunnning cases by seeds one by one.')
+        j = 0
+        for i in range(len(chosen_seeds)):
+            kwargs['chosen_seed'] = chosen_seeds[j]
+            print("CHOSEN SEED: {}".format(chosen_seeds[j]))
+            result = run_all(**kwargs)
+            if result == SUCCESS:
+                chosen_seeds.remove(chosen_seeds[j])
+            else:
+                print('Error in cases with seed {}.'.format(chosen_seeds[j]))
+                j += 1
+    
+    else:
+        processes = []
+        q = Queue()
+        kwargs['queue'] = q
+        for chosen_seed in chosen_seeds:
+            kwargs['chosen_seed'] = chosen_seed
+            processes.append(Process(target= run_all, kwargs= kwargs))
+            processes[-1].start()
+        
+        for p in processes:
+            p.join()
+
+        errors = q.get()
+
+        if errors:
+            print(errors)
         else:
-            print('Error in cases with seed {}.'.format(chosen_seeds[j]))
-            j += 1
+            chosen_seeds = []
 
     if chosen_seeds == []:
         return SUCCESS
@@ -139,19 +162,11 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             net_dir: str, num_bands: List[int], repetitions: int, num_cases_simultaneously: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
             result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0):
+            extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0,
+            allrun_solver: bool= False, queue: Queue= None):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
     
-    verif_modes = []
-    processes = []
-
-    for mode in modes:
-        if mode.lower() == 'varying':
-            verif_modes.append('varying')
-        elif mode.lower() == 'fixed':
-            verif_modes.append('fixed')
-        elif mode.lower() == 'single':
-            verif_modes.append('single')
+    verif_modes = genf.verify_modes(modes)
 
     # Preparing a row of cases for simulation
     num_modes = len(verif_modes)
@@ -163,16 +178,23 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
 
     move_file = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
     xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
-    #Verifying if movement simulation is already done
-    done = compare_last_line(xml_filename, '<!--Done-->\n')
-    if done:
-        print(f'Movement profile already simulated. Results in {xml_filename}.')
-    # If not done, do it    
-    else:
-        move_ini_path = project_dir + '/' + sim_dir + '/' + move_file
-        run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
-                                size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
-                                num_slices= num_slices, cpu_num= cpu_count())
+
+    # Semaphore to control the use of the cpu
+    with semaphore_cpucount:
+        try:
+            #Verifying if movement simulation is already done
+            done = compare_last_line(xml_filename, '<!--Done-->\n')
+            if done:
+                print(f'Movement profile already simulated. Results in {xml_filename}.')
+            # If not done, do it    
+            else:
+                move_ini_path = project_dir + '/' + sim_dir + '/' + move_file
+                run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
+                                        size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
+                                        num_slices= num_slices, cpu_num= 1)
+        except Exception as e:
+            if queue is not None:
+                queue.put(e)
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
@@ -180,7 +202,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices, 'per_slice': per_slice,
-              'disaster_percentage': disaster_percentage}
+              'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver}
     
     for param in extra_dir:
         kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
@@ -195,24 +217,39 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     sim_dir = kwargs['sim_dir']
     net_dir = kwargs['net_dir']
     
-    with parallel_backend('loky'):
-        result = Parallel(n_jobs=num_cases_simultaneously)(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr, mode, xml_filename, min_dis,
-                                                                                 first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
-                                                                                 target_f,result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config, min_time,
-                                                                                 micro_power, num_slices, per_slice, disaster_percentage)
-                                                                                 for mode, min_sinr in cases)
-            
     return_success = True
-    for i in range(len(result)):
-        if result[i] != SUCCESS:
-            mode, min_sinr = cases[i]
-            print('Error in case: mode {} and min SINR {}'.format(mode, min_sinr))
-            return_success = False
+    if allrun_solver:
+        with parallel_backend('loky', n_jobs= num_cases_simultaneously):
+            result = Parallel()(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr, mode, xml_filename, min_dis,
+                                                                                                            first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
+                                                                                                            target_f, result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config,
+                                                                                                            min_time, micro_power, num_slices, per_slice, disaster_percentage, allrun_solver)
+                                                                                                            for mode, min_sinr in cases)
+                                                                                            
+        for i in range(len(result)):
+            if result[i] != SUCCESS:
+                mode, min_sinr = cases[i]
+                print('Error in case: mode {} and min SINR {}'.format(mode, min_sinr))
+                return_success = False
+
+    else:
+        processes = []
+        for mode, min_sinr in cases:
+            kwargs['queue'] = queue
+            kwargs['mode'] = mode
+            kwargs['min_sinr'] = min_sinr
+            processes.append(Process(target= process_func, kwargs= kwargs))
+            processes[-1].start()
+        
+        for p in processes:
+            p.join()
 
     if return_success:
         print('\nExporting .CSV files.\n')
         for mode in verif_modes:
-            get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
+            # Semaphore to control the use of the cpu
+            with semaphore_cpucount:
+                get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
         return SUCCESS
     else:
         return
@@ -220,10 +257,15 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
 def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
                  mode: str, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
                  sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
-                 target_f: float,result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
-                 is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True, min_time: int = 2,
-                 micro_power: int= 30, num_slices: int= 10, per_slice: bool = True, disaster_percentage: int = 0):
+                 target_f: float, result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
+                 is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True,
+                 min_time: int = 2, micro_power: int= 30, num_slices: int= 10, per_slice: bool = True,
+                 disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
+
+    if not allrun_solver:
+        semaphore_cpucount.acquire()
+
     print("\nRunning case {} {} dB, seed {}, micro power {}, disaster percentage {}\n".format(mode,min_sinr, chosen_seed, micro_power, disaster_percentage))
     
     check_mode(mode= mode)
@@ -233,19 +275,28 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     #Verifying if solver is already done
     done = compare_last_line(genf.gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
     
-    if done:
-        print(f'Solver {file_name} already computed. (Seed: {chosen_seed})')
-    # If not done, do it    
-    else:
-        #Running solver
-        gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                     xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
-                     first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
-                     disaster_percentage= disaster_percentage)
+    try:
+        if done:
+            print(f'Solver {file_name} already computed. (Seed: {chosen_seed})')
+        # If not done, do it    
+        else:
+            #Running solver
+            gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
+                        xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
+                        first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
+                        disaster_percentage= disaster_percentage)
+
+    except Exception as e:
+        if queue is not None:
+            queue.put(e)
 
     #while psutil.virtual_memory().percent > 40:
     #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
     #    time.sleep(600)
+
+    if not allrun_solver:
+        semaphore_cpucount.release()
+        semaphore_cpucount.acquire()
 
     #Generating config and network files
     print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
@@ -255,9 +306,9 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     if per_slice and mode != 'single':
         config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                                          min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                                          slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                                          micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+                                                                        min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                                        slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                                        micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
         if config_name_sliced_list == None and num_enbs_time == None:
             #There was a not feasible solution
@@ -270,23 +321,32 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     
     else:
         config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                         min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                         slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                         micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+                                                        min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                        slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                        micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
         ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
-    
+
+
     #Running the simulation
     run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                          min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
-                    
-    if run_numbers == []:
-        print('All simulations are already computed.')
-    else:
-        if per_slice and mode != 'single':
-            run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count(), run_numbers= run_numbers)
+                                        min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
+    try:          
+        if run_numbers == []:
+            print('All simulations are already computed. Min Snr: {} - {} (Seed: {})'.format(min_sinr, mode.capitalize(), chosen_seed))
         else:
-            run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count(), run_numbers= run_numbers)
+            print("Executing Simulations - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
+            if per_slice and mode != 'single':
+                run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
+            else:
+                run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
+
+    except Exception as e:
+        if queue is not None:
+            queue.put(e)
+
+    if not allrun_solver:
+        semaphore_cpucount.release()
 
     return SUCCESS
 
@@ -295,15 +355,11 @@ def get_csv(mode: str, sim_path: str, extra_config_name: str = ''):
 
     check_mode(mode= mode)
 
-    result_dir = sim_path + '/results'
-    if extra_config_name != '':
-        extra_config_name = '_' + extra_config_name 
-    path = result_dir + f'/ilp_{mode}_sliced_*' + extra_config_name
-    path_csv = result_dir + f'/ilp_{mode}_sliced' + extra_config_name
+    csv_path, sca_vec_dir = genf.gen_csv_path(mode, sim_path, extra_config_name)
 
-    print(f'Making .csv of {path_csv}.')
+    print(f'Making {csv_path}.')
 
-    code = subprocess.run(f'scavetool x -o {path_csv}.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {path}/*-*.sca {path}/*-*.vec', shell= True)
+    code = subprocess.run(f'scavetool x -o {csv_path} -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {sca_vec_dir}/*-*.sca {sca_vec_dir}/*-*.vec', shell= True)
 
     code.check_returncode()
 

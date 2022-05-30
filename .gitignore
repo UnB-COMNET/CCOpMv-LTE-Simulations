@@ -3,3 +3,4 @@
 **/.qtenvrc
 **/.cmdenv-log
 **/out
+**/Makefile*
