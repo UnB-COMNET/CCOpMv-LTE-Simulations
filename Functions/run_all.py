@@ -286,52 +286,47 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                         first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
                         disaster_percentage= disaster_percentage)
 
-    except Exception as e:
-        if queue is not None:
-            queue.put(e)
+        #while psutil.virtual_memory().percent > 40:
+        #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
+        #    time.sleep(600)
 
-    #while psutil.virtual_memory().percent > 40:
-    #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
-    #    time.sleep(600)
+        if not allrun_solver:
+            semaphore_cpucount.release()
+            semaphore_cpucount.acquire()
 
-    if not allrun_solver:
-        semaphore_cpucount.release()
-        semaphore_cpucount.acquire()
+        #Generating config and network files
+        print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
+        
+        ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
+        network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
-    #Generating config and network files
-    print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
-    
-    ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
-    network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
+        if per_slice and mode != 'single':
+            config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+                                                                            min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                                            slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                                            micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
-    if per_slice and mode != 'single':
-        config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                                        min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                                        slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                                        micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+            if config_name_sliced_list == None and num_enbs_time == None:
+                #There was a not feasible solution
+                print("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
+                return None
 
-        if config_name_sliced_list == None and num_enbs_time == None:
-            #There was a not feasible solution
-            print("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
-            return None
+            for slice in range(len(num_enbs_time)):
+                network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
+                ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+        
+        else:
+            config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+                                                            min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                            slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                            micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
 
-        for slice in range(len(num_enbs_time)):
-            network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
-            ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
-    
-    else:
-        config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                        min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                        slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                        micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
-
-        ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+            ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 
 
-    #Running the simulation
-    run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                        min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)
-    try:          
+        #Running the simulation
+        run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
+                                            min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)          
         if run_numbers == []:
             print('All simulations are already computed. Min Snr: {} - {} (Seed: {})'.format(min_sinr, mode.capitalize(), chosen_seed))
         else:
