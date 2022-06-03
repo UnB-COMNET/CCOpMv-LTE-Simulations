@@ -1,10 +1,7 @@
 # Version 23/05/2022
 
-from cmath import e
 from math import ceil
-import queue
 from typing import List
-from unittest import result
 from gen_ilp_info import run_movement_simulation, gen_ilp_info
 from multiprocessing import cpu_count, Process, Semaphore, Manager, Queue
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned
@@ -12,7 +9,6 @@ from run_simulations import run_make, run_simulation_all_slices, run_simulation_
 from joblib import Parallel, delayed, parallel_backend
 from pathlib import Path
 import subprocess
-import sys
 from errors import check_mode
 import general_functions as genf
 #import psutil
@@ -195,6 +191,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         except Exception as e:
             if queue is not None:
                 queue.put(e)
+            print(f'Terminated because of exception while running {xml_filename}.')
+            return
 
     #Varying, fixed or both
     kwargs = {'chosen_seed' : chosen_seed, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinr': None,
@@ -217,7 +215,10 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     sim_dir = kwargs['sim_dir']
     net_dir = kwargs['net_dir']
     
-    return_success = True
+    failed_modes = []
+    processes = []
+    mode_queues = {}
+
     if allrun_solver:
         with parallel_backend('loky', n_jobs= num_cases_simultaneously):
             result = Parallel()(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr, mode, xml_filename, min_dis,
@@ -230,12 +231,15 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             if result[i] != SUCCESS:
                 mode, min_sinr = cases[i]
                 print('Error in case: mode {} and min SINR {}'.format(mode, min_sinr))
-                return_success = False
+                if mode not in failed_modes: failed_modes.append(mode)
+                
 
     else:
-        processes = []
+        for mode in verif_modes:
+            mode_queues[mode]= Queue()
+
         for mode, min_sinr in cases:
-            kwargs['queue'] = queue
+            kwargs['queue'] = mode_queues[mode]
             kwargs['mode'] = mode
             kwargs['min_sinr'] = min_sinr
             processes.append(Process(target= process_func, kwargs= kwargs))
@@ -244,12 +248,21 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         for p in processes:
             p.join()
 
-    if return_success:
-        print('\nExporting .CSV files.\n')
         for mode in verif_modes:
+            errors = mode_queues[mode].get()
+            if errors:
+                print(f'Error in process_func of Mode: {mode}, Seed: {chosen_seed}.')
+                if mode not in failed_modes: failed_modes.append(mode)
+                queue.put(errors)
+
+    for mode in verif_modes:
+        if mode not in failed_modes:
             # Semaphore to control the use of the cpu
             with semaphore_cpucount:
+                print(f'\nExporting .CSV files (Mode: {mode}, Seed: {chosen_seed}).\n')
                 get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
+
+    if failed_modes == []:
         return SUCCESS
     else:
         return
@@ -264,7 +277,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
 
     if not allrun_solver:
-        semaphore_cpucount.acquire()
+        semaphore_cpucount.acquire(blocking= True)
 
     print("\nRunning case {} {} dB, seed {}, micro power {}, disaster percentage {}\n".format(mode,min_sinr, chosen_seed, micro_power, disaster_percentage))
     
@@ -292,7 +305,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
         if not allrun_solver:
             semaphore_cpucount.release()
-            semaphore_cpucount.acquire()
+            semaphore_cpucount.acquire(blocking= True)
 
         #Generating config and network files
         print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
