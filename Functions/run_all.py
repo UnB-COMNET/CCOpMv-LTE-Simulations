@@ -1,16 +1,18 @@
-# Version 23/05/2022
+# Version 03/06/2022
 
 from math import ceil
 from typing import List
 from gen_ilp_info import run_movement_simulation, gen_ilp_info
-from multiprocessing import cpu_count, Process, Semaphore, Manager, Queue
+from multiprocessing import cpu_count, Process, current_process, Manager, Queue
 from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned
 from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from joblib import Parallel, delayed, parallel_backend
 from pathlib import Path
 import subprocess
-from errors import check_mode
+from errors import check_mode, ErrorPackage
 import general_functions as genf
+import sys
+import traceback
 #import psutil
 #import time
 
@@ -20,15 +22,15 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = list(range(0, 10))#
+    chosen_seeds = [2,3,4,5,6,7,10,11,12,13]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5,10,15]
-    modes = ['varying','single', 'fixed'] # varying, fixed or single
+    min_sinrs = [5]
+    modes = ['varying'] # varying, fixed or single
+    micro_power = 40 #dBm
     result_dir = "Solutions"
-    micro_power = 30 #dBm
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     extra_dir = ['disaster_percentage','micro_power']
@@ -141,12 +143,15 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
         for p in processes:
             p.join()
 
-        errors = q.get()
+        errors = []
+        while not q.empty():
+            errors.append(q.get())
 
-        if errors:
-            print(errors)
-        else:
+        if errors == []:
             chosen_seeds = []
+        else:
+            for error in errors:
+                print(error)
 
     if chosen_seeds == []:
         return SUCCESS
@@ -155,12 +160,15 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
 
 def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
             project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
-            net_dir: str, num_bands: List[int], repetitions: int, num_cases_simultaneously: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
-            result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
+            net_dir: str, num_bands: List[int], repetitions: int, num_cases_simultaneously: int, p_size: int, app: str, target_f: float,
+            modes: List[str]= [], result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
             extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0,
             allrun_solver: bool= False, queue: Queue= None):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
+    
+    if not allrun_solver:
+        print(f'Started process run_all {current_process().name} {current_process().pid}. (Seed: {chosen_seed})')
     
     verif_modes = genf.verify_modes(modes)
 
@@ -190,7 +198,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
                                         num_slices= num_slices, cpu_num= 1)
         except Exception as e:
             if queue is not None:
-                queue.put(e)
+                queue.put(ErrorPackage(exc_info= sys.exc_info(), pname= current_process().name, pid= current_process().pid, **{'seed': chosen_seed}))
             print(f'Terminated because of exception while running {xml_filename}.')
             return
 
@@ -249,9 +257,10 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             p.join()
 
         for mode in verif_modes:
-            errors = mode_queues[mode].get()
-            if errors:
-                print(f'Error in process_func of Mode: {mode}, Seed: {chosen_seed}.')
+
+            while not mode_queues[mode].empty():
+                errors = mode_queues[mode].get()
+                print(f'Error in process_func of Mode: {mode.capitalize()}, Seed: {chosen_seed}.')
                 if mode not in failed_modes: failed_modes.append(mode)
                 queue.put(errors)
 
@@ -275,20 +284,20 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  min_time: int = 2, micro_power: int= 30, num_slices: int= 10, per_slice: bool = True,
                  disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
-
+    
     if not allrun_solver:
-        semaphore_cpucount.acquire(blocking= True)
-
-    print("\nRunning case {} {} dB, seed {}, micro power {}, disaster percentage {}\n".format(mode,min_sinr, chosen_seed, micro_power, disaster_percentage))
-    
-    check_mode(mode= mode)
-
-    file_name = genf.gen_file_name(mode= mode, min_sinr= min_sinr)
-    sim_path = project_dir + '/' + sim_dir
-    #Verifying if solver is already done
-    done = compare_last_line(genf.gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
-    
+        print(f'Started process process_func {current_process().name} {current_process().pid}. (Seed: {chosen_seed}, Mode: {mode}, Min_sinr: {min_sinr})')
+        semaphore_cpucount.acquire()
     try:
+        print(f"\nRunning case {mode} {min_sinr} dB, seed {chosen_seed}, micro power {micro_power}, disaster percentage {disaster_percentage}.\n")
+        
+        check_mode(mode= mode)
+
+        file_name = genf.gen_file_name(mode= mode, min_sinr= min_sinr)
+        sim_path = project_dir + '/' + sim_dir
+        #Verifying if solver is already done
+        done = compare_last_line(genf.gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
+    
         if done:
             print(f'Solver {file_name} already computed. (Seed: {chosen_seed})')
         # If not done, do it    
@@ -302,10 +311,6 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         #while psutil.virtual_memory().percent > 40:
         #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
         #    time.sleep(600)
-
-        if not allrun_solver:
-            semaphore_cpucount.release()
-            semaphore_cpucount.acquire(blocking= True)
 
         #Generating config and network files
         print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
@@ -351,10 +356,12 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     except Exception as e:
         if queue is not None:
-            queue.put(e)
-
-    if not allrun_solver:
-        semaphore_cpucount.release()
+            queue.put(ErrorPackage(exc_info= "".join(traceback.format_exception(*sys.exc_info())), pname= current_process().name, pid= current_process().pid, **{'seed': chosen_seed, 'mode': mode, 'min_sinr': min_sinr}))
+        return
+    
+    finally:
+        if not allrun_solver:
+            semaphore_cpucount.release()
 
     return SUCCESS
 
