@@ -17,7 +17,7 @@ class ErrorPackage:
         extra = ''
         for key in self.kwargs:
             extra += f' {key.capitalize()}: {self.kwargs[key]} ;'
-        text = (f'Exc Info > {self.exc_info}.\n'
+        text = (f'Exc Info > {self.exc_info}'
                 f'Process > Name: {self.pname} ; Pid: {self.pid}.\n'
                 f'Extra >{extra[:-2]}.\n')
         return text
