@@ -258,7 +258,7 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
 
     tmp_throughput = get_data_from_vector('throughput:vector', "ue", preVector)['vecvalue']
     data_throughput = get_data_vector_mean(tmp_throughput)
-    throughput, _, _ = getCOV(data_throughput, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= same_ue)
+    throughput, _, _ = getCOV(data_throughput.fillna(0), extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= same_ue)
 
     enbs, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= True)
     #enbs_std, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, slice_op= 'std')
@@ -1025,7 +1025,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Mean (Bps)", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "UEs Throughput DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
-
+  
   fig.write_image(images_dir+"/"+"thr_ilptype.svg", height= height, width= width)
 
   if cov:
@@ -1060,9 +1060,6 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   lines = all_sinr.index.get_level_values("ILP").tolist()
 
   facet = all_sinr.index.get_level_values("Power").tolist()
-
-  with pd.option_context('display.max_rows', None, 'display.max_columns', None):  # more options can be specified also
-    print(all_sinr['Mean'])
 
   fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Sinr:Mean (dB)", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
                 title= "UE Sinr DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})

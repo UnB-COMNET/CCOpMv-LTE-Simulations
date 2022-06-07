@@ -53,7 +53,7 @@ def get_map_ues_time(scen: MapChess, xml_filename: str) -> List[List[int]]:
   return map_ues_time
 
 def get_ues_time(ues_list, xml_filename: str, time: float = 1) -> List[List[Ue]]:
-  """This function parses a snapshot file (.sna) returning the UEs location over time."""
+  """This function parses a snapshot file (.sna) returning the UEs location over time (matrix)."""
   accumulated_xml = ''
   ues_time = [ues_list]
 

@@ -113,13 +113,11 @@ def ccop_mv_MILP(
                     if users_t_m[t][n] > 0:
                         if m != n:
                             ct = solver.Constraint(-solver.infinity(),0)
-                            ct.SetCoefficient(ytmn[t][m][n], 1)
-                            ct.SetCoefficient(xtm[t][m], -1)
                         # Constraint - if antenna in m then serve m
                         else:
                             ct = solver.Constraint(0,0)
-                            ct.SetCoefficient(ytmn[t][m][n], 1)
-                            ct.SetCoefficient(xtm[t][m], -1)
+                        ct.SetCoefficient(ytmn[t][m][n], 1)
+                        ct.SetCoefficient(xtm[t][m], -1)
 
 
     objective = solver.Objective()

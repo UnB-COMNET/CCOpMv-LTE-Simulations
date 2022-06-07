@@ -188,6 +188,9 @@ class Ue:
         self.index = index
         self.movement = Movement(speed, dir)
 
+    def __str__(self):
+        return f'Ue> Id: {self.index}; Position: {self.position}; Movement: {self.movement}.'
+
 class Movement:
     """Represents a movement made by an entity"""
 
@@ -195,6 +198,9 @@ class Movement:
         """Initializes the class based on the its speed and direction"""
         self.speed = speed
         self.direction = dir
+
+    def __str__(self):
+        return f'({self.speed} m/s, {self.direction}°)'
 
 def placeObject(obj: Union[Macrocell,Smallcell], radius, min_distance) -> Coordinate:
     """Determines the position of an object randomly based on the radius
