@@ -33,6 +33,7 @@ def main():
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
+    csv_dir = '_5G/results'
     extra_dir = ['disaster_percentage','micro_power']
     num_slices = 10
     per_slice = True
@@ -59,7 +60,7 @@ def main():
     cmdenv_config = True #Redirects cmdenv outputs to a file
 
     result = run_multiple_seeds(chosen_seeds= chosen_seeds, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                                min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, modes= modes, result_dir= result_dir,
+                                min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, csv_dir= csv_dir, modes= modes, result_dir= result_dir,
                                 move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
                                 net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
                                 app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
@@ -73,7 +74,7 @@ def main():
     
 
 def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
-                       project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
+                       project_dir: str, sim_dir: str, csv_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
                        net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
                        result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                        extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
@@ -113,10 +114,10 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
 
     kwargs = {'chosen_seed' : None, 'size_x': size_x, 'size_y': size_y, 'size_sector': size_sector, 'n_macros': n_macros, 'min_sinrs': min_sinrs,
               'modes': modes, 'move_config_name': move_config_name, 'result_dir': result_dir, 'min_dis': min_dis, 'first_antenna_region': first_antenna_region,
-              'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'num_cases_simultaneously': num_cases_simultaneously, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
-              'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
-              'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'extra_dir': extra_dir, 'num_slices': num_slices,
-              'per_slice': per_slice, 'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver}  
+              'sim_dir': sim_dir, 'csv_dir': csv_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'num_cases_simultaneously': num_cases_simultaneously,
+              'slice_time': slice_time, 'p_size': p_size, 'app': app, 'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers,
+              'is_micro': is_micro, 'cmdenv_config': cmdenv_config, 'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir,
+              'extra_dir': extra_dir, 'num_slices': num_slices, 'per_slice': per_slice, 'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver}  
 
     if allrun_solver is True:
         print('\nRunnning cases by seeds one by one.')
@@ -159,7 +160,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
         return
 
 def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinrs: List[int],
-            project_dir: str, sim_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
+            project_dir: str, sim_dir: str, csv_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int,
             net_dir: str, num_bands: List[int], repetitions: int, num_cases_simultaneously: int, p_size: int, app: str, target_f: float,
             modes: List[str]= [], result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
@@ -214,9 +215,12 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
         kwargs['sim_dir'] += '/' + param + f'_{kwargs[param]}'
         kwargs['net_dir'] += '/' + param + f'_{kwargs[param]}'
-        Path(kwargs['result_dir']).mkdir(parents=True, exist_ok=True)
-        Path(project_dir + '/' + kwargs['sim_dir']).mkdir(parents=True, exist_ok=True)
-        Path(project_dir + '/' + kwargs['net_dir']).mkdir(parents=True, exist_ok=True)
+        csv_dir += '/' + param + f'_{kwargs[param]}'
+
+    Path(kwargs['result_dir']).mkdir(parents=True, exist_ok=True)
+    Path(project_dir + '/' + kwargs['sim_dir']).mkdir(parents=True, exist_ok=True)
+    Path(project_dir + '/' + kwargs['net_dir']).mkdir(parents=True, exist_ok=True)
+    Path(project_dir + '/' + csv_dir).mkdir(parents=True, exist_ok=True)
 
     print(f'Starting computations on {cpu_count()} cores.')
     result_dir = kwargs['result_dir']
@@ -230,10 +234,10 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     if allrun_solver:
         with parallel_backend('loky', n_jobs= num_cases_simultaneously):
             result = Parallel()(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr, mode, xml_filename, min_dis,
-                                                                                                            first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
-                                                                                                            target_f, result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config,
-                                                                                                            min_time, micro_power, num_slices, per_slice, disaster_percentage, allrun_solver)
-                                                                                                            for mode, min_sinr in cases)
+                                                      first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
+                                                      target_f, result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config,
+                                                      min_time, micro_power, num_slices, per_slice, disaster_percentage, allrun_solver)
+                                                      for mode, min_sinr in cases)
                                                                                             
         for i in range(len(result)):
             if result[i] != SUCCESS:
@@ -269,7 +273,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             # Semaphore to control the use of the cpu
             with semaphore_cpucount:
                 print(f'\nExporting .CSV files (Mode: {mode}, Seed: {chosen_seed}).\n')
-                get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], extra_config_name= extra_config_name)
+                get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], results_path= project_dir + '/' + csv_dir, extra_config_name= extra_config_name)
 
     if failed_modes == []:
         return SUCCESS
@@ -365,12 +369,12 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     return SUCCESS
 
-def get_csv(mode: str, sim_path: str, extra_config_name: str = ''):
+def get_csv(mode: str, sim_path: str, results_path: str, extra_config_name: str = ''):
     """This function call a scavetool command to create the necessary .csv files"""
 
     check_mode(mode= mode)
 
-    csv_path, sca_vec_dir = genf.gen_csv_path(mode, sim_path, extra_config_name)
+    csv_path, sca_vec_dir = genf.gen_csv_path(mode, sim_path, results_path, extra_config_name)
 
     print(f'Making {csv_path}.')
 

@@ -43,13 +43,13 @@ def verify_modes(modes: List[str]):
 
     return np.unique(verif_modes).tolist()
 
-def gen_csv_path(mode: str, sim_path: str, extra_config_name: str = ''):
+def gen_csv_path(mode: str, sim_path: str, results_path: str, extra_config_name: str = ''):
     
     result_dir = sim_path + '/results'
 
     if extra_config_name != '':
         extra_config_name = '_' + extra_config_name 
     sca_vec_dir = result_dir + f'/ilp_{mode}_sliced_*' + extra_config_name
-    csv_path = result_dir + f'/ilp_{mode}_sliced' + extra_config_name + '.csv'
+    csv_path = results_path + f'/ilp_{mode}_sliced' + extra_config_name + '.csv'
 
     return csv_path, sca_vec_dir

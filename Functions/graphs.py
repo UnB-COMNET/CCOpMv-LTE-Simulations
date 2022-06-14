@@ -246,7 +246,7 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
 
   results_throughput = []
   results_enb = []
-  #results_enb_std = []
+  results_enb_hist = []
   results_sinr = []
   results_rcvd_packets = []
   results_packets_sent = []
@@ -261,14 +261,14 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
     throughput, _, _ = getCOV(data_throughput.fillna(0), extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= same_ue)
 
     enbs, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= True)
-    #enbs_std, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, slice_op= 'std')
+    hist_enbs = unite_slices(num_enbs, extra_info, preRunattr['repetition'], preRunattr['inifile'], dropna= True, slice_op= 'mean')
 
     data_sinr = get_data_from_scalar("rcvdSinr:mean", "ue", preScalar)
     sinr, _, _ = getCOV(data_sinr.fillna(-10), extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= same_ue)
 
     results_throughput.append(throughput)
     results_enb.append(enbs)
-    #results_enb_std.append(enbs_std)
+    results_enb_hist.append(hist_enbs)
     results_sinr.append(sinr)
 
     if extra:
@@ -299,7 +299,7 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
   all_throughput = pd.concat(results_throughput, keys= value_keys, names= names)
   all_sinr = pd.concat(results_sinr, keys= value_keys, names= names)
   all_enb_mean = pd.concat(results_enb, keys= value_keys, names= names)
-  #all_enb_std = pd.concat(results_enb_std, keys= value_keys, names= names)
+  all_enb_hist = pd.concat(results_enb_hist, keys= value_keys, names= names)
   #all_enb = pd.DataFrame({'Mean': all_enb_mean['Mean'], 'Std': all_enb_std['Mean']})
   all_enb = all_enb_mean
 
@@ -307,9 +307,9 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
     all_enddelay = pd.concat(results_enddelay, keys= value_keys, names= names)
     all_rcvd_packets = pd.concat(results_rcvd_packets, keys= value_keys, names= names)
     all_packets_sent = pd.concat(results_packets_sent, keys= value_keys, names= names)
-    return all_throughput, all_sinr, all_enb, all_enddelay, all_rcvd_packets, all_packets_sent
+    return all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent
   else:
-    return all_throughput, all_sinr, all_enb
+    return all_throughput, all_sinr, all_enb, all_enb_hist
 
 def propagate_std(data, id):
 
@@ -985,8 +985,8 @@ def process_csv(filename, app='video'):
 
     fig.show()
       
-def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_dir: str, sim_dir: str, images_dir: str= "Images", extra_config_name: str= '', extra_dir: List[str] = [],
-                            height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, **kwargs):
+def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_dir: str, sim_dir: str, csv_dir: str, images_dir: str= "Images", extra_config_name: str= '',
+                            extra_dir: List[str] = [], height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, **kwargs):
   """## **Comparing**"""
 
   modes = genf.verify_modes(modes)
@@ -995,6 +995,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   for param in extra_dir:
     sim_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
     images_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
+    csv_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
   Path(images_dir).mkdir(parents=True, exist_ok=True)
 
   data_frames = {}
@@ -1002,16 +1003,18 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
     data_frames[mode] = pd.DataFrame()
     for chosen_seed in chosen_seeds:
       sim_dir_full = sim_dir + f'/chosen_seed_{chosen_seed}'
+      csv_dir_full = csv_dir + f'/chosen_seed_{chosen_seed}'
       sim_path =  project_dir + '/' + sim_dir_full
-      csv_path, _ = genf.gen_csv_path(mode= mode, sim_path= sim_path, extra_config_name= extra_config_name)
+      results_path = project_dir + '/' + csv_dir_full
+      csv_path, _ = genf.gen_csv_path(mode= mode, sim_path= sim_path, results_path= results_path, extra_config_name= extra_config_name)
       new_data_frame = pd.read_csv(csv_path)
       print(csv_path)
       data_frames[mode] = pd.concat([data_frames[mode], new_data_frame])
 
   """### Fixed x Varying (Same seed, power 30 dBm)"""
 
-  all_throughput, all_sinr, all_enb, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[mode] for mode in modes], {'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
-                                                                                                           extra= True, same_ue= same_ue)
+  all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[mode] for mode in modes], {'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
+                                                                                                                          extra= True, same_ue= same_ue)
 
   #print(all_throughput['Mean'].size)                                                                                                         
 
@@ -1048,6 +1051,22 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
               title= "Mean Num Enbs per Simulation", hover_name = names, error_y = "Std", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
   fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height, width= width)
+
+  all_enb_hist.to_excel(images_dir+"/"+'enb_data.xlsx', sheet_name= 'ILPCompare')
+
+  tmp = np.unique(all_enb_hist.index.get_level_values("min_snr_used").tolist())
+
+  for n in tmp:
+    tmp_enb_hist = all_enb_hist.xs(n, level='min_snr_used')
+
+    shape = tmp_enb_hist.index.get_level_values("ILP").tolist()
+
+    facet = tmp_enb_hist.index.get_level_values("Power").tolist()
+
+    fig = px.histogram(tmp_enb_hist, x= 'NumEnbs', height= height, width= width, labels= {"x" : "Number eNBs" ,"color" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "pattern_shape": "ILP Type"},
+                       title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+
+    fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
 
   sp = np.sqrt(((30-1)*0.9660918**2 + (30-1)*0.8164966**2)/(30+30-2))
   t = (3.4 - 3)/(sp * np.sqrt(2/30))
@@ -1119,8 +1138,9 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   return
 
-def comparing_video_powers(chosen_seeds: List[int], modes: Union[List[str], str], micro_powers: List[int], project_dir: str, sim_dir: str, images_dir: str= "Images", extra_config_name: str= '', extra_dir: List[str] = [],
-                           height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, **kwargs):
+def comparing_video_powers(chosen_seeds: List[int], modes: Union[List[str], str], micro_powers: List[int], project_dir: str, sim_dir: str, csv_dir: str,
+                           images_dir: str= "Images", extra_config_name: str= '', extra_dir: List[str] = [], height: int= 500, width: int= 700,
+                           same_ue: bool= True, cov: bool= True, **kwargs):
 
   #Accepting list or a single mode str
   if type(modes) is list:
@@ -1131,11 +1151,11 @@ def comparing_video_powers(chosen_seeds: List[int], modes: Union[List[str], str]
 
   #Comparing for each mode
   for mode in modes:
-    comparing_video_powers_singlemode(chosen_seeds= chosen_seeds, mode= mode, micro_powers= micro_powers, project_dir= project_dir, sim_dir = sim_dir, images_dir= images_dir,
+    comparing_video_powers_singlemode(chosen_seeds= chosen_seeds, mode= mode, micro_powers= micro_powers, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
                                       extra_config_name= extra_config_name, extra_dir = extra_dir, height= height, width= width, same_ue= same_ue, cov= cov, **kwargs)
 
-def comparing_video_powers_singlemode(chosen_seeds: List[int], mode: str, micro_powers: List[int], project_dir: str, sim_dir: str, images_dir: str= "Images", extra_config_name: str= '', extra_dir: List[str] = [],
-                                      height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, **kwargs):
+def comparing_video_powers_singlemode(chosen_seeds: List[int], mode: str, micro_powers: List[int], project_dir: str, sim_dir: str, csv_dir: str, images_dir: str= "Images",
+                                      extra_config_name: str= '', extra_dir: List[str] = [], height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, **kwargs):
   """### Comparing Powers"""
 
   check_mode(mode)
@@ -1146,6 +1166,7 @@ def comparing_video_powers_singlemode(chosen_seeds: List[int], mode: str, micro_
   for param in extra_dir:
     sim_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
     images_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
+    csv_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
   Path(images_dir).mkdir(parents=True, exist_ok=True)
 
   data_frames = {}
@@ -1154,15 +1175,17 @@ def comparing_video_powers_singlemode(chosen_seeds: List[int], mode: str, micro_
 
     for chosen_seed in chosen_seeds:
       sim_dir_full = sim_dir + f'/micro_power_{micro_power}/chosen_seed_{chosen_seed}'
+      csv_dir_full = csv_dir + f'/micro_power_{micro_power}/chosen_seed_{chosen_seed}'
       sim_path =  project_dir + '/' + sim_dir_full
-      csv_path, _ = genf.gen_csv_path(mode= mode, sim_path= sim_path, extra_config_name= extra_config_name)
+      results_path = project_dir + '/' + csv_dir_full
+      csv_path, _ = genf.gen_csv_path(mode= mode, sim_path= sim_path, results_path= results_path, extra_config_name= extra_config_name)
       new_data_frame = pd.read_csv(csv_path)
       print(csv_path)
       data_frames[micro_power] = pd.concat([data_frames[micro_power], new_data_frame])
 
-  all_throughput, all_sinr, all_enb, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[micro_power] for micro_power in micro_powers],
-                                                                                                           {'ILP' : [mode.capitalize() for _ in micro_powers], 'Power': [micro_power for micro_power in micro_powers]},
-                                                                                                           extra= True, same_ue= same_ue)
+  all_throughput, all_sinr, all_enb, all_enb_hist = compare_csvs_video([data_frames[micro_power] for micro_power in micro_powers],
+                                                                       {'ILP' : [mode.capitalize() for _ in micro_powers], 'Power': [micro_power for micro_power in micro_powers]},
+                                                                       extra= False, same_ue= same_ue)
   colors = all_throughput.index.get_level_values("min_snr_used").tolist()
 
   names = all_throughput.index.get_level_values('n_obj').tolist()
@@ -1269,6 +1292,7 @@ if __name__ == "__main__":
   micro_power = 30 #dBm
   sim_dir = '_5G/simulations'
   project_dir = '../Network_CCOpMv'
+  csv_dir = '_5G/results'
   images_dir = "Images"
   extra_config_name= "video"
   height= 500
@@ -1276,11 +1300,11 @@ if __name__ == "__main__":
   same_ue = False #Considera UEs diferentes se utilizam diferentes seeds (pois cada seed tem um inifile diferente)
   cov = False #Cria as imagens do COV ou não
   
-  comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, images_dir= images_dir,
+  comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
                           extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, same_ue= same_ue, cov= cov,
                           **{'disaster_percentage': disaster_percentage, 'micro_power': micro_power})#Disaster and micropower as **kwargs
   
-  #comparing_video_powers(chosen_seeds= chosen_seeds, modes= modes, micro_powers= [30], project_dir= project_dir, sim_dir = sim_dir, images_dir= images_dir,
+  #comparing_video_powers(chosen_seeds= chosen_seeds, modes= modes, micro_powers= [30], project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
   #                      extra_config_name= extra_config_name, extra_dir = ['disaster_percentage'], height= height, width= width, same_ue= same_ue, cov= cov,
   #                       **{'disaster_percentage': disaster_percentage})#Disaster as **kwarg
 
