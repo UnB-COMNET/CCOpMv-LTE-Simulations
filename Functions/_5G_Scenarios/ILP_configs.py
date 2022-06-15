@@ -6,6 +6,7 @@ import geometry as geo
 import numpy as np
 from errors import check_mode
 import general_functions as genf
+from pprint import pprint
 
 def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, config_name: str= 'ilp_move_users',
                    num_slices: int= 10):
@@ -706,7 +707,7 @@ def get_ues_connections_per_slice(result, ues_coords, antennas_regions: List[int
   """This function interpretates the result parsed from the solver in to the elements connections.
 
   Args:
-    result: Dict containing the parsed solution from the solver for a specific time (slice_)
+    result: Dict containing the parsed solution (serving cell for ue region key) from the solver for a specific time (slice_).
     ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
     antennas_regions: List[int] containing the sectors where eNBs are located
     size_sector: sides size of square sectors in meters
