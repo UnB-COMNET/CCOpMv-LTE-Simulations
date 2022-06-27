@@ -36,9 +36,9 @@ def verify_modes(modes: List[str]):
     for mode in modes:
         if mode.lower() == 'varying':
             verif_modes.append('varying')
-        elif mode.lower() == 'fixed':
+        elif mode.lower() == 'fixed' or mode.lower() == 'aid':
             verif_modes.append('fixed')
-        elif mode.lower() == 'single':
+        elif mode.lower() == 'single' or mode.lower() == 'tid':
             verif_modes.append('single')
 
     return np.unique(verif_modes).tolist()
