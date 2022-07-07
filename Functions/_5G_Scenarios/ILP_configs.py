@@ -120,7 +120,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
     ues_map = hxml.get_map_ues_time(scen= scen, xml_filename = xml_filename)
 
     max_time = len(ues_map)
-    _, antennas_regions, _ = parse_results(genf.gen_solver_result_filename(result_dir, 'fixed', min_sinr)+".txt", max_time)
+    _, antennas_regions, _ = genf.parse_results(genf.gen_solver_result_filename(result_dir, 'fixed', min_sinr)+".txt", max_time)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -271,7 +271,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   check_mode(mode= mode)
 
-  optimized, antennas_regions, num_enbs_time = parse_results(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
+  optimized, antennas_regions, num_enbs_time = genf.parse_results(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
 
   scen.placeAntennas(list_regions= antennas_regions)
 
@@ -288,7 +288,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
   num_ues = len(scen.getUEsList())
   num_enbs = len(enbs_coords)
 
-  connections = get_ues_connections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
+  connections = genf.get_ues_connections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
   config_name = genf.gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
 
@@ -430,7 +430,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
     tmp_scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)#Full = 4320 UEs
     list_scen.append(tmp_scen)
 
-  optimized_byslice, antennas_regions_byslice, num_enbs_time = parse_results_per_slice(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
+  optimized_byslice, antennas_regions_byslice, num_enbs_time = genf.parse_results_per_slice(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
 
   if optimized_byslice == None and antennas_regions_byslice == None and num_enbs_time == None:
     #There was a not feasible solution
@@ -456,7 +456,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
   for slice in range(num_slices):
     enbs_coords_list[slice] = list_scen[slice].getAntennasPositionList()
     num_enbs_list[slice] = len(enbs_coords_list[slice])
-    connections_list[slice] = get_ues_connections_per_slice(optimized_byslice[slice], ues_coords, antennas_regions_byslice[slice], size_sector, size_x, size_y, slice)
+    connections_list[slice] = genf.get_ues_connections_per_slice(optimized_byslice[slice], ues_coords, antennas_regions_byslice[slice], size_sector, size_x, size_y, slice)
   
   '''print("Analisando o resultado...")
   ue_test = 3
@@ -597,132 +597,3 @@ def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, ima
     hned.writeSeparation(f, "X2 Connections")
     hned.writeX2Connections(f, object_names=["eNB"], quantities= [n_enbs])
     hned.writeEndNet(f)
-
-def parse_results(filename: str, max_time: int):
-  """This function parses the UEs and eNBs necessary information from the solver (ccop_mv_MILP) resulted solution.
-
-  Args:
-    filename: string representing the name of the txt file with the solution
-    max_time: Max_Time parameter used in the solver
-
-  Return:
-    Three structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
-    The second one is a list with the sectors where the eNBs were located (List[int]).
-    The third is a list with the number of eNBs deployed in each slice
-  """
-
-  results = []
-  enbs = []
-  enbs_time = []
-  for i in range(max_time):
-    results.append({})
-    enbs_time.append([])
-
-  with open(filename, "r") as f:
-    for line in f:
-      if not line.startswith('---'): 
-        data = [int(x) for x in line.split()]   # data: [t, m, n]
-        results[data[0]][data[2]] = data[1]
-        enbs_time[data[0]].append(data[1])
-        enbs.append(data[1])
-        enbs = np.unique(enbs).tolist()
-
-  #Get the number of eNBs at each slice
-  for t in range(max_time):
-    enbs_time[t] = np.unique(enbs_time[t]).size
-
-  return results, enbs, enbs_time
-
-def parse_results_per_slice(filename: str, max_time: int):
-  """This function parses the UEs and eNBs necessary information from the solver (ccop_mv_MILP) resulted solution.
-
-  Args:
-    filename: string representing the name of the txt file with the solution
-    max_time: Max_Time parameter used in the solver
-
-  Return:
-    Three structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
-    The second one is a list of lists (list[t][n]) where t is the time of the simulation and n is the number of the eNB with the sector where each eNB is located at that time (List[List[int]]).
-    The third is a list with the number of eNBs deployed in each slice
-  """
-
-  results = []
-  enbs = []
-  enbs_time = []
-  enbs_byslice = []
-  for i in range(max_time):
-    results.append({})
-    enbs_time.append([])
-    enbs_byslice.append([])
-  try:
-    with open(filename, "r") as f:
-      for line in f:
-        if not line.startswith('---'): 
-          data = [int(x) for x in line.split()]   # data: [t, m, n]
-          results[data[0]][data[2]] = data[1]
-          enbs_time[data[0]].append(data[1])
-          enbs.append(data[1])
-          enbs = np.unique(enbs).tolist()
-  except FileNotFoundError:
-    print("File {} not found.".format(filename))
-    return None, None, None
-
-  #Get the number of eNBs at each slice
-  
-  for t in range(max_time):
-    enbs_byslice[t] = np.unique(enbs_time[t]).tolist()
-    enbs_time[t] = np.unique(enbs_time[t]).size
-  
-  results_list = 10*[None]
-  for i in range(len(results)):
-    results_list[i] = results[i]
-
-  return results_list, enbs_byslice, enbs_time
-
-def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
-  """This function interpretates the result parsed from the solver in to the elements connections.
-
-  Args:
-    result: List[Dict] containing the parsed solution from the solver
-    ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
-    antennas_regions: List[int] containing the sectors where eNBs are located
-    size_sector: sides size of square sectors in meters
-    size_x: x dimension size of considered region in meters
-    size_y: y dimension size of considered region in meters
-
-  Return:
-    A 2D Matrix (n X t) with the serving cell number for each UE (n) at each time (t).
-  """
-  connections = []
-  for ue in ues_coords:
-    connections.append([])
-    for s in range(len(ue)):
-      region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
-      #Assume-se que a regiao do UE é servida por alguma das antenas
-      connections[-1].append(antennas_regions.index(result[s][region])+1)
-
-  return connections
-
-def get_ues_connections_per_slice(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y, slice_):
-  """This function interpretates the result parsed from the solver in to the elements connections.
-
-  Args:
-    result: Dict containing the parsed solution (serving cell for ue region key) from the solver for a specific time (slice_).
-    ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
-    antennas_regions: List[int] containing the sectors where eNBs are located
-    size_sector: sides size of square sectors in meters
-    size_x: x dimension size of considered region in meters
-    size_y: y dimension size of considered region in meters
-    slice_: specific time considered
-
-  Return:
-    A Array of size n with the serving cell number for each UE (n).
-  """
-  connections = []
-  
-  for ue in ues_coords:
-    region = geo.coord2Region(ue[slice_], size_sector, size_x, size_y)
-    #Assume-se que a regiao do UE é servida por alguma das antenas
-    connections.append(antennas_regions.index(result[region])+1)
-
-  return connections

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import List
 import numpy as np
+import geometry as geo
 
 def get_frameworks_path():
     user = 'juliano'
@@ -53,3 +54,132 @@ def gen_csv_path(mode: str, sim_path: str, results_path: str, extra_config_name:
     csv_path = results_path + f'/ilp_{mode}_sliced' + extra_config_name + '.csv'
 
     return csv_path, sca_vec_dir
+
+def parse_results_per_slice(filename: str, max_time: int):
+  """This function parses the UEs and eNBs necessary information from the solver (ccop_mv_MILP) resulted solution.
+
+  Args:
+    filename: string representing the name of the txt file with the solution
+    max_time: Max_Time parameter used in the solver
+
+  Return:
+    Three structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
+    The second one is a list of lists (list[t][n]) where t is the time of the simulation and n is the number of the eNB, containing the sector where each eNB is located at that time (List[List[int]]).
+    The third is a list with the number of eNBs deployed in each slice
+  """
+
+  results = []
+  enbs = []
+  enbs_time = []
+  enbs_byslice = []
+  for i in range(max_time):
+    results.append({})
+    enbs_time.append([])
+    enbs_byslice.append([])
+  try:
+    with open(filename, "r") as f:
+      for line in f:
+        if not line.startswith('---'): 
+          data = [int(x) for x in line.split()]   # data: [t, m, n]
+          results[data[0]][data[2]] = data[1]
+          enbs_time[data[0]].append(data[1])
+          enbs.append(data[1])
+          enbs = np.unique(enbs).tolist()
+  except FileNotFoundError:
+    print("File {} not found.".format(filename))
+    return None, None, None
+
+  #Get the number of eNBs at each slice
+  
+  for t in range(max_time):
+    enbs_byslice[t] = np.unique(enbs_time[t]).tolist()
+    enbs_time[t] = np.unique(enbs_time[t]).size
+  
+  results_list = 10*[None]
+  for i in range(len(results)):
+    results_list[i] = results[i]
+
+  return results_list, enbs_byslice, enbs_time
+
+def parse_results(filename: str, max_time: int):
+  """This function parses the UEs and eNBs necessary information from the solver (ccop_mv_MILP) resulted solution.
+
+  Args:
+    filename: string representing the name of the txt file with the solution
+    max_time: Max_Time parameter used in the solver
+
+  Return:
+    Three structures. The first one is a list of dict (results[t]{n: m}) where t is the simulation time, n is the sector of a UE at that time and m is the sector of its serving cell.
+    The second one is a list with the sectors where the eNBs were located (List[int]).
+    The third is a list with the number of eNBs deployed in each slice
+  """
+
+  results = []
+  enbs = []
+  enbs_time = []
+  for i in range(max_time):
+    results.append({})
+    enbs_time.append([])
+
+  with open(filename, "r") as f:
+    for line in f:
+      if not line.startswith('---'): 
+        data = [int(x) for x in line.split()]   # data: [t, m, n]
+        results[data[0]][data[2]] = data[1]
+        enbs_time[data[0]].append(data[1])
+        enbs.append(data[1])
+        enbs = np.unique(enbs).tolist()
+
+  #Get the number of eNBs at each slice
+  for t in range(max_time):
+    enbs_time[t] = np.unique(enbs_time[t]).size
+
+  return results, enbs, enbs_time
+
+def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
+  """This function interpretates the result parsed from the solver in to the elements connections.
+
+  Args:
+    result: List[Dict] containing the parsed solution from the solver
+    ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
+    antennas_regions: List[int] containing the sectors where eNBs are located
+    size_sector: sides size of square sectors in meters
+    size_x: x dimension size of considered region in meters
+    size_y: y dimension size of considered region in meters
+
+  Return:
+    A 2D Matrix (n X t) with the serving cell number for each UE (n) at each time (t).
+  """
+  connections = []
+  for ue in ues_coords:
+    connections.append([])
+    for s in range(len(ue)):
+      region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
+      #Assume-se que a regiao do UE é servida por alguma das antenas
+      connections[-1].append(antennas_regions.index(result[s][region])+1)
+
+  return connections
+
+def get_ues_connections_per_slice(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y, slice_):
+  """This function interpretates the result parsed from the solver in to the elements connections.
+
+  Args:
+    result: Dict containing the parsed solution (serving cell for ue region key) from the solver for a specific time (slice_).
+    ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
+    antennas_regions: List[int] containing the sectors where eNBs are located
+    size_sector: sides size of square sectors in meters
+    size_x: x dimension size of considered region in meters
+    size_y: y dimension size of considered region in meters
+    slice_: specific time considered
+
+  Return:
+    A Array of size n with the serving cell number for each UE (n).
+  """
+  connections = []
+  
+  for ue in ues_coords:
+    region = geo.coord2Region(ue[slice_], size_sector, size_x, size_y)
+    #Assume-se que a regiao do UE é servida por alguma das antenas
+    connections.append(antennas_regions.index(result[region])+1)
+
+  return connections
