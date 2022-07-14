@@ -1,4 +1,4 @@
-# Version 03/06/2022
+# Version 14/07/2022
 
 from math import ceil
 from typing import List
@@ -28,8 +28,8 @@ def main():
     size_sector = 400
     n_macros = 1
     min_sinrs = [5]
-    modes = ['varying'] # varying, fixed or single
-    micro_power = 40 #dBm
+    modes = ['single'] # fixed or single
+    micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
@@ -37,7 +37,6 @@ def main():
     extra_dir = ['disaster_percentage','micro_power']
     num_slices = 10
     per_slice = True
-    allrun_solver = False
     
     #Solver configs
     move_config_name = 'ilp_move_users'
@@ -59,13 +58,17 @@ def main():
     target_f = 10 #Mbps
     cmdenv_config = True #Redirects cmdenv outputs to a file
 
+    #For the user
+    allrun_solver = False #Older version where runs all solvers first
+    only_solver = True #Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
+
     result = run_multiple_seeds(chosen_seeds= chosen_seeds, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                                 min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, csv_dir= csv_dir, modes= modes, result_dir= result_dir,
                                 move_config_name= move_config_name, min_dis= min_dis, first_antenna_region= first_antenna_region,
                                 net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
                                 app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
                                 min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice,
-                                allrun_solver = allrun_solver, disaster_percentage= disaster_percentage)
+                                allrun_solver = allrun_solver, disaster_percentage= disaster_percentage, only_solver= only_solver)
     
     if result == SUCCESS:
         print('Executions ended successfully.')
@@ -78,12 +81,20 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
                        net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [],
                        result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                        extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
-                       extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True, allrun_solver: bool = False, disaster_percentage: int = 0):
+                       extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True, allrun_solver: bool = False, disaster_percentage: int = 0,
+                       only_solver: bool = False):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
     
     # Generating makefile and compiling OMNeT++ and its frameworks
-    print(f'\nRunning makefile.')
-    run_make()  
+    if not only_solver:
+        print(f'\nRunning makefile.')
+        run_make()
+    else:
+        print(f'Solver only option selected.')
+        if allrun_solver:
+            #The option in this case is not correctly implemented, so better not allow using it
+            print(f'Error: Not possible to run with both allrun_solve and only_solver set to True.')
+            return
     
     # Evaluating maximum runs
     num_seeds = len(chosen_seeds)
@@ -136,6 +147,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
         processes = []
         q = Queue()
         kwargs['queue'] = q
+        kwargs['only_solver'] = only_solver
         for chosen_seed in chosen_seeds:
             kwargs['chosen_seed'] = chosen_seed
             processes.append(Process(target= run_all, kwargs= kwargs))
@@ -165,7 +177,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             modes: List[str]= [], result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
             extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0,
-            allrun_solver: bool= False, queue: Queue= None):
+            allrun_solver: bool= False, queue: Queue= None, only_solver: bool = False):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
     
     if not allrun_solver:
@@ -193,10 +205,14 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
                 print(f'Movement profile already simulated. Results in {xml_filename}.')
             # If not done, do it    
             else:
-                move_ini_path = project_dir + '/' + sim_dir + '/' + move_file
-                run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
-                                        size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
-                                        num_slices= num_slices, cpu_num= 1)
+                if only_solver:
+                    print(f'Error: Moviment profile missing (Seed: {chosen_seed}) with only_solver True. Returning.')
+                    return
+                else:
+                    move_ini_path = project_dir + '/' + sim_dir + '/' + move_file
+                    run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
+                                            size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
+                                            num_slices= num_slices, cpu_num= 1)
         except Exception as e:
             if queue is not None:
                 queue.put(ErrorPackage(exc_info= sys.exc_info(), pname= current_process().name, pid= current_process().pid, **{'seed': chosen_seed}))
@@ -242,11 +258,13 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         for i in range(len(result)):
             if result[i] != SUCCESS:
                 mode, min_sinr = cases[i]
-                print('Error in case: mode {} and min SINR {}'.format(mode, min_sinr))
+                print('Error in case: mode {} and min SINR {}.'.format(mode, min_sinr))
                 if mode not in failed_modes: failed_modes.append(mode)
                 
 
     else:
+        kwargs['only_solver'] = only_solver
+
         for mode in verif_modes:
             mode_queues[mode]= Queue()
 
@@ -264,16 +282,20 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
 
             while not mode_queues[mode].empty():
                 errors = mode_queues[mode].get()
-                print(f'Error in process_func of Mode: {mode.capitalize()}, Seed: {chosen_seed}.')
+                print(f'Error in process_func of Mode: {mode.capitalize()}, Seed: {chosen_seed}.\n')
                 if mode not in failed_modes: failed_modes.append(mode)
                 queue.put(errors)
 
-    for mode in verif_modes:
-        if mode not in failed_modes:
-            # Semaphore to control the use of the cpu
-            with semaphore_cpucount:
-                print(f'\nExporting .CSV files (Mode: {mode}, Seed: {chosen_seed}).\n')
-                get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], results_path= project_dir + '/' + csv_dir, extra_config_name= extra_config_name)
+    if not only_solver:
+        for mode in verif_modes:
+            if mode not in failed_modes:
+                # Semaphore to control the use of the cpu
+                with semaphore_cpucount:
+                    print(f'\nExporting .CSV files (Mode: {mode}, Seed: {chosen_seed}).\n')
+                    get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], results_path= project_dir + '/' + csv_dir, extra_config_name= extra_config_name)
+
+    else:
+        print(f'\nEnding (Seed {chosen_seed}) with only_solver True.\n')
 
     if failed_modes == []:
         return SUCCESS
@@ -286,7 +308,8 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  target_f: float, result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
                  is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True,
                  min_time: int = 2, micro_power: int= 30, num_slices: int= 10, per_slice: bool = True,
-                 disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None):
+                 disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None,
+                 only_solver: bool = False):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
     
     if not allrun_solver:
@@ -316,47 +339,49 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         #    print(f'High memory use ({psutil.virtual_memory().percent}). Sleeping.({file_name} : {chosen_seed})')
         #    time.sleep(600)
 
-        #Generating config and network files
-        print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
-        
-        ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
-        network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
+        if not only_solver:
 
-        if per_slice and mode != 'single':
-            config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                                            min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                                            slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                                            micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+            #Generating config and network files
+            print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
+            
+            ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
+            network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
-            if config_name_sliced_list == None and num_enbs_time == None:
-                #There was a not feasible solution
-                print("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
-                return None
-
-            for slice in range(len(num_enbs_time)):
-                network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
-                ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
-        
-        else:
-            config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
-                                                            min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
-                                                            slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                            micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
-
-            ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
-
-
-        #Running the simulation
-        run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                            min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)          
-        if run_numbers == []:
-            print('All simulations are already computed. Min Snr: {} - {} (Seed: {})'.format(min_sinr, mode.capitalize(), chosen_seed))
-        else:
-            print("Executing Simulations - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
             if per_slice and mode != 'single':
-                run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
+                config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+                                                                                min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                                                slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+
+                if config_name_sliced_list == None and num_enbs_time == None:
+                    #There was a not feasible solution
+                    print("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
+                    return None
+
+                for slice in range(len(num_enbs_time)):
+                    network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
+                    ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+            
             else:
-                run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
+                config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+                                                                min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
+                                                                slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
+                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+
+                ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
+
+
+            #Running the simulation
+            run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
+                                                min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)          
+            if run_numbers == []:
+                print('All simulations are already computed. Min Snr: {} - {} (Seed: {})'.format(min_sinr, mode.capitalize(), chosen_seed))
+            else:
+                print("Executing Simulations - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
+                if per_slice and mode != 'single':
+                    run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
+                else:
+                    run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
 
     except Exception as e:
         if queue is not None:
