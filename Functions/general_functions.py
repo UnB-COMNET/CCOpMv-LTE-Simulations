@@ -203,7 +203,7 @@ def plot_scenario(scen: geo.MapChess, title: str):
 def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False):
     """Get the regions which each antenna serves.
 
-       Params:
+       Args:
             antennas_regions: List with the antennas regions in the map
             metric_map_mn: Matrix m x n representing a list of the metric map for each antenna position. m must be equal to n.
             minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
