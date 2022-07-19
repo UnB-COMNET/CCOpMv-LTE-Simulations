@@ -199,3 +199,44 @@ def plot_scenario(scen: geo.MapChess, title: str):
     plt.ylim(0, 4000)
     plt.show()
     print("Plot")
+
+def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False):
+    """Get the regions which each antenna serves.
+
+       Params:
+            antennas_regions: List with the antennas regions in the map
+            metric_map_mn: Matrix m x n representing a list of the metric map for each antenna position. m must be equal to n.
+            minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
+
+       Returns:
+            Dictionary with the antennas regions as keys and a list with the serving regions as values
+    """
+    metrics_of_service = {}
+
+    #Every possible pair of antennas to compare
+    antennas_pairs = []
+    for i in range(len(antennas_regions)):
+        #Initializes metrics_of_service for each antenna
+        metrics_of_service[str(antennas_regions[i])] = np.array(metric_map_mn[antennas_regions[i]])
+        for j in range(i+1, len(antennas_regions)):
+            antennas_pairs.append((antennas_regions[i], antennas_regions[j]))
+
+    for m, n in antennas_pairs:
+        #Compare the metrics of service between the pair of antennas
+        comp_array = metrics_of_service[str(m)] > metrics_of_service[str(n)]
+        if minimization:
+            comp_array = ~comp_array #Inverts the comparison to obey that a big value is better
+
+        #New values of the metric of service to discard already rulled out regions
+        metrics_of_service[str(m)][~comp_array] = np.inf if minimization else -np.inf #Inverts comp_array because we want the values of m that lost to n
+        metrics_of_service[str(n)][comp_array] = np.inf if minimization else -np.inf #Changing the values of n that lose to those of m
+    
+    regions_of_service = {}
+
+    for key in metrics_of_service:
+        if minimization:
+            regions_of_service[key] = np.ravel(np.argwhere(metrics_of_service[key] < np.inf))
+        else:
+            regions_of_service[key] = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
+
+    return regions_of_service

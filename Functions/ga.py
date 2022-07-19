@@ -216,12 +216,12 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float]):
 
     antennas_regions = np.ravel(np.argwhere(solution > 0))
 
-    #regions_of_service = get_regions_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
+    regions_of_service = genf.get_regions_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
 
-    #for key in regions_of_service:
-    #    print(f'Antenna: {key}. Number Regions: {len(regions_of_service[key])}.\n\tRegions: {regions_of_service[key]}.')
+    for key in regions_of_service:
+        print(f'Antenna: {key}. Number Regions: {len(regions_of_service[key])}.\n\tRegions: {regions_of_service[key]}.')
 
-    return antennas_regions
+    return regions_of_service
 
 def fitness(solution, solution_idx):
     """Evaluates how good a solution is.
