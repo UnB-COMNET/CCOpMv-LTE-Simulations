@@ -246,8 +246,8 @@ def callback_gen(ga_instance):
 def create_population(base_genome, population_size):
     """Create the population of genomes.
 
-       Returns:
-            A List of List[int] where each List[int] represents a genome.
+    Returns:
+        A List of List[int] where each List[int] represents a genome.
     """
     return[base_genome for i in range(population_size)]
 
