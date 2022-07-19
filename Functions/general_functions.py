@@ -209,7 +209,7 @@ def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List
         minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
 
     Returns:
-        Dictionary with the antennas regions as keys and a list with the serving regions as values
+        Dictionary with the antennas regions as keys and a list with the serving regions as values.
     """
     metrics_of_service = {}
 

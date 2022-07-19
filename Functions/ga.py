@@ -237,6 +237,9 @@ def fitness(solution, solution_idx):
            if _antennas_last_result[m] == 1 and solution[m] != 1:
                 return 0
 
+    # Must provide a minimum amount of SINR to all users
+    pass
+
     return fitness_score
 
 def callback_gen(ga_instance):
@@ -249,7 +252,7 @@ def create_population(base_genome, population_size):
     Returns:
         A List of List[int] where each List[int] represents a genome.
     """
-    return[base_genome for i in range(population_size)]
+    return[base_genome for _ in range(population_size)]
 
 if __name__ == '__main__':
     main()

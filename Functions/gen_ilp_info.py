@@ -102,7 +102,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         seed(chosen_seed)
         max_user_antenna_m = [60 for i in range(scen.n_sectors)]
         antennas_map_m = [(0 if random() < disaster_percentage/100 else 1) for i in range(scen.n_sectors)]
-        min_snr_m = [db_to_linear(min_sinr) for i in range(scen.n_sectors)]
+        min_snr_m = [db_to_linear(min_sinr) for _ in range(scen.n_sectors)]
         distance_mn = scen.getRegionsDistanceMatrix()
 
         #Setting first antenna position
