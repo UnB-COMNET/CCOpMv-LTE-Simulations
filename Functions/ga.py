@@ -1,8 +1,7 @@
 # Import the necessary modules and libraries
+from turtle import distance
 import numpy as np
 from typing import List, Callable
-
-from sklearn import metrics
 import geometry as geo
 from helper_xml import get_map_ues_time
 import general_functions as genf
@@ -10,11 +9,14 @@ import pygad
 from time import time, localtime, mktime
 from datetime import datetime
 from random import randint, seed, random
+import sinr_comput as sc
 
 _users_t_m = []
 _antennas_last_result = []
 _distance_mn = []
 _snr_map_mn = []
+_min_dis = 0
+_first_antenna_region = 0
 
 def main():
     #General configs
@@ -32,16 +34,17 @@ def main():
     #is_micro = True #Keep True
     disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
     move_config_name = 'ilp_move_users'
+    min_dis = 2000
 
     run_ga_solvers(chosen_seeds=chosen_seeds, size_x= size_x, size_y=size_y, size_sector=size_sector, n_macros=n_macros,
                    move_config_name=move_config_name, result_dir=result_dir, mode=mode, min_sinr=min_sinr, num_slices=num_slices,
-                   extra_dir=extra_dir, micro_power= micro_power,
+                   extra_dir=extra_dir, micro_power= micro_power, min_dis= min_dis,
                    disaster_percentage= disaster_percentage) #Disaster as an extra argument in **kwargs to use with extra_dir
   
 
 def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int,n_macros: int, move_config_name: str,
                    result_dir: str, mode: str, min_sinr: int, num_slices: int, extra_dir: List[str], micro_power: int,
-                   is_micro: bool = True, **kwargs):
+                   min_dis: int, is_micro: bool = True, **kwargs):
 
     params = locals() #get local variables in the beginning of the function (the parameters in this case)
     results = []
@@ -54,6 +57,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         elif param in params: #If is a necessary default parameter
             result_dir += '/' + f'{param}_{params[param]}'
 
+    min_sinr_w = sc.db_to_linear(min_sinr)
 
     for chosen_seed in chosen_seeds:
 
@@ -94,7 +98,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         print(f'Seed: {chosen_seed}. First Antenna Region: {first_antenna_region}.')
 
         result = ga_solver(traditional_antennas_map=antennas_m, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness,
-                           first_antenna_region=first_antenna_region, num_slices=num_slices)
+                           first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w)
         results.append(result)
 
         print(f'Done after {(time() - start_time)/(60*60)} hours. (Seed: {chosen_seed})')
@@ -105,7 +109,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         #genf.plot_scenario(scen= scen, title= f'{full_result_dir}')
 
 def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]], fitness_func: Callable[..., float],
-              first_antenna_region: int, num_slices: int):
+              first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float):
 
     if len(users_t_m) < num_slices:
         print('\nError: Missing slices in users behaviour (users_t_m). Returning without solution.\n')
@@ -115,26 +119,46 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
 
     global _distance_mn
     _distance_mn = distance_mn
-    global _users_t_m
-    _users_t_m = users_t_m
     global _snr_map_mn
     _snr_map_mn = snr_map_mn
+    global _min_dis
+    _min_dis = min_dis
+    global _min_sinr_w
+    _min_sinr_w = min_sinr_w
+    global _first_antenna_region
+    _first_antenna_region = first_antenna_region
 
     num_regions = len(traditional_antennas_map)
+
+    global _antennas_last_result
+    _antennas_last_result = [ 0 if m != first_antenna_region else 1 for m in range(num_regions)]
 
     for i in range(num_slices):
         
         print(f'\nStarting GA of slice {i}.\n')
-        global _antennas_last_result
-        _antennas_last_result = [ 0 if i != first_antenna_region else 1 for i in range(num_regions)]
 
-        antennas_regions = run_genetic(traditional_antennas_map, fitness_func)
+        global _users_t_m
+        _users_t_m = users_t_m[i:]
+
+        if i == 0:
+            antennas_regions = run_genetic(traditional_antennas_map, fitness_func, callback_gen)
+        else:
+            antennas_regions = run_genetic(_antennas_last_result, fitness_func, callback_gen)
+
+        #antennas_regions = run_genetic(traditional_antennas_map, fitness_func)
+
+        antennas_m = [0 for _ in range(num_regions)]
+
+        for region in antennas_regions:
+            antennas_m[region] = 1
+
+        _antennas_last_result = antennas_m #Update last slice result
 
         antennas_regions_byslice.append(antennas_regions)
 
     return antennas_regions_byslice
 
-def run_genetic(base_genome: List[int], fitness_func: Callable[..., float]):
+def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_generation_callback: Callable):
 
     # The attribures
 
@@ -197,7 +221,7 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float]):
                         mutation_type=mutation_type,
                         mutation_probability=mutation_probability,
                         gene_space=gene_space,
-                        on_generation=callback_gen,
+                        on_generation=on_generation_callback,
                         #stop_criteria=[f"reach_{M*T}"],
                         gene_type=int)
 
@@ -218,10 +242,30 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float]):
 
     regions_of_service = genf.get_regions_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
 
-    for key in regions_of_service:
-        print(f'Antenna: {key}. Number Regions: {len(regions_of_service[key])}.\n\tRegions: {regions_of_service[key]}.')
+    # Must be connected to the backhaul
+    cleared = []
+    for m in antennas_regions:
+        if m in cleared or m == _first_antenna_region:
+            continue
+        for n in antennas_regions:
+            if m!=n:
+                if _distance_mn[m][n] <= _min_dis:
+                    if m not in cleared:
+                        cleared.append(m)
+                    if n not in cleared and n != _first_antenna_region:
+                        cleared.append(n)
 
-    return regions_of_service
+    print(f'Cleared: {np.sort(cleared, kind= "heapsort")}.\nAntennas: {np.sort(antennas_regions, kind= "heapsort")}')
+    print(f'Distances:')
+
+    for i in range(len(antennas_regions)):
+        for j in range(i+1, len(antennas_regions)):
+            print(f'\n{antennas_regions[i]} : {antennas_regions[j]} => {_distance_mn[antennas_regions[i]][antennas_regions[j]]}')
+
+    #for key in regions_of_service:
+    #    print(f'Antenna: {key}. Number Regions: {len(regions_of_service[key])}.\n\tRegions: {regions_of_service[key]}.')
+
+    return antennas_regions
 
 def fitness(solution, solution_idx):
     """Evaluates how good a solution is.
@@ -238,7 +282,36 @@ def fitness(solution, solution_idx):
                 return 0
 
     # Must provide a minimum amount of SINR to all users
-    pass
+    regions_of_service = genf.get_regions_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
+
+    for n in range(num_genes):
+        if _users_t_m[0][n] > 0: #Only verifies the snr of regions with users
+            snr_value = -np.inf
+            for key in regions_of_service: #Discovers the serving antenna and the snr value
+                if n in regions_of_service[key]:
+                    snr_value = _snr_map_mn[int(key)][n]
+                    break
+            if snr_value < _min_sinr_w:
+                return 0
+
+    
+    # Must be connected to the backhaul
+    cleared = []
+    for m in antennas_regions:
+        if m in cleared or m == _first_antenna_region:
+            continue
+        for n in antennas_regions:
+            if m!=n:
+                if _distance_mn[m][n] <= _min_dis:
+                    if m not in cleared:
+                        cleared.append(m)
+                    if n not in cleared and n != _first_antenna_region:
+                        cleared.append(n)
+    # Compares the sorted cleared array with the sorted antennas regions without the first antenna
+    sorted_antennas = np.sort(antennas_regions, kind= "heapsort")
+    sorted_cleared = np.sort(cleared + [_first_antenna_region], kind= "heapsort")
+    if not np.array_equal(sorted_cleared, sorted_antennas):
+        return 0
 
     return fitness_score
 
