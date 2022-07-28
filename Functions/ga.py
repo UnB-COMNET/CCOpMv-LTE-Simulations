@@ -8,7 +8,6 @@ import general_functions as genf
 import pygad
 from time import time, localtime, mktime
 from datetime import datetime
-from random import randint, seed, random
 import sinr_comput as sc
 
 _users_t_m = []
@@ -92,9 +91,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         for region in antennas_regions_byslice[-1]:
             antennas_m[region] = 1
 
-        seed(chosen_seed)
-        _ = [(0 if random() < 0/100 else 1) for i in range(scen.n_sectors)]
-        first_antenna_region = randint(0, scen.n_sectors - 1)
+        first_antenna_region = genf.gen_first_antenna_region(chosen_seed=chosen_seed, n_sectors=scen.n_sectors)
         print(f'Seed: {chosen_seed}. First Antenna Region: {first_antenna_region}.')
 
         result = ga_solver(traditional_antennas_map=antennas_m, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness,

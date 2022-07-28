@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 import geometry as geo
 import matplotlib.pyplot as plt
+from random import random, randint, seed
 
 def get_frameworks_path():
     user = 'juliano'
@@ -240,3 +241,14 @@ def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List
             regions_of_service[key] = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
 
     return regions_of_service
+
+def gen_first_antenna_region(chosen_seed: int, n_sectors: int):
+
+    seed(chosen_seed)
+
+    for _ in range(n_sectors):
+        random()
+
+    first_antenna_region = randint(0, n_sectors - 1)
+
+    return first_antenna_region

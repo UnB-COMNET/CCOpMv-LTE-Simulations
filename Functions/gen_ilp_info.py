@@ -111,7 +111,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             if first_antenna_region is not None and antennas_map_m[first_antenna_region] == 1:
                 done = True
             else:
-                first_antenna_region = randint(0, scen.n_sectors - 1)
+                first_antenna_region = genf.gen_first_antenna_region(chosen_seed=chosen_seed, n_sectors=scen.n_sectors)
 
         #Generating ues time map
         print("-------------Generating ues map")
