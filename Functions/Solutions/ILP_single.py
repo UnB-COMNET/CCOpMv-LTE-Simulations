@@ -99,13 +99,14 @@ def ccop_mv_MILP(
         print(objective.Value())
         with open(gen_solver_result_filename(result_dir, 'single', math.ceil(linear_to_db(MIN_SNR_m[0]))), 'w') as f:
             print("\nMédia de carros:", objective.Value())
-            found=[]
+            all_antennas=[]
             for m in range(0,M):
                 if antenasmap_m[m] != 0:
                     if xm[m].solution_value() > 0.9:
-                        found.append(m)
+                        all_antennas.append(m)
 
             for t in range(0,T):
+                found = all_antennas.copy()
                 print("t=%d"%t)
                 if t == valid_time:
                     for m in found:
@@ -126,20 +127,30 @@ def ccop_mv_MILP(
 
                 else:
                     connections_m_n = {}
+                    num_connections_m = {}
 
                     for n in range(0,M):
                         if users_t_m[t][n] > 0:
-                            min_dist = float('inf')
-                            min_index = -1
+                            max_snr = -math.inf
+                            max_index = -1
                             for m in found:
-                                if distance_mn[m][n] < min_dist:
-                                    min_dist = distance_mn[m][n]
-                                    min_index = m
+
+                                if m not in num_connections_m:
+                                    num_connections_m[m] = 0
+
+                                if num_connections_m[m] + users_t_m[t][n] >= MAX_USER_PER_ANTENNA_m[m]: #Checks if antenna would pass max capacity
+                                    continue #If it would, ignores this antenna
+
                                 if m not in connections_m_n:
                                     connections_m_n[m] = []
 
-                            connections_m_n[min_index].append(n)
+                                if snr_map_mn[m][n] > max_snr:
+                                    max_snr = snr_map_mn[m][n]
+                                    max_index = m
 
+                            if max_index > -1: #If found an available antenna, make connection
+                                connections_m_n[max_index].append(n)
+                                num_connections_m[max_index] += users_t_m[t][n]
 
 
                     for m in connections_m_n:           

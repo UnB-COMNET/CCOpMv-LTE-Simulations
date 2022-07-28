@@ -158,8 +158,10 @@ def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_se
         connections.append([])
         for s in range(len(ue)):
             region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
-            #Assume-se que a regiao do UE é servida por alguma das antenas
-            connections[-1].append(antennas_regions.index(result[s][region])+1)
+            if region in result[s].keys():
+                connections[-1].append(antennas_regions.index(result[s][region])+1)
+            else:
+                connections[-1].append(0)
 
     return connections
 
@@ -183,7 +185,10 @@ def get_ues_connections_per_slice(result, ues_coords, antennas_regions: List[int
     for ue in ues_coords:
         region = geo.coord2Region(ue[slice_], size_sector, size_x, size_y)
         #Assume-se que a regiao do UE é servida por alguma das antenas
-        connections.append(antennas_regions.index(result[region])+1)
+        if region in result.keys():
+            connections.append(antennas_regions.index(result[region])+1)
+        else:
+            connections[-1].append(0)    
 
     return connections
 
