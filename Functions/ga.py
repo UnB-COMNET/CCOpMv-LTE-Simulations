@@ -327,5 +327,48 @@ def create_population(base_genome, population_size):
     """
     return[base_genome for _ in range(population_size)]
 
+def run_genetic_connections(base_genome: List[int], fitness_func: Callable[..., float], gene_space: List[int]):
+    # The attribures
+
+    parent_selection_type = "rank"
+    crossover_type = "two_points"
+    mutation_type = "random" 
+
+    num_generations = 100
+    num_parents_mating = 4 # Número de pais a serem selecionados
+
+    population_size = 100 # Tamanho da população
+
+    num_genes = len(base_genome)
+
+    #colocar solução valida
+    
+    keep_parents = 2 # Nr de indivíduos que serão selecionados para a próxima geração sem sofrer crossover nem mutação
+
+    #mutation_percent_genes = 10 #% de porcentagem dos genes a mutar
+    mutation_probability = 0.2 # chance de ocorrer a mutação em um gene (entre 0 e 1)
+    crossover_probability = 0.8
+
+    initial_population = create_population(base_genome=base_genome, population_size=population_size)
+
+    ga_instance=pygad.GA(num_generations=num_generations,
+                        num_parents_mating=num_parents_mating,
+                        fitness_func=fitness_func,
+                        initial_population=initial_population,
+                        parent_selection_type=parent_selection_type,
+                        keep_parents=keep_parents,
+                        crossover_type=crossover_type,
+                        crossover_probability=crossover_probability,
+                        mutation_type=mutation_type,
+                        mutation_probability=mutation_probability,
+                        gene_space=gene_space,
+                        #stop_criteria=[f"reach_{M*T}"],
+                        gene_type=int)
+
+    ga_instance.run()
+
+def fitness_connections():
+    pass
+
 if __name__ == '__main__':
     main()
