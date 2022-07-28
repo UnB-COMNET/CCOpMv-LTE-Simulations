@@ -297,9 +297,11 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
   if interference:
-    extra_sca_vec_name = "-${Interference}"
+    extra_sca_vec_name = "inter"
+    cmdenv_output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-" + extra_sca_vec_name + ".out"
   else:
     extra_sca_vec_name = ''
+    cmdenv_output_file_name = None
 
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, 'ilp_sliced_ini', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
@@ -313,10 +315,10 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + extra_sca_vec_name)
+    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else''))
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
-      hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+      hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name=cmdenv_output_file_name)
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_name + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
@@ -480,6 +482,13 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
+  if interference:
+    extra_sca_vec_name = "inter"
+    cmdenv_output_file_name = "${resultdir}/" + config_pattern + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-" + extra_sca_vec_name + ".out"
+  else:
+    extra_sca_vec_name = ''
+    cmdenv_output_file_name = None
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, 'ilp_sliced_ini2', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.generalConfig(f)
@@ -535,10 +544,10 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
       hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'')) #Vec/Sca name
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
-        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, cmdenv_output_file_name= cmdenv_output_file_name)
       hp.writeSeparation(f, "Snapshots")
       hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_pattern + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
       hp.writeSlice(f, slice= slice, iter_name= iter_slice_name)

@@ -373,10 +373,14 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
                 ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 
-
+            if interference:
+                extra_out_name = 'inter'
+            else:
+                extra_out_name = ''
             #Running the simulation
-            run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                                min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name)          
+            run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path, min_sinr= min_sinr,
+                                                  num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name,
+                                                  extra_out_name=extra_out_name)          
             if run_numbers == []:
                 print('All simulations are already computed. Min Snr: {} - {} (Seed: {})'.format(min_sinr, mode.capitalize(), chosen_seed))
             else:
@@ -429,7 +433,8 @@ def compare_last_line(filename: str, line: str):
     else:
         return last_line == line
 
-def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int, multi_carriers: bool, extra_config_name: str):
+def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int, multi_carriers: bool, extra_config_name: str,
+                            extra_out_name: str):
     """This function returns the simulation runs that were not executed yet"""
 
     sim_resultdir = f'{sim_path}/results'
@@ -439,7 +444,7 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
     for band in num_bands:
         for slice in range(num_slices):
             for repetition in range(repetitions):
-                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
+                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}{("-"+extra_out_name) if extra_out_name != "" else ""}.out'
                 done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
                 if not done:
                     missing.append(counter)
