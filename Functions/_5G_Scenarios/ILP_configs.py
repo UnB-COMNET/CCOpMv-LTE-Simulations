@@ -221,7 +221,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                   extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
-                  cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference_compare: bool= False):
+                  cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference: bool= False):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -255,7 +255,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
     micro_power: defines the transmission power used when is_micro is True
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
-    interference_compare: if True, also simulates with interference using a variable
+    interference: if True, enables multicell-interference
   """
   #Dict with the parameters used (must be the first operation in the function)
   dict_args = locals()
@@ -296,6 +296,11 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
+  if interference:
+    extra_sca_vec_name = "-${Interference}"
+  else:
+    extra_sca_vec_name = ''
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, 'ilp_sliced_ini', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
@@ -308,7 +313,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + extra_sca_vec_name)
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
       hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True)
@@ -322,13 +327,9 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     else:
       hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")
-    if interference_compare:
-      both_inter = True
-    else:
-      both_inter = False
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, both_inter= both_inter)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, uplink_interference=interference, downlink_interference=interference)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
     hp.writeNumEnbs(f, options= num_enbs_time, iter_name= 'NumEnbs', parallel_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
@@ -378,7 +379,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                              num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                              extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
-                             cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference_compare: bool= False):
+                             cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference: bool= False):
   """This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -412,7 +413,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
     micro_power: defines the transmission power used when is_micro is True
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
-    interference_compare: if True, also simulates with interference using a variable
+    interference: if True enables multicell-interference
   """
   #Dict with the parameters used (must be the first operation in the function)
   dict_args = locals()
@@ -491,13 +492,9 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
     else:
       hp.writeCarrierAggregation5G(f, carriers_frequencies= [scen.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")
-    if interference_compare:
-      both_inter = True
-    else:
-      both_inter = False
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, both_inter=both_inter)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, uplink_interference=interference, downlink_interference=interference)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
     hp.writeSeparation(f, "UEs")

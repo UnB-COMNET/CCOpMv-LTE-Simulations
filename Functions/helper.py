@@ -388,16 +388,11 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
                         lambdaMaxTh: float = 0.2, lambdaMinTh: float = 0.02, lambdaRatioTh: float = 20,
                         rsrqScale: float = 1.0, rsrqShift: float = 22, shadowing: bool = True, targetBler: float = 0.01,
                         thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
-                        uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False, both_inter: bool = True):
+                        uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
   """Writes the channel model submodule configuration in a .ini file."""
 
-  if both_inter:
-    #getOptionsString(values: ty.List[ty.Union[float, int, str]], name: str = '', unit: str = '', parallel: str = "")
-    downlink_interference = getOptionsString(["false", "true"], name= 'Interference')
-    uplink_interference = getOptionsString(["false", "true"], name= '', parallel='Interference')
-  else:
-    downlink_interference = "false" if not downlink_interference else "true"
-    uplink_interference = "false" if not downlink_interference else "true"
+  downlink_interference = getOptionsString(["false" if not downlink_interference else "true"], name= 'Interference')
+  uplink_interference = getOptionsString(["false" if not uplink_interference else "true"], name= '', parallel='Interference')
 
   f.write(('**.cellularNic.LteChannelModelType = "{}"\n'
            '**.cellularNic.channelModel[*].building_height = {}\n'
