@@ -388,8 +388,17 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
                         lambdaMaxTh: float = 0.2, lambdaMinTh: float = 0.02, lambdaRatioTh: float = 20,
                         rsrqScale: float = 1.0, rsrqShift: float = 22, shadowing: bool = True, targetBler: float = 0.01,
                         thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
-                        uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
+                        uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False, both_inter: bool = True):
   """Writes the channel model submodule configuration in a .ini file."""
+
+  if both_inter:
+    #getOptionsString(values: ty.List[ty.Union[float, int, str]], name: str = '', unit: str = '', parallel: str = "")
+    downlink_interference = getOptionsString(["false", "true"], name= 'Interference')
+    uplink_interference = getOptionsString(["false", "true"], name= '', parallel='Interference')
+  else:
+    downlink_interference = "false" if not downlink_interference else "true"
+    uplink_interference = "false" if not downlink_interference else "true"
+
   f.write(('**.cellularNic.LteChannelModelType = "{}"\n'
            '**.cellularNic.channelModel[*].building_height = {}\n'
            '**.cellularNic.channelModel[*].nodeb_height = {}\n'
@@ -430,12 +439,12 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
           ).format(model_name, building_height, nodeb_height, ue_height, street_wide, fading_type,
                    "true" if extCell_interference else "false", antennGainEnB, antennGainMicro, antennaGainUe,
                    bs_noise_figure, cable_loss, componentCarrierIndex, correlation_distance, "true" if d2d_interference else "false",
-                   delay_rms, "false" if not downlink_interference else "true", "false" if not dynamic_los else "true",
+                   delay_rms, downlink_interference, "false" if not dynamic_los else "true",
                    "true" if enable_extCell_los else "false", "true" if fading else "false", fading_paths,
                    "false" if not fixed_los else "true", harqReduction, "false" if not inside_building else "true",
                    lambdaMaxTh, lambdaMinTh, lambdaRatioTh, rsrqScale, rsrqShift, "true" if shadowing else "false",
                    targetBler, thermalNoise, "false" if not tolerateMaxDistViolation else "true", ue_noise_figure,
-                   "false" if not uplink_interference else "true", "false" if not useRsrqFromLog else "true",
+                   uplink_interference, "false" if not useRsrqFromLog else "true",
                    "false" if not useTorus else "true"))
 
 def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
@@ -445,7 +454,7 @@ def writeSlices(f, num_slices: int, iter_name: str = 'Slice'):
 def writeSlice(f, slice: int, iter_name: str = 'Slice'):
   f.write('**.cellularNic.channelModel[*].num_slice = ${' + iter_name + ' = ' + str(slice) + '}\n')
 
-def writeNumEnbs(f, options: ty.List[int], iter_name: str = 'Slice', parallel_name: str = ''):
+def writeNumEnbs(f, options: ty.List[int], iter_name: str = 'NumEnbs', parallel_name: str = ''):
   """Writes the configuration that informs the number of eNBs used when in each slice using MoreInfoChannelModel."""
   f.write('**.cellularNic.channelModel[*].num_enbs = {}\n'.format(getOptionsString(values= options, name= iter_name, parallel= parallel_name)))  
 

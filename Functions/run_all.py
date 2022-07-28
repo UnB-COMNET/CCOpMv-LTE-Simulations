@@ -60,7 +60,8 @@ def main():
 
     #For the user
     allrun_solver = False #Older version where runs all solvers first
-    only_solver = True #Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
+    only_solver = False #Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
+    interference_compare = False #Option to run the same simulations with and without multicell-interference
 
     result = run_multiple_seeds(chosen_seeds= chosen_seeds, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                                 min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, csv_dir= csv_dir, modes= modes, result_dir= result_dir,
@@ -68,7 +69,8 @@ def main():
                                 net_dir= net_dir, num_bands= num_bands, repetitions= repetitions, slice_time= slice_time, p_size= p_size,
                                 app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
                                 min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, per_slice= per_slice,
-                                allrun_solver = allrun_solver, disaster_percentage= disaster_percentage, only_solver= only_solver)
+                                allrun_solver= allrun_solver, disaster_percentage= disaster_percentage, only_solver= only_solver,
+                                interference_compare= interference_compare)
     
     if result == SUCCESS:
         print('Executions ended successfully.')
@@ -82,7 +84,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
                        result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
                        extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
                        extra_dir: List[str] = [], num_slices: int= 10, per_slice: bool= True, allrun_solver: bool = False, disaster_percentage: int = 0,
-                       only_solver: bool = False):
+                       only_solver: bool = False, interference_compare: bool = False):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
     
     # Generating makefile and compiling OMNeT++ and its frameworks
@@ -101,8 +103,8 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
     num_modes = len(modes)
     num_minSinrs = len(min_sinrs)
     num_cases = num_seeds * num_modes * num_minSinrs
-    num_totalRuns =  num_cases * num_slices * repetitions
-    num_cases_simultaneously = ceil(cpu_count()/(num_slices*repetitions))
+    num_totalRuns =  num_cases * num_slices * repetitions * (2 if interference_compare else 1)
+    num_cases_simultaneously = ceil(cpu_count()/(num_slices*repetitions*(2 if interference_compare else 1)))
     print("Simulating at most {} cases, hence {} runs. There are {} CPU cores available".format(num_cases, num_totalRuns, cpu_count()))
     
     # Changing the results directory hierarchy
@@ -128,7 +130,8 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'sim_dir': sim_dir, 'csv_dir': csv_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'num_cases_simultaneously': num_cases_simultaneously,
               'slice_time': slice_time, 'p_size': p_size, 'app': app, 'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers,
               'is_micro': is_micro, 'cmdenv_config': cmdenv_config, 'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir,
-              'extra_dir': extra_dir, 'num_slices': num_slices, 'per_slice': per_slice, 'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver}  
+              'extra_dir': extra_dir, 'num_slices': num_slices, 'per_slice': per_slice, 'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver,
+              'interference_compare': interference_compare}  
 
     if allrun_solver is True:
         print('\nRunnning cases by seeds one by one.')
@@ -177,7 +180,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             modes: List[str]= [], result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
             extra_dir: List[str] = [], num_slices: int= 10, make: bool= False, per_slice: bool= True, disaster_percentage: int= 0,
-            allrun_solver: bool= False, queue: Queue= None, only_solver: bool = False):
+            allrun_solver: bool= False, queue: Queue= None, only_solver: bool = False, interference_compare: bool = False):
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario, determined by the mode and min_sinrs."""
     
     if not allrun_solver:
@@ -225,7 +228,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices, 'per_slice': per_slice,
-              'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver}
+              'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver, 'interference_compare': interference_compare}
     
     for param in extra_dir:
         kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
@@ -309,7 +312,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True,
                  min_time: int = 2, micro_power: int= 30, num_slices: int= 10, per_slice: bool = True,
                  disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None,
-                 only_solver: bool = False):
+                 only_solver: bool = False, interference_compare: bool = False):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
     
     if not allrun_solver:
@@ -351,7 +354,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                                                 slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+                                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename, interference_compare= interference_compare)
 
                 if config_name_sliced_list == None and num_enbs_time == None:
                     #There was a not feasible solution
@@ -366,7 +369,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                                 slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
+                                                                micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename, interference_compare= interference_compare)
 
                 ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 
