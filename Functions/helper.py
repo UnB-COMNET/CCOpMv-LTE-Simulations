@@ -392,7 +392,7 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
   """Writes the channel model submodule configuration in a .ini file."""
 
   downlink_interference = getOptionsString(["false" if not downlink_interference else "true"], name= 'Inter')
-  uplink_interference = getOptionsString(["false" if not uplink_interference else "true"], name= '', parallel='Inter')
+  uplink_interference = '${Inter}'
 
   f.write(('**.cellularNic.LteChannelModelType = "{}"\n'
            '**.cellularNic.channelModel[*].building_height = {}\n'
