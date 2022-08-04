@@ -1,5 +1,4 @@
 # Import the necessary modules and libraries
-from turtle import distance
 import numpy as np
 from typing import List, Callable
 import geometry as geo
@@ -14,12 +13,16 @@ _users_t_m = []
 _antennas_last_result = []
 _distance_mn = []
 _snr_map_mn = []
+_min_sinr_w = 0
 _min_dis = 0
 _first_antenna_region = 0
+_max_users_per_antenna_m = []
+
+_last_antennas_regions = []
 
 def main():
     #General configs
-    chosen_seeds = [2]#[2,3,4,5,6,7,10,11,12,13]#
+    chosen_seeds = [2, 3]#[2,3,4,5,6,7,10,11,12,13]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -80,6 +83,8 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
 
         snr_map_mn = scen.getSinrMap()
 
+        max_users_antenna_m = [60 for i in range(scen.n_sectors)]
+
         optimized_byslice, antennas_regions_byslice, num_enbs_time = genf.parse_results_per_slice(genf.gen_solver_result_filename(full_result_dir, mode, min_sinr), num_slices)
 
         if optimized_byslice == None and antennas_regions_byslice == None and num_enbs_time == None:
@@ -95,7 +100,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         print(f'Seed: {chosen_seed}. First Antenna Region: {first_antenna_region}.')
 
         result = ga_solver(traditional_antennas_map=antennas_m, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness,
-                           first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w)
+                           first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w, max_users_per_antenna_m=max_users_antenna_m)
         results.append(result)
 
         print(f'Done after {(time() - start_time)/(60*60)} hours. (Seed: {chosen_seed})')
@@ -106,7 +111,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         #genf.plot_scenario(scen= scen, title= f'{full_result_dir}')
 
 def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]], fitness_func: Callable[..., float],
-              first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float):
+              first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int]):
 
     if len(users_t_m) < num_slices:
         print('\nError: Missing slices in users behaviour (users_t_m). Returning without solution.\n')
@@ -124,6 +129,8 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
     _min_sinr_w = min_sinr_w
     global _first_antenna_region
     _first_antenna_region = first_antenna_region
+    global _max_users_per_antenna_m
+    _max_users_per_antenna_m = max_users_per_antenna_m
 
     num_regions = len(traditional_antennas_map)
 
@@ -152,6 +159,9 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
         _antennas_last_result = antennas_m #Update last slice result
 
         antennas_regions_byslice.append(antennas_regions)
+
+        # After having the result, get the connections using the run_genetic_connections again.
+        # The result may not be the same but it will obey the contraints. Valid because the fitness value is 0 or 1, not optimizing the SINR.
 
     return antennas_regions_byslice
 
@@ -237,23 +247,21 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
 
     antennas_regions = np.ravel(np.argwhere(solution > 0))
 
-    regions_of_service = genf.get_regions_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
+    # # Must be connected to the backhaul
+    # cleared = []
+    # for m in antennas_regions:
+    #     if m in cleared or m == _first_antenna_region:
+    #         continue
+    #     for n in antennas_regions:
+    #         if m!=n:
+    #             if _distance_mn[m][n] <= _min_dis:
+    #                 if m not in cleared:
+    #                     cleared.append(m)
+    #                 if n not in cleared and n != _first_antenna_region:
+    #                     cleared.append(n)
 
-    # Must be connected to the backhaul
-    cleared = []
-    for m in antennas_regions:
-        if m in cleared or m == _first_antenna_region:
-            continue
-        for n in antennas_regions:
-            if m!=n:
-                if _distance_mn[m][n] <= _min_dis:
-                    if m not in cleared:
-                        cleared.append(m)
-                    if n not in cleared and n != _first_antenna_region:
-                        cleared.append(n)
-
-    print(f'Cleared: {np.sort(cleared, kind= "heapsort")}.\nAntennas: {np.sort(antennas_regions, kind= "heapsort")}')
-    print(f'Distances:')
+    # print(f'Cleared: {np.sort(cleared, kind= "heapsort")}.\nAntennas: {np.sort(antennas_regions, kind= "heapsort")}')
+    # print(f'Distances:')
 
     for i in range(len(antennas_regions)):
         for j in range(i+1, len(antennas_regions)):
@@ -267,7 +275,6 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
 def fitness(solution, solution_idx):
     """Evaluates how good a solution is.
     """
-
     num_genes = len(solution)
     fitness_score = (num_genes - sum(solution))#Antennas per time #+ M*M*T
 
@@ -279,17 +286,16 @@ def fitness(solution, solution_idx):
                 return 0
 
     # Must provide a minimum amount of SINR to all users
-    regions_of_service = genf.get_regions_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
+    map_of_service = genf.get_map_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
 
-    for n in range(num_genes):
-        if _users_t_m[0][n] > 0: #Only verifies the snr of regions with users
-            snr_value = -np.inf
-            for key in regions_of_service: #Discovers the serving antenna and the snr value
-                if n in regions_of_service[key]:
-                    snr_value = _snr_map_mn[int(key)][n]
-                    break
-            if snr_value < _min_sinr_w:
-                return 0
+    # for n in range(num_genes):
+    #     if _users_t_m[0][n] > 0: #Only verifies the snr of regions with users in the present time
+    #         snr_value = -np.inf
+    #         serving_antenna = map_of_service[n]
+    #         if serving_antenna >= 0: #In case there is no serving antenna it doenst pass (this should always be True)
+    #             snr_value = _snr_map_mn[int(serving_antenna)][n]
+    #         if snr_value < _min_sinr_w:
+    #             return 0
 
     
     # Must be connected to the backhaul
@@ -310,7 +316,13 @@ def fitness(solution, solution_idx):
     if not np.array_equal(sorted_cleared, sorted_antennas):
         return 0
 
-    return fitness_score
+    users_regions = np.ravel(np.argwhere(np.array(_users_t_m[0]) > 0))
+    base_connections_genome = [map_of_service[n] for n in users_regions]
+    global _last_antennas_regions
+    _last_antennas_regions = antennas_regions
+    connect_solution, connect_fitnnes_score = run_genetic_connections(base_genome=base_connections_genome, fitness_func=fitness_connections, gene_space=antennas_regions)
+
+    return fitness_score * connect_fitnnes_score
 
 def callback_gen(ga_instance):
     print("Generation : ", ga_instance.generations_completed)
@@ -331,7 +343,7 @@ def run_genetic_connections(base_genome: List[int], fitness_func: Callable[..., 
     crossover_type = "two_points"
     mutation_type = "random" 
 
-    num_generations = 100
+    num_generations = 10
     num_parents_mating = 4 # Número de pais a serem selecionados
 
     population_size = 100 # Tamanho da população
@@ -364,8 +376,50 @@ def run_genetic_connections(base_genome: List[int], fitness_func: Callable[..., 
 
     ga_instance.run()
 
-def fitness_connections():
-    pass
+    solution, solution_fitness, solution_idx = ga_instance.best_solution()
+
+    return solution, solution_fitness
+
+def fitness_connections(solution, solution_idx):
+    """Evaluates how good a solution is. Expect a connection solution.
+    """
+    #MUSTCONNECT
+    #MUSTCONNECTTOENB
+    #REGIONTOONEENB
+
+    num_genes = len(solution)
+
+    users_regions = np.ravel(np.argwhere(np.array(_users_t_m[0]) > 0)) #Regions that have users
+
+    # Must provide a minimum amount of SINR to all users
+    for i in range(num_genes):
+        n = users_regions[i] #Region of the gene i of the genome
+        serving_antenna = solution[i]
+        snr_value = _snr_map_mn[int(serving_antenna)][n]
+        if snr_value < _min_sinr_w:
+            return 0
+
+    # Constraint - if antenna in m then serve m
+    for i in range(num_genes):
+        n = users_regions[i] #Region of the gene i of the genome
+        serving_antenna = solution[i]
+        if n in _last_antennas_regions and serving_antenna != n:
+            return 0
+
+    # Antenas m support a max number of users connected
+    users_connected_count = dict(zip(_last_antennas_regions, [ 0 for _ in _last_antennas_regions]))
+    for i in range(num_genes):
+        n = users_regions[i] #Region of the gene i of the genome
+        serving_antenna = solution[i]
+        users_connected_count[serving_antenna] += _users_t_m[0][n]
+        if users_connected_count[serving_antenna] > _max_users_per_antenna_m[serving_antenna]:
+            return 0
+
+
+
+
+    fitness_score = 1
+    return fitness_score
 
 if __name__ == '__main__':
     main()
