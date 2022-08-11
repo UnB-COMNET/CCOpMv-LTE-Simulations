@@ -4,7 +4,7 @@ from math import ceil
 from typing import List
 from gen_ilp_info import run_movement_simulation, gen_ilp_info
 from multiprocessing import cpu_count, Process, current_process, Manager, Queue
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_per_slice, ilp_ned
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_varying_users, ilp_sliced_ini_per_slice, ilp_ned
 from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from joblib import Parallel, delayed, parallel_backend
 from pathlib import Path
@@ -22,7 +22,7 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [2,3,4,5,6,7,10,11,12,13]#
+    chosen_seeds = [45,67]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -60,7 +60,7 @@ def main():
 
     #For the user
     allrun_solver = False #Older version where runs all solvers first
-    only_solver = True #Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
+    only_solver = False #Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
 
     result = run_multiple_seeds(chosen_seeds= chosen_seeds, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
                                 min_sinrs= min_sinrs, project_dir= project_dir, sim_dir= sim_dir, csv_dir= csv_dir, modes= modes, result_dir= result_dir,
@@ -193,6 +193,9 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         for j in range(num_minSinrs):
                 cases.append((verif_modes[i],min_sinrs[j]))
 
+    users_t_m = genf.gen_users_t_m(chosen_seed)
+    max_ues = max(users_t_m)
+    
     move_file = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
     xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
 
@@ -211,7 +214,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
                 else:
                     move_ini_path = project_dir + '/' + sim_dir + '/' + move_file
                     run_movement_simulation(ini_path= move_ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y,
-                                            size_sector= size_sector, n_macros= n_macros, config_name= move_config_name,
+                                            size_sector= size_sector, n_macros= n_macros, n_ues = max_ues, config_name= move_config_name,
                                             num_slices= num_slices, cpu_num= 1)
         except Exception as e:
             if queue is not None:
@@ -237,7 +240,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     Path(project_dir + '/' + kwargs['sim_dir']).mkdir(parents=True, exist_ok=True)
     Path(project_dir + '/' + kwargs['net_dir']).mkdir(parents=True, exist_ok=True)
     Path(project_dir + '/' + csv_dir).mkdir(parents=True, exist_ok=True)
-
+    
     print(f'Starting computations on {cpu_count()} cores.')
     result_dir = kwargs['result_dir']
     sim_dir = kwargs['sim_dir']
@@ -248,8 +251,9 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     mode_queues = {}
 
     if allrun_solver:
+        print("Essa opcao")
         with parallel_backend('loky', n_jobs= num_cases_simultaneously):
-            result = Parallel()(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, min_sinr, mode, xml_filename, min_dis,
+            result = Parallel()(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, users_t_m, min_sinr, mode, xml_filename, min_dis,
                                                       first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
                                                       target_f, result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config,
                                                       min_time, micro_power, num_slices, per_slice, disaster_percentage, allrun_solver)
@@ -264,7 +268,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
 
     else:
         kwargs['only_solver'] = only_solver
-
+        kwargs['users_t_m'] = users_t_m
         for mode in verif_modes:
             mode_queues[mode]= Queue()
 
@@ -302,7 +306,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     else:
         return
 
-def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, min_sinr: int,
+def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, users_t_m: list, min_sinr: int,
                  mode: str, xml_filename: str, min_dis: int, first_antenna_region: int, project_dir: str,
                  sim_dir: str, net_dir: str, num_bands: List[int], repetitions: int, p_size: int, app: str,
                  target_f: float, result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False,
@@ -363,11 +367,10 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                     ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
             
             else:
-                config_name_sliced, enbs_sliced_num = ilp_sliced_ini(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+                config_name_sliced, enbs_sliced_num = ilp_sliced_ini_varying_users(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, users_t_m = users_t_m, repetitions= repetitions,
                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                                 slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
                                                                 micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
-
                 ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 
 
