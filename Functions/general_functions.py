@@ -1,9 +1,12 @@
 from cProfile import label
 from pathlib import Path
 from typing import List
+from matplotlib import use
 import numpy as np
 import geometry as geo
 import matplotlib.pyplot as plt
+from scipy.stats import poisson
+from random import choice
 
 def get_frameworks_path():
     user = 'juliano'
@@ -240,3 +243,107 @@ def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List
             regions_of_service[key] = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
 
     return regions_of_service
+
+def gen_users_t_m(seed):
+    mu = 10
+    np.random.seed(seed)
+    while(True):
+        r = poisson.rvs(mu, size=10)
+        user_t_m = 10*[0]
+        for i in range(len(user_t_m)):    
+            if i < 5:
+                # to sum
+                if i == 0:
+                    user_t_m[i] = user_t_m[i] + r[i]        
+                else:
+                    user_t_m[i] = user_t_m[i-1] + r[i]        
+
+            else:
+                # to subtract
+                user_t_m[i] = user_t_m[i-1] - r[i]
+
+        is_valid = True
+        for i in range(len(user_t_m)):
+            if user_t_m[i] <= 0:
+                is_valid = False
+        
+        if is_valid:   
+            break
+    
+    return user_t_m
+
+def gen_ue_per_slice(user_t_m):
+    max_user_t_m = max(user_t_m)
+    ue_list = max_user_t_m*[0]
+    
+    for i in range(len(ue_list)):
+        ue_list[i] = i
+
+    bck = ue_list.copy()
+    ue_slice = 10*[[]]
+    
+    for i in range(len(user_t_m)):
+        if i == 0:
+            ue_choiced = []
+            for j in range(user_t_m[0]):
+                if ue_list != []:
+                    ue = choice(ue_list)
+                    ue_choiced.append(ue)
+                    ue_list.pop(ue_list.index(ue))
+            
+            ue_slice[i] = ue_choiced
+
+        elif user_t_m[i] > user_t_m[i-1]:
+            # additive
+            ue_choiced = []
+            for j in range(user_t_m[i] - user_t_m[i-1]):
+                if ue_list != []:
+                    ue = choice(ue_list)
+                    ue_choiced.append(ue)
+                    ue_list.pop(ue_list.index(ue))
+
+            ue_slice[i] = ue_choiced
+        else:
+            pass
+    
+    if ue_list != []:
+        print("ERROR in gen_ue_per_slice()")
+        return None
+    
+    for i in range(len(ue_slice)):
+        # cumulative adding
+        if ue_slice[i] != [] and i > 0:
+            ue_slice[i] = ue_slice[i-1] + ue_slice[i]
+            ue_slice[i]
+
+        elif ue_slice[i] == []:
+            ue_choiced = []
+            tmp_ue_slice = ue_slice[i-1].copy()
+            for j in range(user_t_m[i-1] - user_t_m[i]):
+                ue = choice(tmp_ue_slice)
+                tmp_ue_slice.pop(tmp_ue_slice.index(ue))
+                ue_list.append(ue)
+
+            ue_slice[i] = tmp_ue_slice
+
+    # Verifying
+    for i in range(len(ue_slice)):
+        if len(ue_slice[i]) != user_t_m[i]:
+            print("ERROR 2 in gen_ue_per_slice()")
+            return None
+
+    # contagem de duração para cada UE
+    '''for i in range(max_user_t_m):
+        c = 0
+        first = None
+        last = None
+        for j in range(len(ue_slice)):
+            for k in ue_slice[j]:            
+                if k == i:
+                    c += 1
+                    if first == None:
+                        first = j
+        print("UE {} esta ativo por {} slices, entrou no slice {}".format(i, c, first))
+        if c == 0: break
+    '''
+    return ue_slice
