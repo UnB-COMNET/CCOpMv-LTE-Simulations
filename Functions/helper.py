@@ -324,6 +324,30 @@ def writeAppVideoUL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool
   if mtu:
     f.write('**.mtu = 1428B\n')
 
+def writeAppVideoUL_varyingUsers(f, numUEs: int, ues_per_slice: list, p_size:int = 1000, n_app: int = 0, mtu: bool = True, s_interval: int = 1):
+  """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
+  f.write(('**.server.app[{n}..{f}].typename = "UdpVideoStreamClient"\n'
+           '**.server.app[{n}..{f}].serverAddress = "ue[" + string(ancestorIndex(0) - {n}) + "]"\n'
+           '**.server.app[{n}..{f}].localPort = 9000 + ancestorIndex(0)\n'
+           '**.server.app[{n}..{f}].serverPort = 4088\n').format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
+  
+  for ue in range(numUEs):
+    values_startTime = len(ues_per_slice)*[99]
+    for slice in range(len(ues_per_slice)):
+      for x in ues_per_slice[slice]:
+        if ue == x:
+          values_startTime[slice] = 0.001
+    f.write('**.server.app[{}].startTime = {}\n'.format(ue,getOptionsString(values= values_startTime, name='', unit='s', parallel= "Slice")))  
+
+  f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamServer"\n'
+           '**.ue[*].app[{n}].videoSize = 10MiB\n'
+           '**.ue[*].app[{n}].localPort = 4088\n'
+           '**.ue[*].app[{n}].sendInterval = {s_interval}ms\n'
+           '**.ue[*].app[{n}].packetLen = {p_size}B\n'
+          ).format(p_size= p_size, n = n_app, s_interval= s_interval))
+  if mtu:
+    f.write('**.mtu = 1428B\n')
+
 def writeAppVideoDL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool= True, s_interval: int = 1):
   """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
   f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamClient"\n'
@@ -341,6 +365,29 @@ def writeAppVideoDL(f, numUEs: int, p_size:int = 1000, n_app: int = 0, mtu: bool
   if mtu:
     f.write('**.mtu = 1428B\n')
   
+def writeAppVideoDL_varyingUsers(f, numUEs: int, ues_per_slice: list, p_size:int = 1000, n_app: int = 0, mtu: bool= True, s_interval: int = 1):
+  """Writes the Video Streaming DL aplication configuration involving an UE list and a server in a .ini file."""
+  f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamClient"\n'
+           '**.ue[*].app[{n}].serverAddress = "server"\n'
+           '**.ue[*].app[{n}].localPort = 9000\n'
+           '**.ue[*].app[{n}].serverPort = 3088 + ancestorIndex(1) + {g}\n').format(n = n_app, g= numUEs*n_app))
+
+  for ue in range(numUEs):
+    values_startTime = len(ues_per_slice)*[99]
+    for slice in range(len(ues_per_slice)):
+      for x in ues_per_slice[slice]:
+        if ue == x:
+          values_startTime[slice] = 0.001
+    f.write('**.ue[{ue}].app[{n}].startTime = {str}\n'.format(ue=ue,n= n_app, str = getOptionsString(values= values_startTime, name='', unit='s', parallel= "Slice")))  
+
+  f.write(('**.server.app[{n}..{f}].typename = "UdpVideoStreamServer"\n'
+           '**.server.app[{n}..{f}].videoSize = 10MiB\n'
+           '**.server.app[{n}..{f}].localPort = 3088 + ancestorIndex(0)\n'
+           '**.server.app[{n}..{f}].sendInterval = {s_interval}ms\n'
+           '**.server.app[{n}..{f}].packetLen = {p_size}B\n'
+          ).format(p_size= p_size, n = n_app * numUEs, f = numUEs*(n_app+1) - 1, s_interval= s_interval))
+  if mtu:
+    f.write('**.mtu = 1428B\n')
 
 def writeNumUEs(f, numUEs: int):
   """Writes the number os UEs in a .ini file."""
