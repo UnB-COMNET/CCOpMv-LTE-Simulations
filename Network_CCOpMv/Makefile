@@ -2,7 +2,7 @@
 # OMNeT++/OMNEST Makefile for Network_CCOpMv
 #
 # This file was generated with the command:
-#  opp_makemake -f --deep -O out -KINET4_PROJ=../../../OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=../../../OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$(INET4_PROJ)/src -I$(SIMU5G_1_1_0_PROJ)/src -L$(INET4_PROJ)/src -L$(SIMU5G_1_1_0_PROJ)/src -lINET$(D) -lsimu5g$(D)
+#  opp_makemake -f --deep -O out -KINET4_PROJ=/home/juliano/OmNET2/inet4 -KSIMU5G_1_1_0_PROJ=/home/juliano/OmNET2/Simu5G-1.1.0 -DINET_IMPORT -I. -I$$\(INET4_PROJ\)/src -I$$\(SIMU5G_1_1_0_PROJ\)/src -L$$\(INET4_PROJ\)/src -L$$\(SIMU5G_1_1_0_PROJ\)/src -lINET$$\(D\) -lsimu5g$$\(D\)
 #
 
 # Name of target to be created (-o option)
@@ -30,7 +30,7 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/_5G/models/MoreInfoChannelModel.o $O/_5G/models/Snapshotter.o $O/_5G/models/VariableSpeedMobility.o
+OBJS = $O/_5G/models/LinearMobilityDelayed.o $O/_5G/models/MoreInfoChannelModel.o $O/_5G/models/Snapshotter.o $O/_5G/models/VariableSpeedMobility.o
 
 # Message files
 MSGFILES =
@@ -39,8 +39,8 @@ MSGFILES =
 SMFILES =
 
 # Other makefile variables (-K)
-INET4_PROJ=../../../OmNET2/inet4
-SIMU5G_1_1_0_PROJ=../../../OmNET2/Simu5G-1.1.0
+INET4_PROJ=/home/juliano/OmNET2/inet4
+SIMU5G_1_1_0_PROJ=/home/juliano/OmNET2/Simu5G-1.1.0
 
 #------------------------------------------------------------------------------
 
