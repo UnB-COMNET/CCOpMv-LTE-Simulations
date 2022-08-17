@@ -76,8 +76,12 @@ def get_ues_time(ues_list, xml_filename: str, time: float = 1) -> List[List[Ue]]
                 speed_text = coords_obj[-1].find("./info").text
                 speed_numbers = [float(s) for s in speed_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit() or (len(s) > 1 and s[0] == '-' and s[1].isdigit())]
                 speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)/time
-                direction = degrees(atan(speed_numbers[1]/speed_numbers[0]))
-                mov = Movement(speed, direction)
+                # Alguns casos a velocidade é nula, logo resulta numa divisao 0/0
+                if speed_numbers[0] != 0:
+                  direction = degrees(atan(speed_numbers[1]/speed_numbers[0]))
+                else:
+                  direction = degrees(0)
+                mov = Movement(speed, direction,startTime=0)
                 ues_time[int(root.get('simtime'))].append(Ue(coord, [int(s) for s in re.findall(r'\d+', root.get('object'))][-1]))
                 ues_time[int(root.get('simtime'))-1][len(ues_time[int(root.get('simtime'))])-1].movement = mov
 
@@ -98,7 +102,7 @@ def get_ues_time(ues_list, xml_filename: str, time: float = 1) -> List[List[Ue]]
         speed_numbers = [float(s) for s in speed_text.split('(')[1].split(')')[0].split(', ') if s[0].isdigit() or (len(s) > 1 and s[0] == '-' and s[1].isdigit())]
         speed = sqrt(speed_numbers[0]**2 + speed_numbers[1]**2)/time
         direction = degrees(atan(speed_numbers[1]/speed_numbers[0]))
-        mov = Movement(speed, direction)
+        mov = Movement(speed, direction,startTime=0)
         ues_time[int(root.get('simtime'))].append(Ue(coord, [int(s) for s in re.findall(r'\d+', root.get('object'))][-1]))
         ues_time[int(root.get('simtime'))-1][len(ues_time[int(root.get('simtime'))])-1].movement = mov
 
