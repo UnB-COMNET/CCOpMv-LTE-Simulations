@@ -12,18 +12,20 @@
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
 
-#include "VariableSpeedMobility.h"
+#include "VariableSpeedMobilityDelayed.h"
 
 namespace omnetpp {
 
-VariableSpeedMobility::VariableSpeedMobility() {
+VariableSpeedMobilityDelayed::VariableSpeedMobilityDelayed() {
 }
 
-void VariableSpeedMobility::initialize(int stage) {
+void VariableSpeedMobilityDelayed::initialize(int stage) {
     LineSegmentsMobilityBase::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL) {
         inet::rad heading = inet::deg(par("initialMovementHeading"));
         inet::rad elevation = inet::deg(par("initialMovementElevation"));
+        startTime = par("startTime");
+        endTime = par("endTime");
         changeIntervalParameter = &par("changeInterval");
         meanSpeedParameter = &par("meanSpeed");
         standardDeviationParameter = &par("standardDeviation");
@@ -32,9 +34,10 @@ void VariableSpeedMobility::initialize(int stage) {
     }
 }
 
-void VariableSpeedMobility::move(){
+void VariableSpeedMobilityDelayed::move(){
     simtime_t now = simTime();
     inet::rad dummyAngle;
+
     if (now == nextChange) {
         lastPosition = targetPosition;
         handleIfOutside(REFLECT, targetPosition, lastVelocity, dummyAngle, dummyAngle, quaternion);
@@ -54,7 +57,7 @@ void VariableSpeedMobility::move(){
 }
 
 //Uses second rng
-void VariableSpeedMobility::setTargetPosition(){
+void VariableSpeedMobilityDelayed::setTargetPosition(){
     quaternion.normalize();
     inet::Coord direction = quaternion.rotate(inet::Coord::X_AXIS);
     float speed = normal(*meanSpeedParameter,standardDeviationParameter->doubleValue(), 1);
@@ -62,7 +65,12 @@ void VariableSpeedMobility::setTargetPosition(){
     simtime_t nextChangeInterval = *changeIntervalParameter;
     EV_DEBUG << "interval: " << nextChangeInterval << endl;
     sourcePosition = lastPosition;
-    targetPosition = lastPosition + direction * speed * nextChangeInterval.dbl();
+    if (simTime() >= startTime && simTime() <= endTime){
+        targetPosition = lastPosition + direction * speed * nextChangeInterval.dbl();
+    }
+    else{
+        targetPosition = lastPosition;
+    }
     previousChange = simTime();
     nextChange = previousChange + nextChangeInterval;
 }

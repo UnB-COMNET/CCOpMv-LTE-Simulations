@@ -29,6 +29,7 @@ simple LinearMobilityDelayed extends MovingMobilityBase
         bool initFromDisplayString = default(true); // enables one time initialization from the subject module's display string
         double speed @unit(mps) = default(0mps); // speed of the host
         double startTime @unit(s) = default(0s); // movement start time
+        double endTime @unit(s) = default(999s); // movement end time
         double initialMovementHeading @unit(deg) = default(uniform(0deg, 360deg));
         double initialMovementElevation @unit(deg) = default(0deg);
         @class(LinearMobilityDelayed);

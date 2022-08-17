@@ -33,6 +33,7 @@ void LinearMobilityDelayed::initialize(int stage)
     if (stage == inet::INITSTAGE_LOCAL) {
         speed = par("speed");
         startTime = par("startTime");
+        endTime = par("endTime");
         stationary = (speed == 0);
         inet::rad heading = inet::deg(par("initialMovementHeading"));
         inet::rad elevation = inet::deg(par("initialMovementElevation"));
@@ -44,7 +45,7 @@ void LinearMobilityDelayed::initialize(int stage)
 
 void LinearMobilityDelayed::move()
 {
-    if(simTime() >= startTime){
+    if(simTime() >= startTime && simTime() <= endTime){
         double elapsedTime = (simTime() - lastUpdate).dbl();
         lastPosition += lastVelocity * elapsedTime;
 

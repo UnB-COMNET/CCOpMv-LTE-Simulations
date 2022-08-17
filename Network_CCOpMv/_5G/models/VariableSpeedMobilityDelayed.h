@@ -11,8 +11,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 
-#ifndef __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
-#define __NETWORK_CCOPMV_VARIABLESPEEDMOBILITY_H
+#ifndef __NETWORK_CCOPMV_VARIABLESPEEDMOBILITYDELAYED_H
+#define __NETWORK_CCOPMV_VARIABLESPEEDMOBILITYDELAYED_H
 
 #include <inet/common/INETDefs.h>
 #include <inet/mobility/base/LineSegmentsMobilityBase.h>
@@ -21,7 +21,7 @@
 
 namespace omnetpp {
 
-class VariableSpeedMobility : public inet::LineSegmentsMobilityBase
+class VariableSpeedMobilityDelayed : public inet::LineSegmentsMobilityBase
 {
     protected:
         inet::cPar *changeIntervalParameter = nullptr;
@@ -31,6 +31,8 @@ class VariableSpeedMobility : public inet::LineSegmentsMobilityBase
         inet::Quaternion quaternion;
         simtime_t previousChange;
         inet::Coord sourcePosition;
+        double startTime;
+        double endTime;
 
     protected:
         virtual int numInitStages() const { return inet::NUM_INIT_STAGES; }
@@ -39,10 +41,10 @@ class VariableSpeedMobility : public inet::LineSegmentsMobilityBase
         virtual void setTargetPosition();
 
     public:
-        VariableSpeedMobility();
+        VariableSpeedMobilityDelayed();
 };
 
-Define_Module(VariableSpeedMobility);
+Define_Module(VariableSpeedMobilityDelayed);
 
 }
 

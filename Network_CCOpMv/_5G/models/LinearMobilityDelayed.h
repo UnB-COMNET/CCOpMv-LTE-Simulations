@@ -36,6 +36,7 @@ class LinearMobilityDelayed : public inet::MovingMobilityBase
   protected:
     double speed;
     double startTime;
+    double endTime;
 
   protected:
     virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
