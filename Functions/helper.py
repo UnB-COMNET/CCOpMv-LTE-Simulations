@@ -97,27 +97,29 @@ def writeMobilityType(f, type: str, object_name = "ue[*]"):
   f.write('*.{}.mobilityType = "{}"\n'.format(object_name, type))
 
 def writeArrayMovMobility(f, object_array_name, movements: ty.List[ty.Union[Movement, ty.List[Movement]]], fixed_speed: bool = True,
-                          iter_name: str = '', paral_name: str= '', unit_speed: str = 'mps', unit_heading: str = 'deg'):
+                          iter_name: str = '', paral_name: str= '', unit_speed: str = 'mps', unit_heading: str = 'deg', unit_startTime: str = 's'):
   """Writes the moving mobility configuration of an array of objects a .ini file."""
   count = 0
   for mov in movements:
     if type(mov) is list:
       direction = [m.direction for m in mov]
       speed = [m.speed for m in mov]
+      startTime = [m.startTime for m in mov]
     else:
       direction = mov.direction
       speed = mov.speed
+      startTime = mov.startTime
 
     if not fixed_speed:
-      writeMovMobility(f, speed =None, initial_heading=direction, object_name= object_array_name+'['+str(count)+']',
-                       iter_name= iter_name, paral_name= paral_name, unit_speed= unit_speed, unit_heading= unit_heading)
+      writeMovMobility(f, speed =None, initial_heading=direction, startTime = startTime, object_name= object_array_name+'['+str(count)+']',
+                       iter_name= iter_name, paral_name= paral_name, unit_speed= unit_speed, unit_heading= unit_heading, unit_startTime = unit_startTime)
     else:
-      writeMovMobility(f, speed =speed, initial_heading=direction, object_name= object_array_name+'['+str(count)+']',
-                       iter_name= iter_name, paral_name= paral_name, unit_speed= unit_speed, unit_heading= unit_heading)
+      writeMovMobility(f, speed =speed, initial_heading=direction, startTime = startTime, object_name= object_array_name+'['+str(count)+']',
+                       iter_name= iter_name, paral_name= paral_name, unit_speed= unit_speed, unit_heading= unit_heading, unit_startTime = unit_startTime)
     count += 1
 
-def writeMovMobility(f, speed: ty.Union[float, ty.List[float]] = None, initial_heading: ty.Union[float, ty.List[float]] = 0, object_name = "ue[*]",
-                     iter_name: str = '', paral_name: str= '', unit_speed: str = 'mps', unit_heading: str = 'deg'):
+def writeMovMobility(f, speed: ty.Union[float, ty.List[float]] = None, initial_heading: ty.Union[float, ty.List[float]] = 0, startTime: ty.Union[float, ty.List[float]] = None, 
+                      object_name = "ue[*]", iter_name: str = '', paral_name: str= '', unit_speed: str = 'mps', unit_heading: str = 'deg', unit_startTime: str = 's'):
   """Writes the moving mobility configuration of an object in a .ini file."""
   if speed is not None:
     if type(speed) is list:
@@ -127,8 +129,10 @@ def writeMovMobility(f, speed: ty.Union[float, ty.List[float]] = None, initial_h
   
   if type(initial_heading) is list:
     f.write('*.{}.mobility.initialMovementHeading = {}\n'.format(object_name, getOptionsString(initial_heading, "Ini_head_"+iter_name if iter_name != '' else '', unit_heading, paral_name)))
+    f.write('*.{}.mobility.startTime = {}\n'.format(object_name, getOptionsString(startTime, "Stt_time_"+iter_name if iter_name != '' else '', unit_startTime, paral_name)))
   else:
     f.write('*.{}.mobility.initialMovementHeading = {}{}\n'.format(object_name, initial_heading, unit_heading))
+    f.write('*.{}.mobility.startTime = {}{}\n'.format(object_name, startTime, unit_startTime))
 
 def writeMassMobDefault(f, object_name = "ue[*]", update_interval: float = 1.0, angle_delta: float = 0, axis_angle: float = 0):
   """Writes the default configuration of the MassMobility mobility type in a .ini file."""
