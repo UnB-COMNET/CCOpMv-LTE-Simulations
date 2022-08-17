@@ -194,12 +194,12 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
     sys.stdout = sys.__stdout__
 
-def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, n_ues: int, config_name: str= 'ilp_move_users',
+def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, ues_per_slice: list, n_ues: int, config_name: str= 'ilp_move_users',
                             num_slices: int= 10, cpu_num: int= 1):
     #Genereting .ini file
     ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros,
-                        n_ues_macro = n_ues, config_name= config_name, num_slices= num_slices)
-
+                        n_ues_macro = n_ues, ues_per_slice = ues_per_slice, config_name= config_name, num_slices= num_slices)
+    
     snapshot_filename = genf.gen_movement_filename(config_name= config_name, seed= chosen_seed, snapshot= True)
 
     open(snapshot_filename, 'w').close()

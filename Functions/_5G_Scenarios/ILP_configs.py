@@ -10,8 +10,8 @@ from errors import check_mode
 import general_functions as genf
 from pprint import pprint
 
-def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, n_ues_macro: int = 60, config_name: str= 'ilp_move_users',
-                   num_slices: int= 10):
+def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2,
+                    n_ues_macro: int = 60, ues_per_slice = list, config_name: str= 'ilp_move_users', num_slices: int= 10):
   """This function generates a .ini file to watch users mobility behaviour.
   
   The simulation configured with the resulting file has the purpose of generate the mobility data of the users in time.
@@ -33,13 +33,19 @@ def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000,
   dict_args = locals()
 
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed)
-  scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro = n_ues_macro)#Full = 4320 UEs
+  scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro = n_ues_macro, ues_per_slice = ues_per_slice)#Full = 4320 UEs
 
   ues_coords = scen.getUEsPositionList()
-  ues_mov = scen.getUEsMovementList()
+  ues_mov: List[geo.Movement] = n_ues_macro*[None]
+  map_ues: List[geo.Ue] = scen.map_ues
+  for n in range(len(map_ues)):
+    for ue in map_ues[n]:
+      ues_mov[ue.index] = ue.movement
+  
+  #ues_mov = scen.getUEsMovementList().sort(key= lambda x, x.map)
   #scen.plotUes()
   num_ues = len(ues_coords)
-
+  
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_move_users", dict_args, extra = 'Using {} macros with {} ues each.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
@@ -71,7 +77,7 @@ def ilp_move_users(filename: str, seed: int, size_y:int =8000, size_x:int =8000,
     hp.writeSeparation(f, "Mobility")
     hp.writeComment(f, text= "UEs")
     hp.nl(f)
-    hp.writeMobilityType(f, type= "VariableSpeedMobility", object_name= "ue[*]")
+    hp.writeMobilityType(f, type= "VariableSpeedMobilityDelayed", object_name= "ue[*]")
     hp.writeVarSpeedMobDefault(f, speed_mean= 3000, std_dev= 1000, object_name= "ue[*]", update_interval= 1)
     hp.writeArrayIniMobility(f, object_array_name= 'ue', coordinates= ues_coords)
     hp.writeArrayMovMobility(f, object_array_name= 'ue', movements= ues_mov, fixed_speed= False)
@@ -373,11 +379,15 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   return config_name, num_enbs
 
-def ilp_sliced_ini_varying_users(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, users_t_m = [], min_sinr: float = 10, repetitions: int = 5,
+def ilp_sliced_ini_varying_users(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, ues_per_slice = [], n_ues: int = 0, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                   extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
                   cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
-  """ <EDIT|EDIT|EDIT|EDIT>
+  """
+  
+  <EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT>
+  <EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT><EDIT|EDIT|EDIT|EDIT>
+
   This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -418,8 +428,7 @@ def ilp_sliced_ini_varying_users(filename, seed, size_y:int =8000, size_x:int =8
   scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                       enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
-  max_users = max(users_t_m)
-  scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= max_users)#Full = 4320 UEs
+  scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= n_ues)#Full = 4320 UEs
 
   ues_in_time = hxml.get_ues_time(scen.getUEsList(), xml_filename, slice_time)
 
@@ -447,7 +456,6 @@ def ilp_sliced_ini_varying_users(filename, seed, size_y:int =8000, size_x:int =8
 
   connections = genf.get_ues_connections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
 
-  ues_per_slice = genf.gen_ue_per_slice(users_t_m)
   config_name = genf.gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
