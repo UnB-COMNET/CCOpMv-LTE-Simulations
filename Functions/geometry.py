@@ -182,11 +182,11 @@ class Antenna:
 class Ue:
     """Represents a UE"""
 
-    def __init__(self, position: Coordinate, index, speed = 0, dir = 0):
+    def __init__(self, position: Coordinate, index, speed = 0, dir = 0, startTime = 0):
         """Initializes the UE based on its coordinates, speed and direction"""
         self.position = position
         self.index = index
-        self.movement = Movement(speed, dir)
+        self.movement = Movement(speed, dir, startTime)
 
     def __str__(self):
         return f'Ue> Id: {self.index}; Position: {self.position}; Movement: {self.movement}.'
@@ -194,10 +194,11 @@ class Ue:
 class Movement:
     """Represents a movement made by an entity"""
 
-    def __init__(self, speed, dir):
+    def __init__(self, speed, dir, startTime):
         """Initializes the class based on the its speed and direction"""
         self.speed = speed
         self.direction = dir
+        self.startTime = startTime
 
     def __str__(self):
         return f'({self.speed} m/s, {self.direction}°)'
@@ -327,7 +328,7 @@ class MapChess:
         self.n_sectors = self.n_sectors_y*self.n_sectors_x
         
         self.map_antennas = []
-        self.map_ues = []
+        self.map_ues = [Ue]
 
         self.scenario = scenario
         self.h_enbs = h_enbs
@@ -386,7 +387,13 @@ class MapChess:
         
         self.map_ues[coord2Region(coord,self.size_sector,self.size_x,self.size_y)].append(Ue(coord,index,speed,dir))
 
-    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60):
+    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60, ues_per_slice: list = []):
+        startTimeArray = n_ues_macro*[-1]
+        for slice in range(len(ues_per_slice)):
+            for ue in ues_per_slice[slice]:
+                if startTimeArray[ue] == -1:
+                    startTimeArray[ue] = slice
+        
         """Places UEs across the map based on the informed type"""
         count = 0
         mean_speed = 3000#3/3.6
@@ -411,6 +418,7 @@ class MapChess:
                     #Defining inital movement of the ues
                     ue.movement.speed = normalvariate(mu= mean_speed, sigma= var_speed)
                     ue.movement.direction = random() * 360
+                    ue.movement.startTime = startTimeArray[ue.index]
                 self.map_ues[region].append(ue)
                 count += 1
 
@@ -435,7 +443,7 @@ class MapChess:
                 self.map_antennas[m] = Antenna(coord, count)
                 count += 1
 
-    def uesRandomMapHexa_(self, small_per_macro = 1, n_macros = 20, n_ues_macro = 60)->List[Ue]:
+    def uesRandomMapHexa_(self, small_per_macro = 1, n_macros = 20, n_ues_macro = 60)-> List[Ue]:
         """Places UEs using fictional macrocells placed randomly in space delimited by a margin
         
         The UEs are placed based on the informed number of UEs
@@ -511,7 +519,7 @@ class MapChess:
         return ues
 
     def placeHexaUes_(self, tmp_mcs: List[Macrocell], tmp_smc: List[Smallcell], n_ues:int, dropradius_ue_cluster: int,
-                      d_macromacro: int, d_macroue: int, small_per_macro: int):
+                      d_macromacro: int, d_macroue: int, small_per_macro: int) -> List[Ue]:
         """Places the UEs according with the macrocells and smallcells informed.
         
         The UEs are placed based on the informed number of UEs
