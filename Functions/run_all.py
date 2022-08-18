@@ -23,12 +23,12 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [51]#
+    chosen_seeds = [0,1,2,3,4,5,6,7,8,9]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5]
+    min_sinrs = [5,15]
     modes = ['single'] # fixed or single
     micro_power = 30 #dBm
     result_dir = "Solutions"
@@ -196,7 +196,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
 
     # Generating amount of users following the Poisso process, 
     users_t_m = genf.gen_users_t_m(chosen_seed)
-    ues_per_slice = genf.gen_ue_per_slice(users_t_m)
+    ues_per_slice = genf.gen_ue_per_slice(chosen_seed, users_t_m)
     for i in range(len(ues_per_slice)):
         print(len(ues_per_slice[i]), ues_per_slice[i])
     n_ues = max(users_t_m)

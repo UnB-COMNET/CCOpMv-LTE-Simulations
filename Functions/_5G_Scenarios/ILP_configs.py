@@ -434,7 +434,7 @@ def ilp_sliced_ini_varying_users(scen: geo.MapChess, filename, seed, size_y:int 
   
   iter_slice_name = "Slice"
   num_slices = len(ues_in_time)
-
+  
   check_mode(mode= mode)
 
   optimized, antennas_regions, num_enbs_time = genf.parse_results(genf.gen_solver_result_filename(result_dir, mode, min_sinr), num_slices)
@@ -447,17 +447,21 @@ def ilp_sliced_ini_varying_users(scen: geo.MapChess, filename, seed, size_y:int 
   for slice in ues_in_time:
     ues_coords.append([ue.position for ue in slice])
     ues_mov.append([ue.movement for ue in slice])
-  print(len(ues_coords))
-  #ues_coords = np.swapaxes(ues_coords, 0, 1).tolist()
-  #ues_mov = np.swapaxes(ues_mov, 0, 1).tolist()
-
+  
+  for s in range(len(ues_mov)):
+    for ue in range(len(ues_mov[s])):
+      ues_mov[s][ue].startTime = 0
+  
+  ues_coords = np.swapaxes(ues_coords, 0, 1).tolist()
+  ues_mov = np.swapaxes(ues_mov, 0, 1).tolist()
+  
   enbs_coords = scen.getAntennasPositionList()
 
-  num_ues = len(scen.getUEsList())
+  num_ues = n_ues
   num_enbs = len(enbs_coords)
 
-  connections = genf.get_ues_connections(optimized, ues_coords, antennas_regions, size_sector, size_x, size_y)
-
+  connections = genf.get_ues_connections(optimized, ues_coords, ues_per_slice, antennas_regions, size_sector, size_x, size_y)
+  
   config_name = genf.gen_sliced_config_pattern(min_sinr, mode, multi_carriers, extra_config_name)
 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms

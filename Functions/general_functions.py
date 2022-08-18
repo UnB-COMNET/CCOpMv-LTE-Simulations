@@ -6,7 +6,7 @@ import numpy as np
 import geometry as geo
 import matplotlib.pyplot as plt
 from scipy.stats import poisson
-from random import choice
+from random import choice, seed
 
 def get_frameworks_path():
     user = 'juliano'
@@ -141,7 +141,7 @@ def parse_results(filename: str, max_time: int):
 
     return results, enbs, enbs_time
 
-def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
+def get_ues_connections(result, ues_coords, ues_per_slice:list, antennas_regions: List[int], size_sector, size_x, size_y):
     """This function interpretates the result parsed from the solver in to the elements connections.
 
     Args:
@@ -155,22 +155,25 @@ def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_se
     Return:
         A 2D Matrix (n X t) with the serving cell number for each UE (n) at each time (t).
     """
-    print(len(result), " x ", len(result[0]))
-    for i in range(len(result)):
-        print(result[i])
-        print("----")
-    print(len(ues_coords))
-    print(len(ues_coords[0]))
-    print("antennas_regions", antennas_regions)
     connections = []
+
+    ue_target = 0
     for ue in ues_coords:
         connections.append([])
         for s in range(len(ue)):            
             region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
-            print("posicionando UE na coordenada {},{}, na regiao {}".format(ue[s].x, ue[s].y, region))
-            #Assume-se que a regiao do UE é servida por alguma das antenas
-            print("Obtendo a regiao da antena com index ({})({}) ".format(s,region), result[s][region])
-            connections[-1].append(antennas_regions.index(result[s][region])+1)
+            
+            for ue_find in ues_per_slice[s]:
+                if ue_find == ue_target:
+                    ue_find = ue_target
+                    break
+            
+            if ue_find == ue_target:
+                connections[-1].append(antennas_regions.index(result[s][region])+1)
+            else:
+                connections[-1].append(1)   # unreal connection; 1 is default
+        
+        ue_target += 1
 
     return connections
 
@@ -281,7 +284,7 @@ def gen_users_t_m(seed):
     
     return user_t_m
 
-def gen_ue_per_slice(user_t_m):
+def gen_ue_per_slice(chosen_seed, user_t_m):
     max_user_t_m = max(user_t_m)
     ue_list = max_user_t_m*[0]
     
@@ -290,7 +293,7 @@ def gen_ue_per_slice(user_t_m):
 
     bck = ue_list.copy()
     ue_slice = 10*[[]]
-    
+    seed(chosen_seed)
     for i in range(len(user_t_m)):
         if i == 0:
             ue_choiced = []
