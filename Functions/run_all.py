@@ -4,12 +4,13 @@ from math import ceil
 from typing import List
 from gen_ilp_info import run_movement_simulation, gen_ilp_info
 from multiprocessing import cpu_count, Process, current_process, Manager, Queue
-from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_varying_users, ilp_sliced_ini_per_slice, ilp_ned
+from _5G_Scenarios.ILP_configs import ilp_sliced_ini, ilp_sliced_ini_varying_users, ilp_sliced_ini_per_slice_varying_users, ilp_ned
 from run_simulations import run_make, run_simulation_all_slices, run_simulation_per_slice
 from joblib import Parallel, delayed, parallel_backend
 from pathlib import Path
 import subprocess
 from errors import check_mode, ErrorPackage
+import geometry as geo
 import general_functions as genf
 import sys
 import traceback
@@ -22,7 +23,7 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [55]#
+    chosen_seeds = [51]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
@@ -196,6 +197,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
     # Generating amount of users following the Poisso process, 
     users_t_m = genf.gen_users_t_m(chosen_seed)
     ues_per_slice = genf.gen_ue_per_slice(users_t_m)
+    for i in range(len(ues_per_slice)):
+        print(len(ues_per_slice[i]), ues_per_slice[i])
     n_ues = max(users_t_m)
     
     move_file = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= False)
@@ -331,14 +334,21 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
         sim_path = project_dir + '/' + sim_dir
         #Verifying if solver is already done
         done = compare_last_line(genf.gen_solver_result_filename(result_dir, mode, min_sinr), '--- Done ---\n')
-    
+
+
+        #Initiating scenario
+        scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+                        enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
+        #Placing UEs
+        scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 0)
+        
         if done:
             print(f'Solver {file_name} already computed. (Seed: {chosen_seed})')
         # If not done, do it    
         else:
             #Running solver
-            gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
-                        xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
+            gen_ilp_info(scen = scen, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
+                        ues_per_slice = ues_per_slice, xml_filename= xml_filename, min_sinr= min_sinr, result_dir= result_dir, mode= mode, min_dis= min_dis,
                         first_antenna_region= first_antenna_region, min_time= min_time, micro_power= micro_power, num_slices= num_slices,
                         disaster_percentage= disaster_percentage)
 
@@ -355,7 +365,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
             if per_slice and mode != 'single':
-                config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, repetitions= repetitions,
+                config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice_varying_users(scen, ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, ues_per_slice = ues_per_slice, n_ues = n_ues, repetitions= repetitions,
                                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                                                 slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
                                                                                 micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)
@@ -370,7 +380,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                     ilp_ned(network = network_name, n_enbs= num_enbs_time[slice], size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
             
             else:
-                config_name_sliced, enbs_sliced_num = ilp_sliced_ini_varying_users(ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, ues_per_slice = ues_per_slice , n_ues = n_ues, repetitions= repetitions,
+                config_name_sliced, enbs_sliced_num = ilp_sliced_ini_varying_users(scen, ini_path_sliced, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros, ues_per_slice = ues_per_slice , n_ues = n_ues, repetitions= repetitions,
                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                                 slice_time= slice_time, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
                                                                 micro_power= micro_power, net_dir= net_dir, xml_filename= xml_filename)

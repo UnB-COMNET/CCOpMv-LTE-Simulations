@@ -155,12 +155,21 @@ def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_se
     Return:
         A 2D Matrix (n X t) with the serving cell number for each UE (n) at each time (t).
     """
+    print(len(result), " x ", len(result[0]))
+    for i in range(len(result)):
+        print(result[i])
+        print("----")
+    print(len(ues_coords))
+    print(len(ues_coords[0]))
+    print("antennas_regions", antennas_regions)
     connections = []
     for ue in ues_coords:
         connections.append([])
-        for s in range(len(ue)):
+        for s in range(len(ue)):            
             region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
+            print("posicionando UE na coordenada {},{}, na regiao {}".format(ue[s].x, ue[s].y, region))
             #Assume-se que a regiao do UE é servida por alguma das antenas
+            print("Obtendo a regiao da antena com index ({})({}) ".format(s,region), result[s][region])
             connections[-1].append(antennas_regions.index(result[s][region])+1)
 
     return connections

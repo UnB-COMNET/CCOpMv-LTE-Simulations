@@ -46,7 +46,7 @@ def main():
     #run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
     #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
 
-def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
+def gen_ilp_info(scen: geo.MapChess, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, ues_per_slice: list, xml_filename: str,
                  min_sinr: int, result_dir: str, mode: str, min_dis: int, first_antenna_region: int, min_time: int,
                  micro_power: int = 30, num_slices: int= 10, disaster_percentage: int= 0):
   
@@ -65,12 +65,11 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     is_micro = True
 
     #Initiating scenario
-    scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
-                        enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
+    #scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+    #                    enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
     #Placing UEs
-    scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
-    #scen.plotUes()
+    #scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 0)
 
     if show_sinr:
 
@@ -115,8 +114,8 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
         #Generating ues time map
         print("-------------Generating ues map")
-        users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename)
-
+        users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename, ues_per_slice = ues_per_slice)
+        
         #Output config
         out_file = open(genf.gen_log_file_name(result_dir, file_name), 'wb', 0)
         sys.stdout = io.TextIOWrapper(out_file, write_through=True)
@@ -156,6 +155,7 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                           snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir= result_dir, FIRST_ANTENNA= first_antenna_region)
 
     elif show_ues:
+        # TO FIX
         #Plotting ues configuration over time
         ues_coords = get_ues_time(ues_list= scen.getUEsList(), xml_filename= xml_filename)
         for t_ues in ues_coords:
