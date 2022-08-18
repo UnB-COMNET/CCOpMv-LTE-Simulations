@@ -1,6 +1,9 @@
 from math import cos, pi, sqrt, sin
+from operator import truediv
+import re
 from typing import List, Union, Tuple
 from random import random, seed, normalvariate
+from xmlrpc.client import Boolean
 import matplotlib.pyplot as plt
 import numpy as np
 from numpy import arctan, matrix
@@ -618,6 +621,17 @@ class MapChess:
             for ue in region:
                 list_ues.append(ue)
         return list_ues
+
+    def existUe(self, index) -> bool:
+        """TODO: Return true if exists ue"""
+        result = False
+        for region in self.map_ues:
+            for ue in region:
+                if ue.index == index:
+                    result = True
+
+        return result
+
 
     def getUEsMovementList(self) -> List[Movement]:
         """Returns the movement atribute of all UEs."""
