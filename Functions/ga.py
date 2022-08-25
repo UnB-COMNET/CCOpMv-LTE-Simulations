@@ -189,7 +189,8 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
 
     """
     crossover_type options
-    Type of the crossover operation. Supported types are single_point (for single-point crossover),
+    Type of the crossover operation. Supported types are 
+    single_point (for single-point crossover),
     two_points (for two points crossover), 
     uniform (for uniform crossover), 
     and scattered (for scattered crossover).
@@ -197,7 +198,8 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
     crossover_type = "uniform"#"two_points"
 
     """
-    Type of the mutation operation. Supported types are random (for random mutation), 
+    Type of the mutation operation. Supported types are 
+    random (for random mutation), 
     swap (for swap mutation), 
     inversion (for inversion mutation), 
     scramble (for scramble mutation), 
@@ -476,8 +478,8 @@ class AntennasGA:
 
     def __init__(self, initial_genome: List[int], num_generations: int, fitness_func: Callable[[List[int], int], Union[float, tuple]],
                  population_size: int = 100, elitism: int = 1, gene_space: List[int] = [0, 1], saturate: int = None, num_parents_mating: int = 2,
-                 selection_type: str = 'truncation', crossover_type: str = 'two_points', crossover_probability: float = 0.2,
-                 on_generation: Callable[[Self], None] = None):
+                 selection_type: str = 'truncation', crossover_type: str = 'two_points', crossover_probability: float = 0.6,
+                 mutation_probability: float = 0.2, on_generation: Callable[[Self], None] = None):
 
         self.initial_genome = Genome(initial_genome)
         self.population_size = population_size
@@ -495,6 +497,8 @@ class AntennasGA:
         self.selection_type = selection_type
         self.crossover_type = crossover_type
         self.crossover_probability = crossover_probability if not crossover_probability > 1 else 1
+        self.mutation_probability = mutation_probability
+        self.mutation_type = 'min_antennas'
 
     def run(self):
         self.curr_population= Population([Genome(list(map(lambda x: (x+1)%2 if (i%2) == 1 else x%2, self.initial_genome.values))) for i in range(self.population_size)])
@@ -504,7 +508,7 @@ class AntennasGA:
         for _ in range(self.num_generations):
 
             self._selection_and_crossover()
-            #self._mutation()
+            self._mutation()
 
             self._fitness()#Calculate new fitness values and update best_solution
 
@@ -585,6 +589,46 @@ class AntennasGA:
                 else:
                     raise ValueError('crossover_type deve ser "two_points" ou "single_point"')         
 
+    def _mutation(self):
+        #Each genome excluding the best defined by elitism
+        for genome in self.curr_population.genomes[self.elitism:]:
+
+            new_values = []
+            for gene in genome.values:
+
+                #Check probability
+                if random.random() < self.mutation_probability:
+
+                    if self.mutation_type == 'min_antennas':
+
+                        value_id = self.gene_space.index(gene)
+                        new_value_id = random.randint(0, len(self.gene_space) - 2)
+                        if new_value_id >= value_id:
+                            new_value_id += 1
+
+                        # If it is not a valid solution, do normal mutation
+                        if genome.fitness <= 0:
+
+                            new_values.append(self.gene_space[new_value_id])
+
+                        # If it is a valid solution, try to reduce the number of antennas
+                        else:
+                            if gene > 0:
+                                print(f'Original: {gene}. New: {self.gene_space[new_value_id]}.')
+                                new_values.append(self.gene_space[new_value_id])
+
+                            else:
+                                new_values.append(gene)
+
+                    else:
+                        raise ValueError('mutation_type deve ser "min_antennas"')
+
+                else:
+                    new_values.append(gene)
+
+            genome.values = new_values
+
+
     def _stop_criteria(self):
 
         #Se chegar no limite da gerações
@@ -599,7 +643,7 @@ class AntennasGA:
             return False
 
 def test():
-    ga = AntennasGA(initial_genome= [0,0,0,0,0,1,1,1,1,1], num_generations= 10, fitness_func= fit_test, on_generation= on_gen_test)
+    ga = AntennasGA(initial_genome= [0,0,0,0,0,1,1,1,1,1], num_generations= 10, fitness_func= fit_test, on_generation= on_gen_test, crossover_probability= 0, mutation_probability= 0.2)
     ga.run()
 
 def fit_test(genes, id):
