@@ -314,13 +314,14 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
 
 class MapChess:
     """Represents a scenario that divides the map into multiple square shaped regions (sectors)"""
-    def __init__(self, size_y: int = 1000, size_x: int = 1000, size_sector: int = 100,
+    def __init__(self, size_x: int = 1000, size_y: int = 1000, size_sector: int = 100,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20, los: bool = False,
                  carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363*10**-9,
                  thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
                  gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
-                 enb_tx_power: float = 46, ue_tx_power: float = 26, chosen_seed: int = 123) :
+                 enb_tx_power: float = 46, ue_tx_power: float = 26, chosen_seed: int = 123,
+                 num_slices: int = 10, simtime_move: int = 1000, slice_time: int = 1) :
         """Initializes the scenario based on multiple parameters"""
 
         self.size_sector = size_sector
@@ -352,6 +353,10 @@ class MapChess:
         self.ue_tx_power = ue_tx_power
 
         self.chosen_seed = chosen_seed
+        self.num_slices = num_slices
+        self.simtime_move = simtime_move      
+        self.slice_time = slice_time  
+
 
     def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         """Returns the central coordinate of a region (sector)"""
@@ -391,16 +396,19 @@ class MapChess:
         self.map_ues[coord2Region(coord,self.size_sector,self.size_x,self.size_y)].append(Ue(coord,index,speed,dir))
 
     def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60, ues_per_slice: list = []):
+        # TODO: completar a documentacao
+        """Places UEs across the map based on the informed type"""
+        #Full = 4320 UEs
         startTimeArray = n_ues_macro*[-1]
         for slice in range(len(ues_per_slice)):
             for ue in ues_per_slice[slice]:
                 if startTimeArray[ue] == -1:
-                    startTimeArray[ue] = slice
-        
-        """Places UEs across the map based on the informed type"""
+                    startTimeArray[ue] = slice*(self.simtime_move/self.num_slices)
+         
         count = 0
-        mean_speed = 3000#3/3.6
-        var_speed = 1000#1/3.6
+        slice_time_move = int(self.simtime_move/self.num_slices)
+        mean_speed = int(3000/slice_time_move)                  # base velocity: 3000 mps
+        var_speed = int(1000/slice_time_move)            
         self.map_ues = []
         seed(self.chosen_seed)
 
