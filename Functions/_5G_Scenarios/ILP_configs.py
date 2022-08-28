@@ -789,7 +789,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
   #Dict with the parameters used (must be the first operation in the function)
   dict_args = locals()
 
-  ues_in_time = hxml.get_ues_time(scen, xml_filename, slice_time)
+  ues_in_time = hxml.get_ues_time(scen, xml_filename)
 
   iter_slice_name = "Slice"
   num_slices = scen.num_slices
