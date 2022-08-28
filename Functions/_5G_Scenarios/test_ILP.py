@@ -80,7 +80,7 @@ def test_ILP(filename, seed, d_height:int =1000, d_width:int =1000, d_region:int
 
 def start_scenario_chess(d_height:int =1000, d_width:int =1000, d_region:int =100):
 
-  scen = geo.MapChess(d_height, d_width, d_region)
+  scen = geo.MapChess(d_width, d_height, d_region)
   scen.placeTestUEs()
   scen.placeAntennas([0,1])
 
