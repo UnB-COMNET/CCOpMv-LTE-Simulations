@@ -336,7 +336,7 @@ def writeAppVideoUL_varyingUsers(f, numUEs: int, ues_per_slice: list, p_size:int
            '**.server.app[{n}..{f}].serverPort = 4088\n').format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
   
   for ue in range(numUEs):
-    values_startTime = len(ues_per_slice)*[99]
+    values_startTime = len(ues_per_slice)*[999]
     for slice in range(len(ues_per_slice)):
       for x in ues_per_slice[slice]:
         if ue == x:
@@ -377,7 +377,7 @@ def writeAppVideoDL_varyingUsers(f, numUEs: int, ues_per_slice: list, p_size:int
            '**.ue[*].app[{n}].serverPort = 3088 + ancestorIndex(1) + {g}\n').format(n = n_app, g= numUEs*n_app))
 
   for ue in range(numUEs):
-    values_startTime = len(ues_per_slice)*[99]
+    values_startTime = len(ues_per_slice)*[999]
     for slice in range(len(ues_per_slice)):
       for x in ues_per_slice[slice]:
         if ue == x:
@@ -705,3 +705,9 @@ def defaultGeneral(f, is5g: bool = False):
 def generalConfig(f):
   # General
   f.write("\n[General]\n")
+
+def writeCmdevExpressMode(f, expressMode):
+  if expressMode:
+    f.write('cmdenv-express-mode = true\n')
+  else:
+    f.write('cmdenv-express-mode = false\n')
