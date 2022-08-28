@@ -273,11 +273,11 @@ def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List
 
     return regions_of_service
 
-def gen_users_t_m(seed, mu_poisson, num_slices):
-    mu = mu_poisson
+def gen_users_t_m(seed, lambda_poisson, num_slices):
+    lambda_ = lambda_poisson
     np.random.seed(seed)
     while(True):
-        r = poisson.rvs(mu, size=num_slices)
+        r = poisson.rvs(lambda_, size=num_slices)
         user_t_m = num_slices*[0]
         for i in range(len(user_t_m)):    
             if i < 5:
