@@ -31,7 +31,11 @@ void VariableSpeedMobilityDelayed::initialize(int stage) {
         standardDeviationParameter = &par("standardDeviation");
         quaternion = inet::Quaternion(inet::EulerAngles(heading, -elevation, inet::rad(0)));
         WATCH(lastVelocity);
+        WATCH(initialSpeedFirstSlice);
+        WATCH(initialSpeedLastSlice);
     }
+
+    initialSpeedFirstSlice = lastVelocity;
 }
 
 void VariableSpeedMobilityDelayed::move(){
@@ -46,6 +50,7 @@ void VariableSpeedMobilityDelayed::move(){
         EV_INFO << "new target position = " << targetPosition << ", next change = " << nextChange << endl;
         lastVelocity = (targetPosition - lastPosition) / (nextChange - simTime()).dbl();
         EV << "last velocity = " << lastVelocity << endl;
+        initialSpeedLastSlice = lastVelocity;
         handleIfOutside(REFLECT, targetPosition, lastVelocity, dummyAngle, dummyAngle, quaternion);
     }
     else if (now > lastUpdate) {
@@ -54,6 +59,8 @@ void VariableSpeedMobilityDelayed::move(){
         lastPosition = sourcePosition * (1 - alpha) + targetPosition * alpha;
         handleIfOutside(REFLECT, targetPosition, lastVelocity, dummyAngle, dummyAngle, quaternion);
     }
+
+
 }
 
 //Uses second rng
@@ -73,6 +80,7 @@ void VariableSpeedMobilityDelayed::setTargetPosition(){
     }
     previousChange = simTime();
     nextChange = previousChange + nextChangeInterval;
+
 }
 
 }

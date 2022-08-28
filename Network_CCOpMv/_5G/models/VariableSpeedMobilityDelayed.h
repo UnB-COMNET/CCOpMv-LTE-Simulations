@@ -27,6 +27,8 @@ class VariableSpeedMobilityDelayed : public inet::LineSegmentsMobilityBase
         inet::cPar *changeIntervalParameter = nullptr;
         inet::cPar *meanSpeedParameter = nullptr;
         inet::cPar *standardDeviationParameter = nullptr;
+        inet::Coord initialSpeed;
+        inet::Coord initialSpeedLastSlice;
 
         inet::Quaternion quaternion;
         simtime_t previousChange;

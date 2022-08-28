@@ -34,7 +34,7 @@ def main():
     sim_dir = '_5G/simulations'
     csv_dir = '_5G/results'
     extra_dir = ['disaster_percentage','micro_power','chosen_seed']
-    mu_poisson_gen_users_t_m = 10
+    lambda_poisson_gen_users_t_m = 10
     num_slices = 12
     simtime_move = 1200
     per_slice = True
@@ -74,7 +74,7 @@ def main():
                                 app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
                                 min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, simtime_move= simtime_move,
                                 per_slice= per_slice, allrun_solver = allrun_solver, disaster_percentage= disaster_percentage, only_solver= only_solver,
-                                mu_poisson_gen_users_t_m = mu_poisson_gen_users_t_m)
+                                lambda_poisson_gen_users_t_m = lambda_poisson_gen_users_t_m)
     
     if result == SUCCESS:
         print('Executions ended successfully.')
@@ -87,7 +87,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
                        repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [], result_dir: str = '.', slice_time: int = 1,
                        multi_carriers: bool= False, is_micro: bool= True, extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2,
                        micro_power: int = 30, extra_dir: List[str] = [], num_slices: int= 10, simtime_move: int=1000, per_slice: bool= True,
-                       allrun_solver: bool = False, disaster_percentage: int = 0, mu_poisson_gen_users_t_m: int = 10, only_solver: bool = False):
+                       allrun_solver: bool = False, disaster_percentage: int = 0, lambda_poisson_gen_users_t_m: int = 10, only_solver: bool = False):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
     
     # Generating makefile and compiling OMNeT++ and its frameworks
@@ -135,7 +135,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'slice_time': slice_time, 'p_size': p_size, 'app': app, 'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers,
               'is_micro': is_micro, 'cmdenv_config': cmdenv_config, 'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir,
               'extra_dir': extra_dir, 'num_slices': num_slices, 'simtime_move': simtime_move , 'per_slice': per_slice, 'disaster_percentage': disaster_percentage,
-              'allrun_solver': allrun_solver, 'mu_poisson_gen_users_t_m': mu_poisson_gen_users_t_m}  
+              'allrun_solver': allrun_solver, 'lambda_poisson_gen_users_t_m': lambda_poisson_gen_users_t_m}  
 
     if allrun_solver is True:
         print('\nRunnning cases by seeds one by one.')
@@ -184,7 +184,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             modes: List[str]= [], result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
             extra_dir: List[str] = [], num_slices: int= 10, simtime_move: int = 1000, make: bool= False, per_slice: bool= True,
-            disaster_percentage: int= 0, mu_poisson_gen_users_t_m: int = 10, allrun_solver: bool= False, queue: Queue= None, only_solver: bool = False):
+            disaster_percentage: int= 0, lambda_poisson_gen_users_t_m: int = 10, allrun_solver: bool= False, queue: Queue= None, only_solver: bool = False):
     """ This function is used to run all steps of a scenario study, using one process for each case diferent scenario,
         determined by the mode and min_sinrs."""
     
@@ -202,11 +202,11 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
                 cases.append((verif_modes[i],min_sinrs[j]))
 
     # Generating amount of users following the Poisson process
-    users_t_m = genf.gen_users_t_m(chosen_seed, mu_poisson = mu_poisson_gen_users_t_m, num_slices=num_slices)             
+    users_t_m = genf.gen_users_t_m(chosen_seed, lambda_poisson = lambda_poisson_gen_users_t_m, num_slices=num_slices)             
     ues_per_slice = genf.gen_ue_per_slice(chosen_seed, users_t_m, num_slices=num_slices)
     max_ues = max(users_t_m)
 
-    print("Number of users over time, mu poisson: ", mu_poisson_gen_users_t_m)
+    print("Number of users over time, mu poisson: ", lambda_poisson_gen_users_t_m)
     print(users_t_m)
     print('\nUEs per slice')
     for i in range(len(ues_per_slice)):
