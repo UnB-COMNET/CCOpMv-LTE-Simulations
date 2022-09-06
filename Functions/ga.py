@@ -1,7 +1,6 @@
 # Import the necessary modules and libraries
-from typing_extensions import Self
 import numpy as np
-from typing import List, Callable, Union
+from typing import List, Callable
 import geometry as geo
 from helper_xml import get_map_ues_time
 import general_functions as genf
@@ -42,17 +41,15 @@ def main():
     move_config_name = 'ilp_move_users'
     min_dis = 2000
 
-    pygad = False
-
     run_ga_solvers(chosen_seeds=chosen_seeds, size_x= size_x, size_y=size_y, size_sector=size_sector, n_macros=n_macros,
                    move_config_name=move_config_name, result_dir=result_dir, mode=mode, min_sinr=min_sinr, num_slices=num_slices,
-                   extra_dir=extra_dir, micro_power= micro_power, min_dis= min_dis, pygad= pygad,
+                   extra_dir=extra_dir, micro_power= micro_power, min_dis= min_dis,
                    disaster_percentage= disaster_percentage) #Disaster as an extra argument in **kwargs to use with extra_dir
   
 
 def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int,n_macros: int, move_config_name: str,
                    result_dir: str, mode: str, min_sinr: int, num_slices: int, extra_dir: List[str], micro_power: int,
-                   min_dis: int, is_micro: bool = True, pygad: bool = True, **kwargs):
+                   min_dis: int, is_micro: bool = True, **kwargs):
 
     params = locals() #get local variables in the beginning of the function (the parameters in this case)
     results = []
@@ -106,8 +103,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         print(f'Seed: {chosen_seed}. First Antenna Region: {first_antenna_region}.')
 
         result = ga_solver(traditional_antennas_map=antennas_m, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness_pygad if pygad else fitness,
-                           first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w, max_users_per_antenna_m=max_users_antenna_m,
-                           pygad= pygad)
+                           first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w, max_users_per_antenna_m=max_users_antenna_m)
         results.append(result)
 
         print(f'Done after {(time() - start_time)/(60*60)} hours. (Seed: {chosen_seed})')
@@ -118,7 +114,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         #genf.plot_scenario(scen= scen, title= f'{full_result_dir}')
 
 def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]], fitness_func,
-              first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int], pygad: bool):
+              first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int]):
 
     if len(users_t_m) < num_slices:
         print('\nError: Missing slices in users behaviour (users_t_m). Returning without solution.\n')
@@ -157,10 +153,8 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
             continue
             #Not running GA for slice 0
         else:
-            if pygad:
-                antennas_regions = run_genetic(_antennas_last_result, fitness_func, callback_gen)
-            else:
-                antennas_regions = run_genetic_antennas(_antennas_last_result, fitness_func)
+            antennas_regions, connections = run_genetic(_antennas_last_result, fitness_func, callback_gen)
+            print(f'\nAntennas Regions: {antennas_regions}.\n\nConnections: {connections}.\n')
 
         #antennas_regions = run_genetic(traditional_antennas_map, fitness_func)
 
@@ -180,6 +174,9 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
 
 def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_generation_callback: Callable):
 
+    global _connection_results
+    _connection_results = []
+
     # The attribures
 
     """
@@ -191,7 +188,7 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
     random (for random selection), 
     and tournament (for tournament selection)
     """
-    parent_selection_type = "rank"
+    parent_selection_type = "sss"
 
     """
     crossover_type options
@@ -211,8 +208,8 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
     scramble (for scramble mutation), 
     and adaptive (for adaptive mutation).
     """
-    mutation_type = "random" 
-    mutation_by_replacement = True #Works with random mutation
+    mutation_type = antennas_mutation#"random" 
+    #mutation_by_replacement = True #Works with random mutation
     random_mutation_min_val = 0
     random_mutation_max_val = 1
 
@@ -225,7 +222,7 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
 
     #colocar solução valida
     
-    keep_parents = 2 # Nr de indivíduos que serão selecionados para a próxima geração sem sofrer crossover nem mutação
+    keep_parents = 4 # Nr de indivíduos que serão selecionados para a próxima geração sem sofrer crossover nem mutação
 
     #mutation_percent_genes = 10 #% de porcentagem dos genes a mutar
     mutation_probability = 0.2 # chance de ocorrer a mutação em um gene (entre 0 e 1)
@@ -250,7 +247,7 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
                         mutation_probability=mutation_probability,
                         #mutation_num_genes= mutation_num_genes,
                         #mutation_percent_genes=mutation_percent_genes,
-                        mutation_by_replacement=mutation_by_replacement,
+                        #mutation_by_replacement=mutation_by_replacement,
                         gene_space=gene_space,
                         on_generation=on_generation_callback,
                         stop_criteria=[f"saturate_20"],
@@ -299,7 +296,7 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
     #print('Solutions: ', ga_instance.solutions.tolist())
     #print('Connections: ', _connection_results)
 
-    return antennas_regions
+    return antennas_regions, _connection_results[solution_idx]
 
 def fitness_pygad(solution, solution_idx):
 
@@ -364,6 +361,58 @@ def create_population(base_genome, population_size):
         A List of List[int] where each List[int] represents a genome.
     """
     return[base_genome for _ in range(population_size)]
+
+def antennas_mutation(offspring: np.ndarray, ga_instance: pygad.GA):
+    #Necessary: gene_space como lista
+    #Usando somente mutation_probability
+
+    parents_idx = ga_instance.last_generation_parents_indices
+    keep_count = ga_instance.keep_parents
+
+    new_offspring = offspring.copy()
+
+    for genome_idx in range(offspring.shape[0]):
+
+        #If is a parent and keep_count is not zero, ignore the genome
+        if genome_idx in parents_idx and keep_count != 0:
+            keep_count -= 1
+            continue
+
+
+        for gene_idx in range(offspring[genome_idx].shape[0]):
+
+            #Check probability
+            if random.random() < ga_instance.mutation_probability:
+
+                #Select new value
+                value_id = ga_instance.gene_space.index(new_offspring[genome_idx][gene_idx])
+                new_value_id = random.randint(0, len(ga_instance.gene_space) - 2)
+                if new_value_id >= value_id:
+                    new_value_id += 1
+
+                # If it was not a valid solution, do normal mutation
+                if ga_instance.last_generation_fitness[genome_idx] <= 0:
+
+                    new_offspring[genome_idx][gene_idx] = ga_instance.gene_space[new_value_id]
+
+                # If it was a valid solution, try to reduce the number of antennas
+                else:
+                    #If antenna, mutates normally removing the antenna
+                    if new_offspring[genome_idx][gene_idx] > 0:
+                        new_offspring[genome_idx][gene_idx] = ga_instance.gene_space[new_value_id]
+
+                    #If it is empty, only swap values, to not increase the number of antennas
+                    else:
+                        other_idx = random.randint(0, new_offspring[genome_idx].shape[0] - 2)
+
+                        #To not be the same gene
+                        if other_idx >= gene_idx:
+                            other_idx += 1
+
+                        #Swap values
+                        new_offspring[genome_idx][gene_idx], new_offspring[genome_idx][other_idx] = new_offspring[genome_idx][other_idx], new_offspring[genome_idx][gene_idx] 
+    
+    return new_offspring
 
 def run_genetic_connections(base_genome: List[int], fitness_func: Callable[..., float], gene_space: List[int]):
     # The attribures
@@ -447,273 +496,7 @@ def fitness_connections(solution, solution_idx):
     fitness_score = 1
     return fitness_score
             
-class Genome:
 
-    def __init__(self, values: List[int]):
-        self.values = values
-        self.fitness = 0
-        self.extra = {}
-
-    def __str__(self):
-
-        return f'(values: {self.values}, fitness: {self.fitness}, extra: {self.extra})'
-
-class Population:
-
-    def __init__(self, genomes: List[Genome]):
-
-        if genomes == []:
-            raise ValueError('genomes must be a Genome list with at least one object')
-
-        self.genomes = genomes
-        self.genomes.sort(key= lambda g : g.fitness, reverse= True) #Os com maior fitness primeiro
-        self.pop_fitness = sum([g.fitness for g in self.genomes])
-
-    def sort(self):
-
-        self.genomes.sort(key= lambda g : g.fitness, reverse= True) #Os com maior fitness primeiro
-        self.pop_fitness = sum([g.fitness for g in self.genomes])
-
-        return self.genomes[0]
-
-    def __str__(self):
-
-        p = '['
-        for genome in self.genomes:
-            p += f'{genome},\n'
-        p = p[:-2] + ']'
-
-        return p
-
-class AntennasGA:
-
-    def __init__(self, initial_genome: List[int], num_generations: int, fitness_func: Callable[[List[int], int], Union[float, tuple]],
-                 population_size: int = 100, elitism: int = 1, gene_space: List[int] = [0, 1], saturate: int = None, num_parents_mating: int = 2,
-                 selection_type: str = 'truncation', crossover_type: str = 'two_points', crossover_probability: float = 0.6,
-                 mutation_probability: float = 0.2, on_generation: Callable[[Self], None] = None):
-
-        self.initial_genome = Genome(initial_genome)
-        self.population_size = population_size
-        self.curr_population = Population([self.initial_genome for _ in range(population_size)])
-        self.num_generations = num_generations
-        self.gene_space = gene_space
-        self.fitness_func = fitness_func
-        self.elitism = elitism
-        self.best_solution = Genome(initial_genome)
-        self.saturated_gens = 0
-        self.saturate = saturate
-        self.generations_completed = 0
-        self.on_generation = on_generation
-        self.num_parents_mating = num_parents_mating
-        self.selection_type = selection_type
-        self.crossover_type = crossover_type
-        self.crossover_probability = crossover_probability if not crossover_probability > 1 else 1
-        self.mutation_probability = mutation_probability
-        self.mutation_type = 'min_antennas'
-
-    def run(self):
-        self.curr_population= Population([Genome(list(map(lambda x: (x+1)%2 if (i%2) == 1 else x%2, self.initial_genome.values))) for i in range(self.population_size)])
-
-        self._fitness() #Calculate new fitness values and update best_solution based on the initial_population
-
-        for _ in range(self.num_generations):
-
-            self._selection_and_crossover()
-            self._mutation()
-
-            self._fitness()#Calculate new fitness values and update best_solution
-
-            self.generations_completed += 1
-
-            if self.on_generation is not None:
-                self.on_generation(self)
-
-            if self._stop_criteria():
-                break
-        
-
-
-    def _fitness(self):
-        
-        count = 0
-
-        #Update fitness results for each genome
-        for genome in self.curr_population.genomes:
-            result = self.fitness_func(genome.values, self.population_size*self.generations_completed + count)
-
-            if type(result) == tuple:
-                genome.fitness = result[0]
-                genome.extra = result[1]
-            else:
-                genome.fitness = result
-
-            count += 1
-
-        #Sort the genomes based on their fitness value and return the best one
-        new_best_solution = self.curr_population.sort()
-
-        if self.best_solution.fitness == new_best_solution.fitness:
-            self.saturated_gens += 1
-        else:
-            self.saturated_gens = 0
-
-        self.best_solution = new_best_solution
-    
-    def _selection_and_crossover(self):
-        selected = []
-
-        #Selection
-
-        #Truncation (select the best ones)
-        if self.selection_type == 'truncation':
-            if self.num_parents_mating < 2:
-                #Para somente um parente o crossover vai gerar cópias dele.
-                selected = 2*self.curr_population.genomes[:1]
-            else:
-                selected = self.curr_population.genomes[:self.num_parents_mating]
-
-        elif self.selection_type == 'roulette':
-            #Probabilidades de seleção proporcional ao fitness da população
-            if self.curr_population.pop_fitness == 0:
-                probabilities = [ 1 for g in self.curr_population.genomes]
-            else:
-                probabilities = [g.fitness/self.curr_population.pop_fitness for g in self.curr_population.genomes]
-
-            if self.num_parents_mating < 2:
-                #Para somente um parente o crossover vai gerar cópias dele.
-                selected = 2*random.choices(population= self.curr_population.genomes, weights= probabilities, k=1)
-            else:
-                selected = random.choices(population= self.curr_population.genomes, weights= probabilities, k=self.num_parents_mating)
-
-        else:
-            raise ValueError('selection_type deve ser "truncation" ou "roulette"')
-
-        #Crossover
-
-        #Each genome excluding the best defined by elitism
-        for genome in self.curr_population.genomes[self.elitism:]:
-
-            #Check probability
-            if random.random() < self.crossover_probability:
-                
-                parents = random.sample(selected, 2)
-
-                #Two-points crossover
-                if self.crossover_type == "two_points":
-                    point1 = random.randint(1, self.population_size - 1)
-                    point2 = random.randint(1, self.population_size - 2)
-                    #Making sure point2 > point1
-                    if point2 >= point1:
-                        point2 += 1
-                    else:  # Swap the two points
-                        point1, point2 = point2, point1
-
-                    genome.values[:point1] = parents[0].values[:point1]
-                    genome.values[point1:point2] = parents[1].values[point1:point2]
-                    genome.values[point2:] = parents[0].values[point2:]
-
-                #Single-point crossover
-                elif self.crossover_type == "one_point":
-                    point = random.randint(1, self.population_size - 1)
-                    genome.values[:point] = parents[0].values[:point]
-                    genome.values[point:] = parents[1].values[point:]
-
-                else:
-                    raise ValueError('crossover_type deve ser "two_points" ou "single_point"')         
-
-    def _mutation(self):
-        #Each genome excluding the best defined by elitism
-        for genome in self.curr_population.genomes[self.elitism:]:
-
-            new_values = []
-            for gene in genome.values:
-
-                #Check probability
-                if random.random() < self.mutation_probability:
-
-                    if self.mutation_type == 'min_antennas':
-
-                        value_id = self.gene_space.index(gene)
-                        new_value_id = random.randint(0, len(self.gene_space) - 2)
-                        if new_value_id >= value_id:
-                            new_value_id += 1
-
-                        # If it is not a valid solution, do normal mutation
-                        if genome.fitness <= 0:
-
-                            new_values.append(self.gene_space[new_value_id])
-
-                        # If it is a valid solution, try to reduce the number of antennas
-                        else:
-                            if gene > 0:
-                                new_values.append(self.gene_space[new_value_id])
-
-                            else:
-                                new_values.append(gene)
-
-                                #Swap values
-                                if len(new_values) >= 2:
-                                    other_pos = random.randint(0, len(new_values)-2)
-
-                                    new_values[-1], new_values[other_pos] = new_values[other_pos], new_values[-1]
-
-
-                    else:
-                        raise ValueError('mutation_type deve ser "min_antennas"')
-
-                else:
-                    new_values.append(gene)
-
-            genome.values = new_values
-
-
-    def _stop_criteria(self):
-
-        #Se chegar no limite da gerações
-        if self.generations_completed >= self.num_generations:
-            return True
-        
-        #Se uma solução saturar
-        elif self.saturate != None and self.saturated_gens >= self.saturate:
-            return True
-
-        else:
-            return False
-
-def run_genetic_antennas(base_genome: List[int], fitness_func: Callable[..., float]):
-
-    num_generations = 20
-    crossover_probability = 0.8
-    mutation_probability = 0.2
-    population_size = 100
-    elitism = 2
-    gene_space = [0, 1]
-    saturate = 20
-    num_parents_mating = 3
-    selection_type = 'truncation' #'roulette'
-    crossover_type = 'two_points'
-
-
-    ga = AntennasGA(initial_genome= base_genome, num_generations= num_generations, fitness_func= fitness_func, on_generation= on_gen_test,
-                    population_size= population_size, crossover_probability= crossover_probability, mutation_probability= mutation_probability,
-                    elitism= elitism, gene_space= gene_space, saturate= saturate, num_parents_mating= num_parents_mating,
-                    selection_type= selection_type, crossover_type= crossover_type)
-    ga.run()
-
-    antennas_regions = np.ravel(np.argwhere(np.array(ga.best_solution.values) > 0))
-
-    return antennas_regions     
-
-def test():
-    ga = AntennasGA(initial_genome= [0,0,0,0,0,1,1,1,1,1], num_generations= 10, fitness_func= fit_test, on_generation= on_gen_test, crossover_probability= 0, mutation_probability= 0.2)
-    ga.run()
-
-def fit_test(genes, id):
-    return np.sum(genes)
-
-def on_gen_test(ga: AntennasGA):
-    print(f'\nGeneration {ga.generations_completed}: Best Fitness {ga.best_solution.fitness}')#\n{ga.curr_population}')
 
 if __name__ == '__main__':
-    #test()
     main()
