@@ -72,7 +72,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         full_result_dir = result_dir + f'/chosen_seed_{chosen_seed}'
 
         #Initiating scenario
-        scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
+        scen = geo.MapChess(size_y = size_y, size_x = size_x, size_sector = size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
                             enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
 
         #Placing UEs

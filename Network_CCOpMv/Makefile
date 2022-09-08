@@ -30,7 +30,7 @@ PROJECTRELATIVE_PATH =
 O = $(PROJECT_OUTPUT_DIR)/$(CONFIGNAME)/$(PROJECTRELATIVE_PATH)
 
 # Object files for local .cc, .msg and .sm files
-OBJS = $O/_5G/models/MoreInfoChannelModel.o $O/_5G/models/Snapshotter.o $O/_5G/models/VariableSpeedMobility.o
+OBJS = $O/_5G/models/LinearMobilityDelayed.o $O/_5G/models/MoreInfoChannelModel.o $O/_5G/models/Snapshotter.o $O/_5G/models/VariableSpeedMobilityDelayed.o
 
 # Message files
 MSGFILES =

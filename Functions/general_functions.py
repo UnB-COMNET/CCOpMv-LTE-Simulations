@@ -1,10 +1,13 @@
 from pathlib import Path
 from typing import List
+from matplotlib import use
 import numpy as np
 import geometry as geo
 import matplotlib.pyplot as plt
-from random import random, randint, seed
+from scipy.stats import poisson
+from random import choice, randint, seed, random
 
+# TODO: Use OmNET absolute path.
 def get_frameworks_path():
     user = 'juliano'
     if user == 'juliano':
@@ -74,10 +77,12 @@ def parse_results_per_slice(filename: str, max_time: int):
     enbs = []
     enbs_time = []
     enbs_byslice = []
+
     for i in range(max_time):
         results.append({})
         enbs_time.append([])
         enbs_byslice.append([])
+
     try:
         with open(filename, "r") as f:
             for line in f:
@@ -138,7 +143,7 @@ def parse_results(filename: str, max_time: int):
 
     return results, enbs, enbs_time
 
-def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y):
+def get_ues_connections(result, ues_coords, ues_per_slice:list, antennas_regions: List[int], size_sector, size_x, size_y):
     """This function interpretates the result parsed from the solver in to the elements connections.
 
     Args:
@@ -153,41 +158,61 @@ def get_ues_connections(result, ues_coords, antennas_regions: List[int], size_se
         A 2D Matrix (n X t) with the serving cell number for each UE (n) at each time (t).
     """
     connections = []
+
+    ue_target = 0
     for ue in ues_coords:
         connections.append([])
-        for s in range(len(ue)):
+        for s in range(len(ue)):        
             region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
-            if region in result[s].keys():
+            
+            for ue_find in ues_per_slice[s]:
+                if ue_find == ue_target:
+                    ue_find = ue_target
+                    break
+
+            if ue_find == ue_target:
                 connections[-1].append(antennas_regions.index(result[s][region])+1)
             else:
-                connections[-1].append(0)
+                connections[-1].append(1)   # unreal connection; 1 is default
+        
+        ue_target += 1
 
     return connections
 
-def get_ues_connections_per_slice(result, ues_coords, antennas_regions: List[int], size_sector, size_x, size_y, slice_):
+def get_ues_connections_per_slice(result, ues_coords, ues_list: List[int], antennas_regions: List[int], size_sector, size_x, size_y, slice_):
     """This function interpretates the result parsed from the solver in to the elements connections.
 
     Args:
         result: Dict containing the parsed solution (serving cell for ue region key) from the solver for a specific time (slice_).
         ues_coords: 2D Matrix (n X t) with the coordinates of each UE (n) at each time of simulation (t).
-        antennas_regions: List[int] containing the sectors where eNBs are located
-        size_sector: sides size of square sectors in meters
-        size_x: x dimension size of considered region in meters
-        size_y: y dimension size of considered region in meters
-        slice_: specific time considered
+        ues_list: List[int] containig the index of users who are present in the respective slice.
+        antennas_regions: List[int] containing the sectors where eNBs are located.
+        size_sector: sides size of square sectors in meters.
+        size_x: x dimension size of considered region in meters.
+        size_y: y dimension size of considered region in meters.
+        slice_: specific time considered.
 
     Return:
         A Array of size n with the serving cell number for each UE (n).
     """
     connections = []
     
+    ue_target = 0
     for ue in ues_coords:
         region = geo.coord2Region(ue[slice_], size_sector, size_x, size_y)
-        #Assume-se que a regiao do UE é servida por alguma das antenas
-        if region in result.keys():
+
+        for ue_find in ues_list:
+            if ue_find == ue_target:
+                ue_find = ue_target
+                break
+        
+        if ue_find == ue_target:
             connections.append(antennas_regions.index(result[region])+1)
         else:
-            connections[-1].append(0)    
+            
+            connections.append(1)   # unreal connection; 1 is default
+
+        ue_target += 1
 
     return connections
 
@@ -261,3 +286,107 @@ def gen_first_antenna_region(chosen_seed: int, n_sectors: int):
     first_antenna_region = randint(0, n_sectors - 1)
 
     return first_antenna_region
+
+def gen_users_t_m(seed, lambda_poisson, num_slices):
+    lambda_ = lambda_poisson
+    np.random.seed(seed)
+    while(True):
+        r = poisson.rvs(lambda_, size=num_slices)
+        user_t_m = num_slices*[0]
+        for i in range(len(user_t_m)):    
+            if i < 5:
+                # to sum
+                if i == 0:
+                    user_t_m[i] = user_t_m[i] + r[i]        
+                else:
+                    user_t_m[i] = user_t_m[i-1] + r[i]        
+
+            else:
+                # to subtract
+                user_t_m[i] = user_t_m[i-1] - r[i]
+
+        is_valid = True
+        for i in range(len(user_t_m)):
+            if user_t_m[i] <= 0:
+                is_valid = False
+        
+        if is_valid:   
+            break
+    
+    return user_t_m
+
+def gen_ue_per_slice(chosen_seed, user_t_m, num_slices):
+    max_user_t_m = max(user_t_m)
+    ue_list = max_user_t_m*[0]
+    
+    for i in range(len(ue_list)):
+        ue_list[i] = i
+
+    bck = ue_list.copy()
+    ue_slice = num_slices*[[]]
+    seed(chosen_seed)
+    for i in range(len(user_t_m)):
+        if i == 0:
+            ue_choiced = []
+            for j in range(user_t_m[0]):
+                if ue_list != []:
+                    ue = choice(ue_list)
+                    ue_choiced.append(ue)
+                    ue_list.pop(ue_list.index(ue))
+            
+            ue_slice[i] = ue_choiced
+
+        elif user_t_m[i] > user_t_m[i-1]:
+            # additive
+            ue_choiced = []
+            for j in range(user_t_m[i] - user_t_m[i-1]):
+                if ue_list != []:
+                    ue = choice(ue_list)
+                    ue_choiced.append(ue)
+                    ue_list.pop(ue_list.index(ue))
+
+            ue_slice[i] = ue_choiced
+        else:
+            pass
+    
+    if ue_list != []:
+        print("ERROR in gen_ue_per_slice()")
+        return None
+    
+    for i in range(len(ue_slice)):
+        # cumulative adding
+        if ue_slice[i] != [] and i > 0:
+            ue_slice[i] = ue_slice[i-1] + ue_slice[i]
+            ue_slice[i]
+
+        elif ue_slice[i] == []:
+            ue_choiced = []
+            tmp_ue_slice = ue_slice[i-1].copy()
+            for j in range(user_t_m[i-1] - user_t_m[i]):
+                ue = choice(tmp_ue_slice)
+                tmp_ue_slice.pop(tmp_ue_slice.index(ue))
+                ue_list.append(ue)
+
+            ue_slice[i] = tmp_ue_slice
+
+    # Verifying
+    for i in range(len(ue_slice)):
+        if len(ue_slice[i]) != user_t_m[i]:
+            print("ERROR 2 in gen_ue_per_slice()")
+            return None
+
+    # contagem de duração para cada UE
+    '''for i in range(max_user_t_m):
+        c = 0
+        first = None
+        last = None
+        for j in range(len(ue_slice)):
+            for k in ue_slice[j]:            
+                if k == i:
+                    c += 1
+                    if first == None:
+                        first = j
+        print("UE {} esta ativo por {} slices, entrou no slice {}".format(i, c, first))
+        if c == 0: break
+    '''
+    return ue_slice
