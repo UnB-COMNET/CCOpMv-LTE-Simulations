@@ -154,7 +154,7 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
         elif mode == "ga":
             #TODO: Not working correctly with disaster > 0
             ga.ga_solver(num_regions=scen.n_sectors, num_slices=num_slices, users_t_m=users_t_m, max_users_per_antenna_m=max_user_antenna_m, snr_map_mn=sinr_map, min_sinr_w=db_to_linear(min_sinr),
-                         distance_mn=distance_mn, min_dis=min_dis, result_dir=result_dir, first_antenna_region=first_antenna_region)
+                         distance_mn=distance_mn, min_dis=min_dis, result_dir=result_dir, first_antenna_region=first_antenna_region, fitness_func=ga.fitness_pygad)
 
 
     elif show_ues:

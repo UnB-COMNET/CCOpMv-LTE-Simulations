@@ -11,6 +11,7 @@ import sinr_comput as sc
 import random
 import math
 from sinr_comput import linear_to_db
+import errors
 
 _users_t_m = []
 _antennas_last_result = []
@@ -297,7 +298,10 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
     #print('Solutions: ', ga_instance.solutions.tolist())
     #print('Connections: ', _connection_results)
 
-    return antennas_regions, _connection_results[solution_idx]
+    if _connection_results[solution_idx][1] != solution_idx:
+        raise errors.InvalidResult(f"connection result idx ({_connection_results[solution_idx][1]}) is different from solution idx ({solution_idx}).")
+
+    return antennas_regions, _connection_results[solution_idx][0]
 
 def fitness_pygad(solution, solution_idx):
 
@@ -350,7 +354,7 @@ def fitness(solution, solution_idx):
     connect_solution, connect_fitness_score = run_genetic_connections(base_genome=base_connections_genome, fitness_func=fitness_connections, gene_space=antennas_regions)
 
     connect_dict = {}
-    for i in len(users_regions):
+    for i in range(len(users_regions)):
         connect_dict[str(users_regions[i])] = connect_solution[i]
 
     return fitness_score * connect_fitness_score, connect_dict
