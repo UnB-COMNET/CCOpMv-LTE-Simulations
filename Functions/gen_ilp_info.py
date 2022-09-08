@@ -42,15 +42,13 @@ def main():
 
     gen_ilp_info(chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros, mode= mode, 
                  xml_filename = xml_filename, min_sinr= min_sinr, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region,
-                 min_time= min_time, micro_power= micro_power, num_slices= num_slices, disaster_percentage= disaster_percentage)
+                 min_time= min_time, micro_power= micro_power, disaster_percentage= disaster_percentage)
     #run_all_solvers(ini_path= ini_path, chosen_seed= chosen_seed, size_x= size_x, size_y= size_y, size_sector= size_sector, n_macros= n_macros,
     #                xml_filename= xml_filename, min_sinrs= min_sinrs, result_dir= result_dir, min_dis= min_dis, first_antenna_region= first_antenna_region)
 
-def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, xml_filename: str,
+def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
                  min_sinr: int, result_dir: str, mode: str, min_dis: int, first_antenna_region: int, min_time: int,
-                 micro_power: int = 30, num_slices: int= 10, disaster_percentage: int= 0):
-  
-    #mode = "varying" if varying else "fixed"
+                 disaster_percentage: int= 0):
 
     file_name = genf.gen_file_name(mode= mode, min_sinr= min_sinr)
 
@@ -63,22 +61,19 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
     show_antennas_map = False
 
     is_micro = True
-
-    #Initiating scenario
-    scen = geo.MapChess(size_y, size_x, size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
-                        enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
-
-    #Placing UEs
-    scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
-    #scen.plotUes()
+    chosen_seed = scen.chosen_seed
+    size_x = scen.size_x
+    size_y = scen.size_y
+    size_sector = scen.size_sector
+    num_slices = scen.num_slices
 
     if show_sinr:
 
-        #Generating sinr map
+        # Generating sinr map
         print("-------------Generating sinr map")
         sinr_map = scen.getSinrMap()
 
-        #Showing sinr in file
+        # Showing sinr in file
         count = 0
         count2 = 0
         with open("sinr.txt", 'w') as f:
@@ -92,20 +87,20 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     if get_solution:
 
-        #Generating sinr map
+        # Generating sinr map
         print("-------------Generating sinr map")
         sinr_map = scen.getSinrMap()
 
         print("Running Solver - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
 
-        #Generating default parameters
+        # Generating default parameters
         seed(chosen_seed)
         max_user_antenna_m = [60 for i in range(scen.n_sectors)]
         antennas_map_m = [(0 if random() < disaster_percentage/100 else 1) for i in range(scen.n_sectors)]
         min_snr_m = [db_to_linear(min_sinr) for i in range(scen.n_sectors)]
         distance_mn = scen.getRegionsDistanceMatrix()
 
-        #Setting first antenna position
+        # Setting first antenna position
         done = False
         while not done:
             if first_antenna_region is not None and antennas_map_m[first_antenna_region] == 1:
@@ -113,22 +108,22 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             else:
                 first_antenna_region = randint(0, scen.n_sectors - 1)
 
-        #Generating ues time map
+        # Generating ues time map
         print("-------------Generating ues map")
-        users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename)
-
-        #Output config
+        users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename, ues_per_slice = ues_per_slice)
+        
+        # Output config
         out_file = open(genf.gen_log_file_name(result_dir, file_name), 'wb', 0)
         sys.stdout = io.TextIOWrapper(out_file, write_through=True)
 
-        #Calculating Solution
+        # Calculating Solution
         print(("-------------Calculating Solution (this may take a while)\n"
               f"+++++++++++++++++++Min Sinr: {min_sinr} dB ({mode})\n"
               f"+++++++++++++++++++With backhaul constraint. Start: {datetime.fromtimestamp(mktime(localtime(start_time)))}\n"))
         
         check_mode(mode= mode)
 
-        #Printing parameters
+        # Printing parameters
         print('Parameters:')
         print('- chosen seed {}'.format(chosen_seed))
         print('- Map with {} sectors'.format(scen.n_sectors))
@@ -150,10 +145,13 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             solver_fixed(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
                          snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, FIRST_ANTENNA= first_antenna_region)
         elif mode == "single":
-            solver_single(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, valid_time= 0,
+            valid_time = 0
+            print("- valid_time: ", valid_time)
+            solver_single(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, valid_time= valid_time,
                           snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir= result_dir, FIRST_ANTENNA= first_antenna_region)
 
     elif show_ues:
+        # FIXME: 
         #Plotting ues configuration over time
         ues_coords = get_ues_time(ues_list= scen.getUEsList(), xml_filename= xml_filename)
         for t_ues in ues_coords:
@@ -187,29 +185,29 @@ def gen_ilp_info(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
         print("Plot")
 
-
-
     print(f"--- Done after {(time() - start_time)/(60*60)} hours. ---")
     sys.stdout = sys.__stdout__
 
-def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, config_name: str= 'ilp_move_users',
-                            num_slices: int= 10, cpu_num: int= 1):
-    #Genereting .ini file
-    ilpc.ilp_move_users(ini_path, chosen_seed, size_y= size_y, size_x= size_x, size_sector= size_sector, n_macros= n_macros,
-                        config_name= config_name, num_slices= num_slices)
-
+def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int, ues_per_slice: list, n_ues: int, config_name: str= 'ilp_move_users',
+                            num_slices: int= 10, simtime_move: int = 1000, slice_time: int = 1, cpu_num: int= 1):
+    # Genereting .ini file
+    scen = geo.MapChess(size_x = size_x, size_y = size_y, size_sector = size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed,
+                        num_slices = num_slices, simtime_move= simtime_move, slice_time= slice_time)
+    
+    ilpc.ilp_move_users(scen, ini_path, n_macros= n_macros, n_ues_macro = n_ues, ues_per_slice = ues_per_slice, config_name= config_name)
+    
     snapshot_filename = genf.gen_movement_filename(config_name= config_name, seed= chosen_seed, snapshot= True)
 
     open(snapshot_filename, 'w').close()
     
     frame_path = genf.get_frameworks_path()
-
-    #Running Omnet++
+    
+    # Running Omnet++
     arg = ('cd ../Network_CCOpMv\n'
                           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + rf' -n .:{frame_path}/inet4/src:{frame_path}/inet4/examples:{frame_path}/inet4/tutorials:{frame_path}/inet4/showcases:{frame_path}/Simu5G-1.1.0/simulations:{frame_path}/Simu5G-1.1.0/src')
 
     code = subprocess.check_output(arg, shell= True)
-    #code.check_returncode()
+    # code.check_returncode()
 
     with open(snapshot_filename, 'a') as f:
         f.write('<!--Done-->\n')

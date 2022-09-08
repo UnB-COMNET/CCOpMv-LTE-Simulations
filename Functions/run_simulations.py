@@ -92,7 +92,7 @@ def execute(cpu_num, ini_path,config_name, runs):
 def run_subprocess_multiprocessing(command: str, shell: bool = True):
   code = subprocess.run(command, shell= shell)
   print("-----------------------------------------------------")
-  #print(code.stderr())
+  
   code.check_returncode()
   print("_____________________________________________________")
 

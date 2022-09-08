@@ -991,11 +991,10 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   modes = genf.verify_modes(modes)
 
-  extra_dir = extra_dir
   for param in extra_dir:
-    sim_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
-    images_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
-    csv_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
+    sim_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
+    images_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
+    csv_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
   Path(images_dir).mkdir(parents=True, exist_ok=True)
 
   data_frames = {}
@@ -1164,9 +1163,9 @@ def comparing_video_powers_singlemode(chosen_seeds: List[int], mode: str, micro_
 
   extra_dir = extra_dir
   for param in extra_dir:
-    sim_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
-    images_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
-    csv_dir += '/' + param + (f'_{kwargs[param]}' if param in kwargs else '')
+    sim_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
+    images_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
+    csv_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
   Path(images_dir).mkdir(parents=True, exist_ok=True)
 
   data_frames = {}
