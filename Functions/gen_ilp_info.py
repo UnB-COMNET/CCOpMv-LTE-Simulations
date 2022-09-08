@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import numpy as np
 import general_functions as genf
+import ga
 
 def main():
     ini_path = r"../Network_CCOpMv/_5G/simulations/ilp_move_users.ini"
@@ -149,6 +150,12 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
             print("- valid_time: ", valid_time)
             solver_single(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, valid_time= valid_time,
                           snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir= result_dir, FIRST_ANTENNA= first_antenna_region)
+
+        elif mode == "ga":
+            #TODO: Not working correctly with disaster > 0
+            ga.ga_solver(num_regions=scen.n_sectors, num_slices=num_slices, users_t_m=users_t_m, max_users_per_antenna_m=max_user_antenna_m, snr_map_mn=sinr_map, min_sinr_w=db_to_linear(min_sinr),
+                         distance_mn=distance_mn, min_dis=min_dis, result_dir=result_dir, first_antenna_region=first_antenna_region)
+
 
     elif show_ues:
         # FIXME: 

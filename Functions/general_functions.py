@@ -46,6 +46,8 @@ def verify_modes(modes: List[str]):
             verif_modes.append('fixed')
         elif mode.lower() == 'single' or mode.lower() == 'tid':
             verif_modes.append('single')
+        elif mode.lower() == 'ga':
+            verif_modes.append('ga')
 
     return np.unique(verif_modes).tolist()
 

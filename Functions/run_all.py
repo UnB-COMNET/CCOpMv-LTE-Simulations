@@ -27,7 +27,7 @@ def main():
     size_sector = 400
     n_macros = 1
     min_sinrs = [5,15]
-    modes = ['single'] # fixed or single
+    modes = ['ga'] # fixed or single or ga
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
@@ -309,7 +309,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         while not mode_queues[mode].empty():
             errors = mode_queues[mode].get()
             print(f'Error in process_func of Mode: {mode.capitalize()}, Seed: {chosen_seed}.\n')
-            if mode not in failed_modes: failed_modes.append(mode)
+            if mode not in failed_modes:
+                failed_modes.append(mode)
             queue.put(errors)
 
     if not only_solver:

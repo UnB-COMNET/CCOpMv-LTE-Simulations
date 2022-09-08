@@ -9,6 +9,8 @@ from time import time, localtime, mktime
 from datetime import datetime
 import sinr_comput as sc
 import random
+import math
+from sinr_comput import linear_to_db
 
 _users_t_m = []
 _antennas_last_result = []
@@ -35,26 +37,24 @@ def main():
     extra_dir = ['disaster_percentage', 'micro_power']
     num_slices = 10
     min_sinr = 5
-    mode = 'single'
+    #mode = 'single'
     #is_micro = True #Keep True
     disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
     move_config_name = 'ilp_move_users'
     min_dis = 2000
 
     run_ga_solvers(chosen_seeds=chosen_seeds, size_x= size_x, size_y=size_y, size_sector=size_sector, n_macros=n_macros,
-                   move_config_name=move_config_name, result_dir=result_dir, mode=mode, min_sinr=min_sinr, num_slices=num_slices,
+                   move_config_name=move_config_name, result_dir=result_dir, min_sinr=min_sinr, num_slices=num_slices, #mode=mode,
                    extra_dir=extra_dir, micro_power= micro_power, min_dis= min_dis,
                    disaster_percentage= disaster_percentage) #Disaster as an extra argument in **kwargs to use with extra_dir
   
 
 def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int,n_macros: int, move_config_name: str,
-                   result_dir: str, mode: str, min_sinr: int, num_slices: int, extra_dir: List[str], micro_power: int,
+                   result_dir: str, min_sinr: int, num_slices: int, extra_dir: List[str], micro_power: int, #mode: str,
                    min_dis: int, is_micro: bool = True, **kwargs):
 
     params = locals() #get local variables in the beginning of the function (the parameters in this case)
     results = []
-
-    num_sectors = int(size_x/size_sector) * int(size_y/size_sector)
 
     for param in extra_dir:
         if param in kwargs: #If is an extra parameter passed by kwargs
@@ -73,7 +73,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
 
         #Initiating scenario
         scen = geo.MapChess(size_y = size_y, size_x = size_x, size_sector = size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
-                            enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9)
+                            enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9, num_slices= num_slices)
 
         #Placing UEs
         scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
@@ -88,22 +88,23 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
 
         max_users_antenna_m = [60 for i in range(scen.n_sectors)]
 
-        optimized_byslice, antennas_regions_byslice, num_enbs_time = genf.parse_results_per_slice(genf.gen_solver_result_filename(full_result_dir, mode, min_sinr), num_slices)
+        #optimized_byslice, antennas_regions_byslice, num_enbs_time = genf.parse_results_per_slice(genf.gen_solver_result_filename(full_result_dir, mode, min_sinr), num_slices)
 
-        if optimized_byslice == None and antennas_regions_byslice == None and num_enbs_time == None:
+        #if optimized_byslice == None and antennas_regions_byslice == None and num_enbs_time == None:
             #There was a not feasible solution
-            print(f'\nNot feasable solution in case: Seed {chosen_seed}, Mode: traditional (single). Ignoring this case.\n')
-            continue
+        #    print(f'\nNot feasable solution in case: Seed {chosen_seed}, Mode: traditional (single). Ignoring this case.\n')
+        #    continue
 
-        antennas_m = [0 for _ in range(num_sectors)]
-        for region in antennas_regions_byslice[-1]:
-            antennas_m[region] = 1
+        #antennas_m = [0 for _ in range(num_sectors)]
+        #for region in antennas_regions_byslice[-1]:
+        #    antennas_m[region] = 1
 
         first_antenna_region = genf.gen_first_antenna_region(chosen_seed=chosen_seed, n_sectors=scen.n_sectors)
         print(f'Seed: {chosen_seed}. First Antenna Region: {first_antenna_region}.')
 
-        result = ga_solver(traditional_antennas_map=antennas_m, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness_pygad if pygad else fitness,
-                           first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w, max_users_per_antenna_m=max_users_antenna_m)
+        result = ga_solver(num_regions=scen.n_sectors, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness_pygad if pygad else fitness,
+                           first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w, max_users_per_antenna_m=max_users_antenna_m,
+                           result_dir= full_result_dir)
         results.append(result)
 
         print(f'Done after {(time() - start_time)/(60*60)} hours. (Seed: {chosen_seed})')
@@ -113,14 +114,15 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         #scen.placeAntennas(antennas_regions_byslice[-1])
         #genf.plot_scenario(scen= scen, title= f'{full_result_dir}')
 
-def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]], fitness_func,
-              first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int]):
+def ga_solver(num_regions: int, users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]], fitness_func,
+              first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int], result_dir: str):
 
     if len(users_t_m) < num_slices:
         print('\nError: Missing slices in users behaviour (users_t_m). Returning without solution.\n')
         return
 
     antennas_regions_byslice = []
+    connections_dict_byslice = []
 
     global _distance_mn
     _distance_mn = distance_mn
@@ -135,8 +137,6 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
     global _max_users_per_antenna_m
     _max_users_per_antenna_m = max_users_per_antenna_m
 
-    num_regions = len(traditional_antennas_map)
-
     global _antennas_last_result
     _antennas_last_result = [ 0 if m != first_antenna_region else 1 for m in range(num_regions)]
 
@@ -147,14 +147,14 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
         global _users_t_m
         _users_t_m = users_t_m[i:]
 
-        if i == 0:
+        #if i == 0:
             #antennas_regions = run_genetic(traditional_antennas_map, fitness_func, callback_gen)
-            _antennas_last_result = traditional_antennas_map #Update last slice result
-            continue
+            #_antennas_last_result = traditional_antennas_map #Update last slice result
+            #continue
             #Not running GA for slice 0
-        else:
-            antennas_regions, connections = run_genetic(_antennas_last_result, fitness_func, callback_gen)
-            print(f'\nAntennas Regions: {antennas_regions}.\n\nConnections: {connections}.\n')
+        #else:
+        antennas_regions, connections_dict = run_genetic(_antennas_last_result, fitness_func, callback_gen)
+        #print(f'\nAntennas Regions: {antennas_regions}.\n\nConnections: {connections_dict}.\n')
 
         #antennas_regions = run_genetic(traditional_antennas_map, fitness_func)
 
@@ -166,11 +166,12 @@ def ga_solver(traditional_antennas_map: List[int], users_t_m: List[List[int]], d
         _antennas_last_result = antennas_m #Update last slice result
 
         antennas_regions_byslice.append(antennas_regions)
+        connections_dict_byslice.append(connections_dict)
 
-        # After having the result, get the connections using the run_genetic_connections again.
-        # The result may not be the same but it will obey the contraints. Valid because the fitness value is 0 or 1, not optimizing the SINR.
+    write_file_result(result_dir=result_dir, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, min_sinr_w=min_sinr_w,
+                      antennas_regions_byslice=antennas_regions_byslice, connections_dict_byslice=connections_dict_byslice)
 
-    return antennas_regions_byslice
+    return antennas_regions_byslice, connections_dict_byslice
 
 def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_generation_callback: Callable):
 
@@ -300,10 +301,10 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
 
 def fitness_pygad(solution, solution_idx):
 
-    score, connect_solution = fitness(solution, solution_idx)
+    score, connect_dict = fitness(solution, solution_idx)
 
     global _connection_results
-    _connection_results.append((connect_solution, solution_idx))
+    _connection_results.append((connect_dict, solution_idx))
 
     return score
 
@@ -348,7 +349,11 @@ def fitness(solution, solution_idx):
     _last_antennas_regions = antennas_regions
     connect_solution, connect_fitness_score = run_genetic_connections(base_genome=base_connections_genome, fitness_func=fitness_connections, gene_space=antennas_regions)
 
-    return fitness_score * connect_fitness_score, connect_solution
+    connect_dict = {}
+    for i in len(users_regions):
+        connect_dict[str(users_regions[i])] = connect_solution[i]
+
+    return fitness_score * connect_fitness_score, connect_dict
 
 def callback_gen(ga_instance):
     print("Generation : ", ga_instance.generations_completed)
@@ -496,7 +501,41 @@ def fitness_connections(solution, solution_idx):
     fitness_score = 1
     return fitness_score
             
+def write_file_result(result_dir: str, users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]], min_sinr_w: float,
+                      antennas_regions_byslice: List[List[int]], connections_dict_byslice: List[dict]):
+    
+    mean = 0
 
+    with open(genf.gen_solver_result_filename(result_dir, 'ga', math.ceil(linear_to_db(min_sinr_w))), 'w') as f:
+        for t in range(len(antennas_regions_byslice)):
+            mean += len(antennas_regions_byslice[t])
+            print(f"t={t}")
+            counter = {}
+            mean_snr = {}
+            total_users = {}
+            for m in antennas_regions_byslice[t]:
+                counter[m] = 0
+                mean_snr[m] = 0
+                total_users[m] = 0
+            for n in connections_dict_byslice[t]:
+                m = connections_dict_byslice[t][n]
+                counter[m]+=1
+                mean_snr[m]+=snr_map_mn[m][n]
+                total_users[m]+=users_t_m[t][n]
+                "$y_{%d,%d,%d}$"%(t,m,n)
+                print(f"\t y_{t},{m},{n} = {10*math.log10(snr_map_mn[m][n])} dB")
+                f.write("{t} {m} {n}\n".format(t= t, m= m, n= n))
+                if counter[m] > 0 :
+                    print("\t\tSNR medio:", 10*math.log10(mean_snr[m]/counter[m]))
+                print("\t\tUsuarios totais:", total_users[m])
+            print("Distances:")
+            for i in antennas_regions_byslice[t]:
+                for j in antennas_regions_byslice[t]:
+                    if i < j :
+                        print(f"{i} : {j} = {distance_mn[i][j]}")
+        print("\nMédia de carros:", mean/len(antennas_regions_byslice))
+
+        f.write("--- Done ---\n")
 
 if __name__ == '__main__':
     main()
