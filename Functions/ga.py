@@ -521,14 +521,13 @@ def write_file_result(result_dir: str, users_t_m: List[List[int]], distance_mn: 
                 counter[m] = 0
                 mean_snr[m] = 0
                 total_users[m] = 0
-            for n in connections_dict_byslice[t]:
-                m = connections_dict_byslice[t][n]
+            for s_n in connections_dict_byslice[t]:
+                m = connections_dict_byslice[t][s_n]
                 counter[m]+=1
-                mean_snr[m]+=snr_map_mn[m][n]
-                total_users[m]+=users_t_m[t][n]
-                "$y_{%d,%d,%d}$"%(t,m,n)
-                print(f"\t y_{t},{m},{n} = {10*math.log10(snr_map_mn[m][n])} dB")
-                f.write("{t} {m} {n}\n".format(t= t, m= m, n= n))
+                mean_snr[m]+=snr_map_mn[m][int(s_n)]
+                total_users[m]+=users_t_m[t][int(s_n)]
+                print(f"\t y_{t},{m},{s_n} = {10*math.log10(snr_map_mn[m][int(s_n)])} dB")
+                f.write("{t} {m} {n}\n".format(t= t, m= m, n= int(s_n)))
                 if counter[m] > 0 :
                     print("\t\tSNR medio:", 10*math.log10(mean_snr[m]/counter[m]))
                 print("\t\tUsuarios totais:", total_users[m])
