@@ -733,7 +733,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
       hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'')) #Vec/Sca name
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
-        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, cmdenv_output_file_name= cmdenv_output_file_name)
+        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name= cmdenv_output_file_name)
       hp.writeSeparation(f, "Snapshots")
       hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_pattern + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
       hp.writeSlice(f, slice= slice, iter_name= iter_slice_name)
@@ -933,7 +933,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
       hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'')) #Vec/Sca name
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
-        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, cmdenv_output_file_name= cmdenv_output_file_name)
+        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name= cmdenv_output_file_name)
       hp.writeSeparation(f, "Snapshots")
       hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_pattern + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
       hp.writeSlice(f, slice= slice, iter_name= iter_slice_name)
