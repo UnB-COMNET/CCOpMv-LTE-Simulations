@@ -104,7 +104,7 @@ def parse_results_per_slice(filename: str, max_time: int):
         enbs_byslice[t] = np.unique(enbs_time[t]).tolist()
         enbs_time[t] = np.unique(enbs_time[t]).size
     
-    results_list = 10*[None]
+    results_list = max_time*[None]
     for i in range(len(results)):
         results_list[i] = results[i]
 
@@ -296,7 +296,7 @@ def gen_users_t_m(seed, lambda_poisson, num_slices):
         r = poisson.rvs(lambda_, size=num_slices)
         user_t_m = num_slices*[0]
         for i in range(len(user_t_m)):    
-            if i < 5:
+            if i < int(num_slices/2):
                 # to sum
                 if i == 0:
                     user_t_m[i] = user_t_m[i] + r[i]        
