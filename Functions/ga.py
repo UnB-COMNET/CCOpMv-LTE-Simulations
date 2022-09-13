@@ -404,7 +404,7 @@ def antennas_mutation(offspring: np.ndarray, ga_instance: pygad.GA):
 
                     new_offspring[genome_idx][gene_idx] = ga_instance.gene_space[new_value_id]
 
-                # If it was a valid solution, try to reduce the number of antennas
+                # Else, try to reduce the number of antennas
                 else:
                     #If antenna, mutates normally removing the antenna
                     if new_offspring[genome_idx][gene_idx] > 0:
@@ -517,25 +517,34 @@ def write_file_result(result_dir: str, users_t_m: List[List[int]], distance_mn: 
             counter = {}
             mean_snr = {}
             total_users = {}
+            users = {}
             for m in antennas_regions_byslice[t]:
                 counter[m] = 0
                 mean_snr[m] = 0
                 total_users[m] = 0
+                users[m] = []
             for s_n in connections_dict_byslice[t]:
                 m = connections_dict_byslice[t][s_n]
                 counter[m]+=1
                 mean_snr[m]+=snr_map_mn[m][int(s_n)]
                 total_users[m]+=users_t_m[t][int(s_n)]
-                print(f"\t y_{t},{m},{s_n} = {10*math.log10(snr_map_mn[m][int(s_n)])} dB")
-                f.write("{t} {m} {n}\n".format(t= t, m= m, n= int(s_n)))
+                users[m].append(int(s_n))
+
+            for m in antennas_regions_byslice[t]:
+                print(f"x_{t}_{m}")
+                for n in users[m]:
+                    print(f"\t y_{t},{m},{n} = {10*math.log10(snr_map_mn[m][n])} dB")
+                    f.write("{t} {m} {n}\n".format(t= t, m= m, n= n))
                 if counter[m] > 0 :
                     print("\t\tSNR medio:", 10*math.log10(mean_snr[m]/counter[m]))
                 print("\t\tUsuarios totais:", total_users[m])
+                
             print("Distances:")
             for i in antennas_regions_byslice[t]:
                 for j in antennas_regions_byslice[t]:
                     if i < j :
                         print(f"{i} : {j} = {distance_mn[i][j]}")
+
         print("\nMédia de carros:", mean/len(antennas_regions_byslice))
 
         f.write("--- Done ---\n")
