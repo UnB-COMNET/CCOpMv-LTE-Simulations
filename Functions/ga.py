@@ -252,7 +252,7 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
                         #mutation_by_replacement=mutation_by_replacement,
                         gene_space=gene_space,
                         on_generation=on_generation_callback,
-                        stop_criteria=[f"saturate_20"],
+                        stop_criteria=[f"saturate_30"],
                         gene_type=int,
                         #save_solutions=True
                         )
