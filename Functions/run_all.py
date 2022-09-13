@@ -376,7 +376,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
             network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
-            if per_slice and mode != 'single':
+            if per_slice:
                 config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(scen, ini_path_sliced, n_macros= n_macros, ues_per_slice = ues_per_slice, max_ues = max_ues, repetitions= repetitions,
                                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app,
                                                                                 extra_config_name= extra_config_name, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name,
@@ -411,7 +411,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 print('All simulations are already computed. Min Snr: {} - {} (Seed: {})'.format(min_sinr, mode.capitalize(), chosen_seed))
             else:
                 print("Executing Simulations - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
-                if per_slice and mode != 'single':
+                if per_slice:
                     run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
                 else:
                     run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
