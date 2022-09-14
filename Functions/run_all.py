@@ -21,20 +21,20 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [0,1,2,3,4,5,6,7,8,9]#
+    chosen_seeds = [2,3,4,5,6,7,10,11,12,13]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5,15]
-    modes = ['single'] # fixed or single
+    min_sinrs = [5,10,15]
+    modes = ['fixed','single'] # fixed or single
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     csv_dir = '_5G/results'
     extra_dir = ['disaster_percentage','micro_power','chosen_seed']
-    lambda_poisson_gen_users_t_m = 10
+    lambda_poisson_gen_users_t_m = 30
     num_slices = 12
     simtime_move = 1200
     per_slice = True
