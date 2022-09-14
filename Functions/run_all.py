@@ -27,7 +27,7 @@ def main():
     size_sector = 400
     n_macros = 1
     min_sinrs = [5, 10, 15]
-    modes = ['ga', 'fixed', 'single'] # fixed or single or ga
+    modes = ['fixed', 'single'] # fixed or single or ga
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
@@ -58,7 +58,7 @@ def main():
     extra_config_name= "video"
     target_f = 10 #Mbps
     cmdenv_config = True #Redirects cmdenv outputs to a file
-    interference = False #Enables or disables multicell-interference
+    interference = True #Enables or disables multicell-interference
 
     # For the user
     allrun_solver = False # Older version where runs all solvers first
