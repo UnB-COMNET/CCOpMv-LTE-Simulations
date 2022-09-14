@@ -1,4 +1,4 @@
-# Version 28/08/2022
+# Version 13/09/2022
 
 from math import ceil
 from typing import List
@@ -26,8 +26,8 @@ def main():
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5,10,15]
-    modes = ['fixed','single'] # fixed or single
+    min_sinrs = [5, 10, 15]
+    modes = ['ga', 'fixed', 'single'] # fixed or single or ga
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
@@ -58,6 +58,7 @@ def main():
     extra_config_name= "video"
     target_f = 10 #Mbps
     cmdenv_config = True #Redirects cmdenv outputs to a file
+    interference = False #Enables or disables multicell-interference
 
     # For the user
     allrun_solver = False # Older version where runs all solvers first
@@ -74,7 +75,7 @@ def main():
                                 app= app, target_f= target_f, extra_config_name= extra_config_name, cmdenv_config= cmdenv_config,
                                 min_time= min_time, micro_power= micro_power, extra_dir= extra_dir, num_slices= num_slices, simtime_move= simtime_move,
                                 per_slice= per_slice, allrun_solver = allrun_solver, disaster_percentage= disaster_percentage, only_solver= only_solver,
-                                lambda_poisson_gen_users_t_m = lambda_poisson_gen_users_t_m)
+                                lambda_poisson_gen_users_t_m = lambda_poisson_gen_users_t_m, interference = interference)
     
     if result == SUCCESS:
         print('Executions ended successfully.')
@@ -87,7 +88,8 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
                        repetitions: int, p_size: int, app: str, target_f: float, modes: List[str]= [], result_dir: str = '.', slice_time: int = 1,
                        multi_carriers: bool= False, is_micro: bool= True, extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2,
                        micro_power: int = 30, extra_dir: List[str] = [], num_slices: int= 10, simtime_move: int=1000, per_slice: bool= True,
-                       allrun_solver: bool = False, disaster_percentage: int = 0, lambda_poisson_gen_users_t_m: int = 10, only_solver: bool = False):
+                       allrun_solver: bool = False, disaster_percentage: int = 0, lambda_poisson_gen_users_t_m: int = 10, only_solver: bool = False,
+                       interference: bool = False):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
     
     # Generating makefile and compiling OMNeT++ and its frameworks
@@ -135,7 +137,7 @@ def run_multiple_seeds(chosen_seeds: List[int], size_x: int, size_y: int, size_s
               'slice_time': slice_time, 'p_size': p_size, 'app': app, 'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers,
               'is_micro': is_micro, 'cmdenv_config': cmdenv_config, 'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir,
               'extra_dir': extra_dir, 'num_slices': num_slices, 'simtime_move': simtime_move , 'per_slice': per_slice, 'disaster_percentage': disaster_percentage,
-              'allrun_solver': allrun_solver, 'lambda_poisson_gen_users_t_m': lambda_poisson_gen_users_t_m}  
+              'allrun_solver': allrun_solver, 'lambda_poisson_gen_users_t_m': lambda_poisson_gen_users_t_m, 'interference': interference}  
 
     if allrun_solver is True:
         print('\nRunnning cases by seeds one by one.')
@@ -184,7 +186,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
             modes: List[str]= [], result_dir: str = '.', slice_time: int = 1, multi_carriers: bool= False, is_micro: bool= True,
             extra_config_name: str = '', cmdenv_config: bool= True, min_time: int = 2, micro_power: int = 30,
             extra_dir: List[str] = [], num_slices: int= 10, simtime_move: int = 1000, make: bool= False, per_slice: bool= True,
-            disaster_percentage: int= 0, lambda_poisson_gen_users_t_m: int = 10, allrun_solver: bool= False, queue: Queue= None, only_solver: bool = False):
+            disaster_percentage: int= 0, lambda_poisson_gen_users_t_m: int = 10, allrun_solver: bool= False, queue: Queue= None,
+            only_solver: bool = False, interference: bool = False):
     """ This function is used to run all steps of a scenario study, using one process for each case diferent scenario,
         determined by the mode and min_sinrs."""
     
@@ -246,7 +249,7 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
               'sim_dir': sim_dir, 'num_bands': num_bands, 'repetitions': repetitions, 'slice_time': slice_time, 'p_size': p_size, 'app': app,
               'target_f': target_f, 'extra_config_name': extra_config_name, 'multi_carriers': multi_carriers, 'is_micro': is_micro, 'cmdenv_config': cmdenv_config,
               'min_time': min_time, 'micro_power': micro_power, 'net_dir': net_dir, 'project_dir': project_dir, 'num_slices': num_slices, 'per_slice': per_slice,
-              'simtime_move': simtime_move,'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver}
+              'simtime_move': simtime_move,'disaster_percentage': disaster_percentage, 'allrun_solver': allrun_solver, 'interference': interference}
     
     for param in extra_dir:
         kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
@@ -306,7 +309,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
         while not mode_queues[mode].empty():
             errors = mode_queues[mode].get()
             print(f'Error in process_func of Mode: {mode.capitalize()}, Seed: {chosen_seed}.\n')
-            if mode not in failed_modes: failed_modes.append(mode)
+            if mode not in failed_modes:
+                failed_modes.append(mode)
             queue.put(errors)
 
     if not only_solver:
@@ -332,7 +336,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  is_micro: bool= True,extra_config_name: str = '', cmdenv_config: bool = True,
                  min_time: int = 2, micro_power: int= 30, num_slices: int= 10, simtime_move: int = 1000, per_slice: bool = True,
                  disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None,
-                 only_solver: bool = False):
+                 only_solver: bool = False, interference: bool = False):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
     
     if not allrun_solver:
@@ -372,11 +376,11 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
             network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
-            if per_slice and mode != 'single':
+            if per_slice:
                 config_name_sliced_list, num_enbs_time = ilp_sliced_ini_per_slice(scen, ini_path_sliced, n_macros= n_macros, ues_per_slice = ues_per_slice, max_ues = max_ues, repetitions= repetitions,
                                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app,
                                                                                 extra_config_name= extra_config_name, target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name,
-                                                                                cmdenv_config= cmdenv_config, net_dir= net_dir, xml_filename= xml_filename)
+                                                                                cmdenv_config= cmdenv_config, net_dir= net_dir, xml_filename= xml_filename, interference= interference)
 
                 if config_name_sliced_list == None and num_enbs_time == None:
                     #There was a not feasible solution
@@ -391,18 +395,23 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                 config_name_sliced, enbs_sliced_num = ilp_sliced_ini(scen, ini_path_sliced, n_macros= n_macros, ues_per_slice = ues_per_slice , max_ues = max_ues, repetitions= repetitions,
                                                                 min_sinr= min_sinr, num_bands= num_bands, multi_carriers= multi_carriers, is_micro= is_micro, p_size= p_size, app= app, extra_config_name= extra_config_name,
                                                                 target_f= target_f, result_dir= result_dir, mode = mode, network_name= network_name, cmdenv_config= cmdenv_config,
-                                                                net_dir= net_dir, xml_filename= xml_filename)
+                                                                net_dir= net_dir, xml_filename= xml_filename, interference= interference)
+
                 ilp_ned(network = network_name, n_enbs= enbs_sliced_num, size_x= size_x, size_y= size_y, net_dir= net_dir, project_dir= project_dir)
 
-            # Running the simulation
-            run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path,
-                                                  min_sinr= min_sinr, num_slices= num_slices, multi_carriers= multi_carriers,
-                                                  extra_config_name= extra_config_name)          
+            if interference:
+                extra_out_name = 'inter'
+            else:
+                extra_out_name = ''
+            #Running the simulation
+            run_numbers = get_missing_simulations(mode= mode, num_bands= num_bands, repetitions= repetitions, sim_path= sim_path, min_sinr= min_sinr,
+                                                  num_slices= num_slices, multi_carriers= multi_carriers, extra_config_name= extra_config_name,
+                                                  extra_out_name=extra_out_name)          
             if run_numbers == []:
                 print('All simulations are already computed. Min Snr: {} - {} (Seed: {})'.format(min_sinr, mode.capitalize(), chosen_seed))
             else:
                 print("Executing Simulations - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
-                if per_slice and mode != 'single':
+                if per_slice:
                     run_simulation_per_slice(ini_path= ini_path_sliced, repetitions= repetitions, config_name_list= config_name_sliced_list, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
                 else:
                     run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced, cpu_num= cpu_count() if allrun_solver else 1, run_numbers= run_numbers)
@@ -450,8 +459,8 @@ def compare_last_line(filename: str, line: str) -> bool:
     else:
         return last_line == line
 
-def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int,
-                            num_slices: int, multi_carriers: bool, extra_config_name: str):
+def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, sim_path: str, min_sinr: int, num_slices: int,
+                            multi_carriers: bool, extra_config_name: str, extra_out_name: str):
     """This function returns the simulation runs that were not executed yet"""
 
     sim_resultdir = f'{sim_path}/results'
@@ -461,7 +470,7 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
     for band in num_bands:
         for slice in range(num_slices):
             for repetition in range(repetitions):
-                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}.out'
+                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}{("-"+extra_out_name) if extra_out_name != "" else ""}.out'
                 done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
                 if not done:
                     missing.append(counter)
