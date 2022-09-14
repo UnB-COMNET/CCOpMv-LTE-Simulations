@@ -516,7 +516,7 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, multicell_interference=interference)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
     hp.writeNumEnbs(f, options= num_enbs_time, iter_name= 'NumEnbs', parallel_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
@@ -902,7 +902,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, multicell_interference= interference)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
     hp.writeSeparation(f, "UEs")
