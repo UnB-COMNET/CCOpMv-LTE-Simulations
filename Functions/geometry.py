@@ -652,7 +652,7 @@ class MapChess:
         return list_movement
 
     def getSinrMap(self) -> List[List[float]]:
-        """Returns the sinr map.
+        """Returns the sinr map in Watts.
         
         The sinr map is composed of the received sinr values at each region (section)
         for a antenna (eNodeB) positioned at each one of the regions (sections)"""

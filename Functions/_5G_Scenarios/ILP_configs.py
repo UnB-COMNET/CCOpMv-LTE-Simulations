@@ -8,7 +8,6 @@ import geometry as geo
 import numpy as np
 from errors import check_mode
 import general_functions as genf
-from pprint import pprint
 
 def ilp_move_users(scen: geo.MapChess, filename: str, n_macros: int = 2, n_ues_macro: int = 60, ues_per_slice = list, config_name: str= 'ilp_move_users'):
   """This function generates a .ini file to watch users mobility behaviour.
@@ -234,7 +233,7 @@ def ilp_hando_fixed_ini(filename, seed, size_y:int =8000, size_x:int =8000, size
 def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                   extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
-                  cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
+                  cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference: bool= False):
   This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -268,7 +267,8 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
     micro_power: defines the transmission power used when is_micro is True
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
-  
+    interference: if True, enables multicell-interference
+
   #Dict with the parameters used (must be the first operation in the function)
   dict_args = locals()
 
@@ -308,6 +308,13 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
+  if interference:
+    extra_sca_vec_name = "inter"
+    cmdenv_output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-" + extra_sca_vec_name + ".out"
+  else:
+    extra_sca_vec_name = ''
+    cmdenv_output_file_name = None
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, 'ilp_sliced_ini', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
@@ -320,10 +327,10 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else''))
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
-      hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+      hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name=cmdenv_output_file_name)
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_name + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
@@ -336,7 +343,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, uplink_interference=interference, downlink_interference=interference)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
     hp.writeNumEnbs(f, options= num_enbs_time, iter_name= 'NumEnbs', parallel_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
@@ -387,7 +394,7 @@ def ilp_sliced_ini(filename, seed, size_y:int =8000, size_x:int =8000, size_sect
 def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slice = [], max_ues: int = 0, min_sinr: float = 10, repetitions: int = 5,
                   num_bands: List[int] = [100], multi_carriers: bool = True, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                   extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
-                  cmdenv_config: bool = False, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
+                  cmdenv_config: bool = False, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference: bool= False):
   """
   This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
@@ -420,6 +427,7 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
     net_dir: directory containing the network
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
+    interference: if True, enables multicell-interference
   """
   seed = scen.chosen_seed
   size_x = scen.size_x
@@ -471,6 +479,15 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
+  extra_sca_vec_name: str
+  cmdenv_output_file_name: str
+  if interference:
+    extra_sca_vec_name = "inter"
+    cmdenv_output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-" + extra_sca_vec_name + ".out"
+  else:
+    extra_sca_vec_name = ''
+    cmdenv_output_file_name = None
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, 'ilp_sliced_ini', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.defaultGeneral(f, is5g= True)
@@ -483,10 +500,10 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else''))
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
-      hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+      hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name=cmdenv_output_file_name)
     hp.writeSeparation(f, "Snapshots")
     hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_name + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
     hp.writeSeparation(f, "Transmission Power")
@@ -550,7 +567,7 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
 def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000, size_sector:int =800, n_macros: int = 2, min_sinr: float = 10, repetitions: int = 5,
                              num_bands: List[int] = [100], multi_carriers: bool = True, slice_time:int = 1, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                              extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
-                             cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
+                             cmdenv_config: bool = False, micro_power: int = 30, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference: bool= False):
   This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
   
   The simulation configured with the resulting file has the purpose of generate data about the behaviour of all elements involved thoughout multiple slices (simulations),
@@ -584,6 +601,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
     micro_power: defines the transmission power used when is_micro is True
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
+    interference: if True enables multicell-interference
 
   #Dict with the parameters used (must be the first operation in the function)
   dict_args = locals()
@@ -650,6 +668,13 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
+  if interference:
+    extra_sca_vec_name = "inter"
+    cmdenv_output_file_name = "${resultdir}/" + config_pattern + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-" + extra_sca_vec_name + ".out"
+  else:
+    extra_sca_vec_name = ''
+    cmdenv_output_file_name = None
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, 'ilp_sliced_ini2', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.generalConfig(f)
@@ -664,7 +689,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, uplink_interference=interference, downlink_interference=interference)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
     hp.writeSeparation(f, "UEs")
@@ -705,10 +730,10 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
       hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'')) #Vec/Sca name
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
-        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name= cmdenv_output_file_name)
       hp.writeSeparation(f, "Snapshots")
       hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_pattern + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
       hp.writeSlice(f, slice= slice, iter_name= iter_slice_name)
@@ -746,7 +771,7 @@ def ilp_sliced_ini_per_slice(filename, seed, size_y:int =8000, size_x:int =8000,
 def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 2, ues_per_slice = [], max_ues: int = 0, min_sinr: float = 10, repetitions: int = 5,
                              num_bands: List[int] = [100], multi_carriers: bool = True, is_micro: bool = True, p_size: int = 40, app: str= "voip", target_f:int = 10,
                              extra_config_name: str = '', result_dir: str = '.', mode: str = '', network_name: str = '', net_dir: str= '_5G/networks',
-                             cmdenv_config: bool = False, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna'):
+                             cmdenv_config: bool = False, xml_filename: str= 'ilp_fixed_users-sched=MAXCI--0.sna', interference: bool= False):
   """
   
   This function generates a .ini file to create a simulation with multiple UEs and eNBs using slices of time.
@@ -777,6 +802,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
     net_dir: directory containing the network
     cmdenv_config: tells if cmdenv should be configured to not display the performance and redirect its output
     xml_filename: name of the snapshot file containing the movement caracteristics of the users
+    interference: if True enables multicell-interference
   """
 
   seed = scen.chosen_seed
@@ -853,6 +879,15 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
 
+  extra_sca_vec_name: str
+  cmdenv_output_file_name: str
+  if interference:
+    extra_sca_vec_name = "inter"
+    cmdenv_output_file_name = "${resultdir}/" + config_pattern + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-" + extra_sca_vec_name + ".out"
+  else:
+    extra_sca_vec_name = ''
+    cmdenv_output_file_name = None
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, 'ilp_sliced_ini2', dict_args= dict_args, extra = 'Using {} macros with {} ues each. Slicing 10s in 10 different simulations. Using microcells.'.format(n_macros, 60))
     hp.generalConfig(f)
@@ -895,10 +930,10 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
       hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}")
+      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'')) #Vec/Sca name
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
-        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True)
+        hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name= cmdenv_output_file_name)
       hp.writeSeparation(f, "Snapshots")
       hp.writeSnapshotsConfig(f, filename= "../../../Functions/" + config_pattern + "-RBs_${RBs}-Slice_${Slice}-"+str(min_sinr)+"-${repetition}.sna", snapshot= False)
       hp.writeSlice(f, slice= slice, iter_name= iter_slice_name)

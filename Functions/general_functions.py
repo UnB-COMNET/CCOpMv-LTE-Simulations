@@ -1,4 +1,3 @@
-from cProfile import label
 from pathlib import Path
 from typing import List
 from matplotlib import use
@@ -6,7 +5,7 @@ import numpy as np
 import geometry as geo
 import matplotlib.pyplot as plt
 from scipy.stats import poisson
-from random import choice, seed
+from random import choice, randint, seed, random
 
 # TODO: Use OmNET absolute path.
 def get_frameworks_path():
@@ -47,6 +46,8 @@ def verify_modes(modes: List[str]):
             verif_modes.append('fixed')
         elif mode.lower() == 'single' or mode.lower() == 'tid':
             verif_modes.append('single')
+        elif mode.lower() == 'ga':
+            verif_modes.append('ga')
 
     return np.unique(verif_modes).tolist()
 
@@ -208,7 +209,6 @@ def get_ues_connections_per_slice(result, ues_coords, ues_list: List[int], anten
                 break
         
         if ue_find == ue_target:
-            # It is assumed that the UE's region is served by one of the antennas.
             connections.append(antennas_regions.index(result[region])+1)
         else:
             
@@ -232,16 +232,16 @@ def plot_scenario(scen: geo.MapChess, title: str):
     plt.show()
     print("Plot")
 
-def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False):
-    """Get the regions which each antenna serves.
+def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False):
+    """Get a map with the antennas that would serve each region.
 
-       Params:
-            antennas_regions: List with the antennas regions in the map
-            metric_map_mn: Matrix m x n representing a list of the metric map for each antenna position. m must be equal to n.
-            minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
+    Args:
+        antennas_regions: List with the antennas regions in the map
+        metric_map_mn: Matrix m x n representing a list of the metric map for each antenna position. m must be equal to n.
+        minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
 
-       Returns:
-            Dictionary with the antennas regions as keys and a list with the serving regions as values
+    Returns:
+        List with the antennas region that serves each index/region.
     """
     metrics_of_service = {}
 
@@ -263,15 +263,31 @@ def get_regions_of_service(antennas_regions: List[int], metric_map_mn: List[List
         metrics_of_service[str(m)][~comp_array] = np.inf if minimization else -np.inf #Inverts comp_array because we want the values of m that lost to n
         metrics_of_service[str(n)][comp_array] = np.inf if minimization else -np.inf #Changing the values of n that lose to those of m
     
-    regions_of_service = {}
+    map_of_service = [ -1 for _ in range(len(metric_map_mn[-1]))]
 
     for key in metrics_of_service:
         if minimization:
-            regions_of_service[key] = np.ravel(np.argwhere(metrics_of_service[key] < np.inf))
+            served_sectors = np.ravel(np.argwhere(metrics_of_service[key] < np.inf))
         else:
-            regions_of_service[key] = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
+            served_sectors = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
+        for i in served_sectors:
+                map_of_service[i] = key
 
-    return regions_of_service
+    if -1 in map_of_service:
+        raise(ValueError('One region is not served in Map Of Service with value -1.'))
+
+    return map_of_service
+
+def gen_first_antenna_region(chosen_seed: int, n_sectors: int):
+
+    seed(chosen_seed)
+
+    for _ in range(n_sectors):
+        random()
+
+    first_antenna_region = randint(0, n_sectors - 1)
+
+    return first_antenna_region
 
 def gen_users_t_m(seed, lambda_poisson, num_slices):
     lambda_ = lambda_poisson
