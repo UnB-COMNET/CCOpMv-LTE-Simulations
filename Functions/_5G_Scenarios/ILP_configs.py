@@ -500,7 +500,7 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else''))
+    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'-'))
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
       hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name=cmdenv_output_file_name)
@@ -929,7 +929,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
       hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'')) #Vec/Sca name
+      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'-')) #Vec/Sca name
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
         hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name= cmdenv_output_file_name)
