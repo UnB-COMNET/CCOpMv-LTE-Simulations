@@ -878,7 +878,6 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
-
   extra_sca_vec_name: str
   cmdenv_output_file_name: str
   if interference:

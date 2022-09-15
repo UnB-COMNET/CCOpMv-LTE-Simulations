@@ -683,7 +683,7 @@ def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterat
 def writeCmdenvConfig(f, min_sinr: int, config_name: str, output_file_name: str = None, performance_display = False, redirect_output= False):
   """Writes the cmdenv configuration in a .ini file."""
   if output_file_name is None:
-    output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}.out"
+    output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-.out"
 
   f.write(('cmdenv-performance-display = {p_display}\n'
            'cmdenv-redirect-output = {r_output}\n'
