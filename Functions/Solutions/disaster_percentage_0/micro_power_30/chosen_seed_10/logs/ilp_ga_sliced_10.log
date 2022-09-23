@@ -1,0 +1,3214 @@
+-------------Calculating Solution (this may take a while)
++++++++++++++++++++Min Sinr: 10 dB (ga)
++++++++++++++++++++With backhaul constraint. Start: 2022-09-14 00:16:59
+
+Parameters:
+- chosen seed 10
+- Map with 100 sectors
+- Map 4000 x 4000 m
+- Sector has a side of 400 m
+- Max time:  12
+- users_t_m:  [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0, 0, 1, 23, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [2, 1, 0, 1, 2, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 1, 0, 1, 0, 0, 0, 2, 0, 1, 2, 2, 0, 0, 0, 1, 1, 1, 1, 1, 25, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], [3, 2, 1, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 2, 2, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 3, 6, 5, 0, 0, 1, 2, 0, 0, 1, 0, 26, 1, 2, 0, 1, 2, 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 3, 1, 0, 1, 0, 1, 0, 1, 1, 2, 0, 1, 0, 0, 1, 0, 1, 0, 0, 3, 1, 1, 2, 0, 0, 1], [0, 3, 2, 1, 0, 1, 0, 1, 0, 0, 2, 0, 1, 0, 1, 1, 1, 3, 1, 1, 1, 1, 1, 3, 0, 1, 1, 1, 1, 0, 2, 0, 1, 0, 1, 2, 0, 2, 0, 0, 1, 0, 1, 3, 3, 1, 0, 0, 1, 0, 1, 2, 0, 0, 3, 16, 2, 0, 1, 1, 0, 3, 2, 2, 2, 1, 0, 0, 2, 2, 1, 0, 1, 0, 2, 0, 0, 2, 3, 2, 0, 4, 4, 1, 0, 1, 0, 1, 3, 1, 4, 2, 1, 1, 1, 0, 0, 1, 3, 1], [2, 4, 3, 2, 1, 1, 1, 2, 2, 0, 1, 1, 2, 0, 3, 0, 1, 2, 2, 0, 2, 0, 3, 0, 0, 0, 3, 2, 0, 1, 1, 1, 2, 0, 2, 3, 2, 0, 1, 0, 7, 4, 0, 2, 2, 4, 3, 1, 0, 0, 2, 1, 0, 2, 1, 22, 3, 2, 1, 0, 2, 0, 2, 0, 1, 1, 1, 0, 0, 2, 3, 0, 0, 1, 3, 0, 2, 1, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 0, 1, 0, 1, 2, 2, 1, 2, 1, 0, 2, 3], [1, 0, 0, 0, 2, 0, 1, 2, 1, 3, 2, 0, 3, 3, 3, 1, 2, 3, 1, 1, 1, 4, 3, 2, 1, 1, 1, 1, 1, 1, 3, 5, 1, 2, 2, 1, 3, 3, 1, 3, 2, 1, 4, 0, 1, 5, 7, 0, 2, 1, 1, 1, 1, 0, 1, 18, 3, 4, 2, 2, 1, 1, 2, 2, 0, 0, 3, 2, 5, 3, 0, 1, 2, 1, 1, 1, 2, 3, 3, 1, 1, 3, 1, 1, 1, 0, 0, 1, 0, 0, 2, 0, 2, 0, 2, 4, 2, 2, 1, 1], [0, 3, 1, 3, 3, 1, 0, 2, 1, 1, 1, 1, 1, 0, 1, 0, 1, 2, 2, 1, 2, 2, 4, 2, 2, 2, 1, 0, 1, 3, 4, 0, 1, 3, 1, 1, 3, 1, 3, 0, 2, 2, 2, 4, 1, 2, 2, 0, 0, 2, 1, 0, 1, 5, 1, 0, 1, 3, 0, 2, 2, 2, 2, 1, 1, 1, 3, 0, 1, 2, 1, 3, 2, 1, 2, 1, 3, 1, 2, 2, 1, 3, 1, 1, 1, 1, 1, 0, 4, 2, 1, 1, 1, 3, 3, 0, 3, 2, 1, 1], [2, 0, 1, 2, 0, 3, 0, 1, 2, 2, 0, 1, 2, 3, 3, 1, 3, 4, 3, 0, 0, 2, 2, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 3, 1, 1, 1, 0, 0, 1, 1, 3, 0, 1, 2, 2, 3, 0, 0, 1, 2, 1, 0, 0, 3, 2, 2, 1, 0, 0, 0, 1, 5, 2, 2, 0, 2, 0, 3, 1, 1, 0, 2, 3, 4, 2, 0, 1, 2, 0, 2, 1, 0, 1, 2, 1, 6, 0, 0, 0, 1, 4, 2, 0, 0, 0, 5, 0, 0, 0], [1, 1, 1, 1, 0, 0, 3, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1, 3, 2, 0, 0, 1, 2, 1, 0, 1, 0, 2, 1, 1, 0, 0, 0, 3, 2, 0, 1, 1, 0, 1, 2, 2, 3, 1, 0, 1, 2, 0, 1, 0, 1, 1, 0, 1, 0, 0, 2, 1, 1, 2, 2, 0, 0, 1, 2, 1, 1, 1, 3, 1, 1, 0, 0, 0, 4, 1, 0, 0, 2, 3, 2, 1, 1, 2, 1, 1, 2, 1, 4, 0, 3, 0, 2, 1, 0, 0, 0, 0, 2], [1, 1, 1, 1, 0, 0, 0, 0, 2, 2, 1, 2, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 2, 1, 0, 0, 0, 1, 3, 0, 0, 0, 0, 2, 1, 0, 0, 0, 1, 0, 2, 2, 0, 0, 1, 0, 0, 1, 1, 2, 0, 0, 0, 1, 0, 1, 2, 0, 1, 1, 1, 0, 0, 2, 2, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 2, 2, 0, 1, 0, 0, 0, 0, 2, 2, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0], [1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 2, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+MAX_USER_PER_ANTENNAS_m:  [60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60, 60]
+antennas_map_m:  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+FIRST_ANTENNA:  53
+MIN_SNR_m:  [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0]
+-MIN_DIST:  2000
+- disaster percentage:  0
+
+Starting GA of slice 0.
+
+Generation :  1
+Fitness of the best solution : 88
+Generation :  2
+Fitness of the best solution : 94
+Generation :  3
+Fitness of the best solution : 97
+Generation :  4
+Fitness of the best solution : 98
+Generation :  5
+Fitness of the best solution : 98
+Generation :  6
+Fitness of the best solution : 98
+Generation :  7
+Fitness of the best solution : 98
+Generation :  8
+Fitness of the best solution : 98
+Generation :  9
+Fitness of the best solution : 98
+Generation :  10
+Fitness of the best solution : 98
+Generation :  11
+Fitness of the best solution : 98
+Generation :  12
+Fitness of the best solution : 98
+Generation :  13
+Fitness of the best solution : 98
+Generation :  14
+Fitness of the best solution : 98
+Generation :  15
+Fitness of the best solution : 98
+Generation :  16
+Fitness of the best solution : 98
+Generation :  17
+Fitness of the best solution : 98
+Generation :  18
+Fitness of the best solution : 98
+Generation :  19
+Fitness of the best solution : 98
+Generation :  20
+Fitness of the best solution : 98
+Generation :  21
+Fitness of the best solution : 98
+Generation :  22
+Fitness of the best solution : 98
+Generation :  23
+Fitness of the best solution : 98
+Generation :  24
+Fitness of the best solution : 98
+Generation :  25
+Fitness of the best solution : 98
+Generation :  26
+Fitness of the best solution : 98
+Generation :  27
+Fitness of the best solution : 98
+Generation :  28
+Fitness of the best solution : 98
+Generation :  29
+Fitness of the best solution : 98
+Generation :  30
+Fitness of the best solution : 98
+Generation :  31
+Fitness of the best solution : 98
+Generation :  32
+Fitness of the best solution : 98
+Generation :  33
+Fitness of the best solution : 98
+Generation :  34
+Fitness of the best solution : 98
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 2
+Index of the best solution : 2
+Total generations: 34.
+Best fitness value reached after 4 generations.
+
+53 : 67 => 1649.2422502470642
+
+Starting GA of slice 1.
+
+Generation :  1
+Fitness of the best solution : 85
+Generation :  2
+Fitness of the best solution : 91
+Generation :  3
+Fitness of the best solution : 91
+Generation :  4
+Fitness of the best solution : 91
+Generation :  5
+Fitness of the best solution : 91
+Generation :  6
+Fitness of the best solution : 93
+Generation :  7
+Fitness of the best solution : 93
+Generation :  8
+Fitness of the best solution : 94
+Generation :  9
+Fitness of the best solution : 94
+Generation :  10
+Fitness of the best solution : 95
+Generation :  11
+Fitness of the best solution : 95
+Generation :  12
+Fitness of the best solution : 95
+Generation :  13
+Fitness of the best solution : 95
+Generation :  14
+Fitness of the best solution : 95
+Generation :  15
+Fitness of the best solution : 95
+Generation :  16
+Fitness of the best solution : 95
+Generation :  17
+Fitness of the best solution : 95
+Generation :  18
+Fitness of the best solution : 95
+Generation :  19
+Fitness of the best solution : 95
+Generation :  20
+Fitness of the best solution : 95
+Generation :  21
+Fitness of the best solution : 95
+Generation :  22
+Fitness of the best solution : 95
+Generation :  23
+Fitness of the best solution : 95
+Generation :  24
+Fitness of the best solution : 95
+Generation :  25
+Fitness of the best solution : 95
+Generation :  26
+Fitness of the best solution : 95
+Generation :  27
+Fitness of the best solution : 95
+Generation :  28
+Fitness of the best solution : 95
+Generation :  29
+Fitness of the best solution : 95
+Generation :  30
+Fitness of the best solution : 95
+Generation :  31
+Fitness of the best solution : 95
+Generation :  32
+Fitness of the best solution : 95
+Generation :  33
+Fitness of the best solution : 95
+Generation :  34
+Fitness of the best solution : 95
+Generation :  35
+Fitness of the best solution : 95
+Generation :  36
+Fitness of the best solution : 95
+Generation :  37
+Fitness of the best solution : 95
+Generation :  38
+Fitness of the best solution : 95
+Generation :  39
+Fitness of the best solution : 95
+Generation :  40
+Fitness of the best solution : 95
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 5
+Index of the best solution : 5
+Total generations: 40.
+Best fitness value reached after 10 generations.
+
+12 : 38 => 2529.8221281347037
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 74 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 74 => 2262.741699796952
+
+53 : 67 => 1649.2422502470642
+
+53 : 74 => 894.4271909999159
+
+67 : 74 => 1264.9110640673518
+
+Starting GA of slice 2.
+
+Generation :  1
+Fitness of the best solution : 82
+Generation :  2
+Fitness of the best solution : 88
+Generation :  3
+Fitness of the best solution : 89
+Generation :  4
+Fitness of the best solution : 88
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 92
+Generation :  8
+Fitness of the best solution : 92
+Generation :  9
+Fitness of the best solution : 92
+Generation :  10
+Fitness of the best solution : 93
+Generation :  11
+Fitness of the best solution : 93
+Generation :  12
+Fitness of the best solution : 94
+Generation :  13
+Fitness of the best solution : 94
+Generation :  14
+Fitness of the best solution : 94
+Generation :  15
+Fitness of the best solution : 94
+Generation :  16
+Fitness of the best solution : 94
+Generation :  17
+Fitness of the best solution : 94
+Generation :  18
+Fitness of the best solution : 94
+Generation :  19
+Fitness of the best solution : 94
+Generation :  20
+Fitness of the best solution : 94
+Generation :  21
+Fitness of the best solution : 94
+Generation :  22
+Fitness of the best solution : 94
+Generation :  23
+Fitness of the best solution : 94
+Generation :  24
+Fitness of the best solution : 94
+Generation :  25
+Fitness of the best solution : 94
+Generation :  26
+Fitness of the best solution : 94
+Generation :  27
+Fitness of the best solution : 94
+Generation :  28
+Fitness of the best solution : 94
+Generation :  29
+Fitness of the best solution : 94
+Generation :  30
+Fitness of the best solution : 94
+Generation :  31
+Fitness of the best solution : 94
+Generation :  32
+Fitness of the best solution : 94
+Generation :  33
+Fitness of the best solution : 94
+Generation :  34
+Fitness of the best solution : 94
+Generation :  35
+Fitness of the best solution : 94
+Generation :  36
+Fitness of the best solution : 94
+Generation :  37
+Fitness of the best solution : 94
+Generation :  38
+Fitness of the best solution : 94
+Generation :  39
+Fitness of the best solution : 91
+Generation :  40
+Fitness of the best solution : 92
+Generation :  41
+Fitness of the best solution : 92
+Generation :  42
+Fitness of the best solution : 92
+Generation :  43
+Fitness of the best solution : 92
+Generation :  44
+Fitness of the best solution : 92
+Generation :  45
+Fitness of the best solution : 93
+Generation :  46
+Fitness of the best solution : 93
+Generation :  47
+Fitness of the best solution : 94
+Generation :  48
+Fitness of the best solution : 94
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 6
+Index of the best solution : 70
+Total generations: 48.
+Best fitness value reached after 12 generations.
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 74 => 2529.8221281347037
+
+38 : 46 => 894.4271909999159
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 74 => 2262.741699796952
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 74 => 1442.2205101855957
+
+53 : 67 => 1649.2422502470642
+
+53 : 74 => 894.4271909999159
+
+67 : 74 => 1264.9110640673518
+
+Starting GA of slice 3.
+
+Generation :  1
+Fitness of the best solution : 82
+Generation :  2
+Fitness of the best solution : 84
+Generation :  3
+Fitness of the best solution : 86
+Generation :  4
+Fitness of the best solution : 87
+Generation :  5
+Fitness of the best solution : 85
+Generation :  6
+Fitness of the best solution : 85
+Generation :  7
+Fitness of the best solution : 85
+Generation :  8
+Fitness of the best solution : 86
+Generation :  9
+Fitness of the best solution : 86
+Generation :  10
+Fitness of the best solution : 87
+Generation :  11
+Fitness of the best solution : 87
+Generation :  12
+Fitness of the best solution : 88
+Generation :  13
+Fitness of the best solution : 89
+Generation :  14
+Fitness of the best solution : 88
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 88
+Generation :  17
+Fitness of the best solution : 89
+Generation :  18
+Fitness of the best solution : 88
+Generation :  19
+Fitness of the best solution : 88
+Generation :  20
+Fitness of the best solution : 87
+Generation :  21
+Fitness of the best solution : 87
+Generation :  22
+Fitness of the best solution : 88
+Generation :  23
+Fitness of the best solution : 88
+Generation :  24
+Fitness of the best solution : 88
+Generation :  25
+Fitness of the best solution : 89
+Generation :  26
+Fitness of the best solution : 89
+Generation :  27
+Fitness of the best solution : 89
+Generation :  28
+Fitness of the best solution : 89
+Generation :  29
+Fitness of the best solution : 89
+Generation :  30
+Fitness of the best solution : 89
+Generation :  31
+Fitness of the best solution : 89
+Generation :  32
+Fitness of the best solution : 89
+Generation :  33
+Fitness of the best solution : 89
+Generation :  34
+Fitness of the best solution : 90
+Generation :  35
+Fitness of the best solution : 90
+Generation :  36
+Fitness of the best solution : 89
+Generation :  37
+Fitness of the best solution : 89
+Generation :  38
+Fitness of the best solution : 89
+Generation :  39
+Fitness of the best solution : 90
+Generation :  40
+Fitness of the best solution : 90
+Generation :  41
+Fitness of the best solution : 89
+Generation :  42
+Fitness of the best solution : 88
+Generation :  43
+Fitness of the best solution : 89
+Generation :  44
+Fitness of the best solution : 89
+Generation :  45
+Fitness of the best solution : 90
+Generation :  46
+Fitness of the best solution : 90
+Generation :  47
+Fitness of the best solution : 90
+Generation :  48
+Fitness of the best solution : 90
+Generation :  49
+Fitness of the best solution : 89
+Generation :  50
+Fitness of the best solution : 90
+Generation :  51
+Fitness of the best solution : 90
+Generation :  52
+Fitness of the best solution : 90
+Generation :  53
+Fitness of the best solution : 90
+Generation :  54
+Fitness of the best solution : 90
+Generation :  55
+Fitness of the best solution : 91
+Generation :  56
+Fitness of the best solution : 90
+Generation :  57
+Fitness of the best solution : 90
+Generation :  58
+Fitness of the best solution : 88
+Generation :  59
+Fitness of the best solution : 88
+Generation :  60
+Fitness of the best solution : 88
+Generation :  61
+Fitness of the best solution : 87
+Generation :  62
+Fitness of the best solution : 87
+Generation :  63
+Fitness of the best solution : 88
+Generation :  64
+Fitness of the best solution : 90
+Generation :  65
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 78
+Total generations: 65.
+Best fitness value reached after 55 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 4.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 5.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 6.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 7.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 8.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 9.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 10.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+
+Starting GA of slice 11.
+
+Generation :  1
+Fitness of the best solution : 90
+Generation :  2
+Fitness of the best solution : 90
+Generation :  3
+Fitness of the best solution : 90
+Generation :  4
+Fitness of the best solution : 90
+Generation :  5
+Fitness of the best solution : 90
+Generation :  6
+Fitness of the best solution : 90
+Generation :  7
+Fitness of the best solution : 90
+Generation :  8
+Fitness of the best solution : 90
+Generation :  9
+Fitness of the best solution : 90
+Generation :  10
+Fitness of the best solution : 90
+Generation :  11
+Fitness of the best solution : 90
+Generation :  12
+Fitness of the best solution : 90
+Generation :  13
+Fitness of the best solution : 90
+Generation :  14
+Fitness of the best solution : 90
+Generation :  15
+Fitness of the best solution : 90
+Generation :  16
+Fitness of the best solution : 90
+Generation :  17
+Fitness of the best solution : 90
+Generation :  18
+Fitness of the best solution : 90
+Generation :  19
+Fitness of the best solution : 90
+Generation :  20
+Fitness of the best solution : 90
+Generation :  21
+Fitness of the best solution : 90
+Generation :  22
+Fitness of the best solution : 90
+Generation :  23
+Fitness of the best solution : 90
+Generation :  24
+Fitness of the best solution : 90
+Generation :  25
+Fitness of the best solution : 90
+Generation :  26
+Fitness of the best solution : 90
+Generation :  27
+Fitness of the best solution : 90
+Generation :  28
+Fitness of the best solution : 90
+Generation :  29
+Fitness of the best solution : 90
+Generation :  30
+Fitness of the best solution : 90
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 1 0 0 0 0 0 0 0 1 0 0 0 0 0 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 0 0 0 0 0
+ 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 10
+Index of the best solution : 0
+Total generations: 30.
+Best fitness value reached after 0 generations.
+
+12 : 22 => 400.0
+
+12 : 38 => 2529.8221281347037
+
+12 : 46 => 2000.0
+
+12 : 52 => 1600.0
+
+12 : 53 => 1649.2422502470642
+
+12 : 67 => 2828.42712474619
+
+12 : 68 => 3124.099870362662
+
+12 : 74 => 2529.8221281347037
+
+12 : 92 => 3200.0
+
+22 : 38 => 2433.105012119288
+
+22 : 46 => 1788.8543819998317
+
+22 : 52 => 1200.0
+
+22 : 53 => 1264.9110640673518
+
+22 : 67 => 2561.2496949731394
+
+22 : 68 => 2884.4410203711914
+
+22 : 74 => 2154.0659228538016
+
+22 : 92 => 2800.0
+
+38 : 46 => 894.4271909999159
+
+38 : 52 => 2529.8221281347037
+
+38 : 53 => 2154.0659228538016
+
+38 : 67 => 1264.9110640673518
+
+38 : 68 => 1200.0
+
+38 : 74 => 2262.741699796952
+
+38 : 92 => 3394.1125496954282
+
+46 : 52 => 1649.2422502470642
+
+46 : 53 => 1264.9110640673518
+
+46 : 67 => 894.4271909999159
+
+46 : 68 => 1131.370849898476
+
+46 : 74 => 1442.2205101855957
+
+46 : 92 => 2561.2496949731394
+
+52 : 53 => 400.0
+
+52 : 67 => 2039.607805437114
+
+52 : 68 => 2433.105012119288
+
+52 : 74 => 1131.370849898476
+
+52 : 92 => 1600.0
+
+53 : 67 => 1649.2422502470642
+
+53 : 68 => 2039.607805437114
+
+53 : 74 => 894.4271909999159
+
+53 : 92 => 1649.2422502470642
+
+67 : 68 => 400.0
+
+67 : 74 => 1264.9110640673518
+
+67 : 92 => 2332.38075793812
+
+68 : 74 => 1649.2422502470642
+
+68 : 92 => 2683.281572999748
+
+74 : 92 => 1131.370849898476
+t=0
+x_0_53
+	 y_0,53,34 = 17.551879760263034 dB
+	 y_0,53,35 = 15.899476363126126 dB
+	 y_0,53,44 = 23.369674923766866 dB
+	 y_0,53,45 = 19.09307065112928 dB
+	 y_0,53,46 = 7.139871374711504 dB
+	 y_0,53,54 = 30.473110775456348 dB
+	 y_0,53,55 = 13.771743295194142 dB
+		SNR medio: 23.41948281605687
+		Usuarios totais: 32
+x_0_67
+		Usuarios totais: 0
+Distances:
+53 : 67 = 1649.2422502470642
+t=1
+x_1_12
+		Usuarios totais: 0
+x_1_38
+		Usuarios totais: 0
+x_1_53
+	 y_1,53,0 = 2.3505556371609795 dB
+	 y_1,53,3 = 4.770903821348256 dB
+	 y_1,53,4 = 7.134295194512305 dB
+	 y_1,53,9 = 4.167284133780641 dB
+	 y_1,53,11 = 3.5045007319130264 dB
+	 y_1,53,19 = 0.48456556240327586 dB
+	 y_1,53,23 = 10.869758986104955 dB
+	 y_1,53,24 = 14.337566910223813 dB
+	 y_1,53,25 = 10.41655154199779 dB
+	 y_1,53,34 = 17.551879760263034 dB
+	 y_1,53,35 = 15.899476363126126 dB
+	 y_1,53,42 = 18.39305578623174 dB
+	 y_1,53,44 = 23.369674923766866 dB
+	 y_1,53,45 = 19.09307065112928 dB
+	 y_1,53,50 = 12.734905566559263 dB
+	 y_1,53,51 = 16.241197381798628 dB
+	 y_1,53,52 = 34.96502696126121 dB
+	 y_1,53,53 = 80.63556941303585 dB
+	 y_1,53,54 = 30.473110775456348 dB
+	 y_1,53,63 = 32.249078665110105 dB
+	 y_1,53,70 = 2.447378224984618 dB
+	 y_1,53,81 = 17.5296593206795 dB
+	 y_1,53,82 = 4.240429175458701 dB
+		SNR medio: 67.0185379771275
+		Usuarios totais: 32
+x_1_67
+	 y_1,67,1 = 1.823427409578784 dB
+	 y_1,67,18 = 4.498576339379255 dB
+	 y_1,67,36 = 16.91639489341695 dB
+	 y_1,67,38 = 20.819126326326057 dB
+	 y_1,67,46 = 11.689397587872605 dB
+	 y_1,67,55 = 18.965414812644127 dB
+	 y_1,67,57 = 30.325764413821943 dB
+	 y_1,67,59 = 16.810046476838224 dB
+	 y_1,67,94 = 7.689760792716754 dB
+	 y_1,67,99 = 13.54195956871817 dB
+		SNR medio: 21.529500329463474
+		Usuarios totais: 35
+x_1_74
+		Usuarios totais: 0
+Distances:
+12 : 38 = 2529.8221281347037
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 74 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 74 = 2262.741699796952
+53 : 67 = 1649.2422502470642
+53 : 74 = 894.4271909999159
+67 : 74 = 1264.9110640673518
+t=2
+x_2_12
+	 y_2,12,0 = 21.621993899406533 dB
+	 y_2,12,1 = 23.002567059900855 dB
+	 y_2,12,2 = 27.582022393240948 dB
+	 y_2,12,6 = 13.98727719606029 dB
+	 y_2,12,11 = 30.728790202799587 dB
+	 y_2,12,14 = 15.332938801589549 dB
+	 y_2,12,15 = 14.16405792303624 dB
+	 y_2,12,20 = 18.186016382847185 dB
+	 y_2,12,22 = 30.733339691624153 dB
+	 y_2,12,23 = 28.68513895067815 dB
+	 y_2,12,25 = 14.582951349036776 dB
+	 y_2,12,30 = 10.93987868928724 dB
+		SNR medio: 25.45688513700666
+		Usuarios totais: 16
+x_2_38
+	 y_2,38,8 = 10.538599320383753 dB
+	 y_2,38,9 = 12.615020742031078 dB
+	 y_2,38,17 = 14.56823262211364 dB
+	 y_2,38,18 = 21.98932263980059 dB
+	 y_2,38,26 = 11.84131331101338 dB
+	 y_2,38,29 = 27.563248072956867 dB
+	 y_2,38,38 = 91.48740747183204 dB
+	 y_2,38,45 = 20.419658499622344 dB
+	 y_2,38,46 = 22.56418837589787 dB
+	 y_2,38,49 = 18.702486679277 dB
+	 y_2,38,59 = 17.84133816566751 dB
+		SNR medio: 81.0734844061924
+		Usuarios totais: 21
+x_2_46
+		Usuarios totais: 0
+x_2_53
+	 y_2,53,24 = 14.337566910223813 dB
+	 y_2,53,33 = 19.005468189088504 dB
+	 y_2,53,43 = 29.612312236269744 dB
+	 y_2,53,44 = 23.369674923766866 dB
+	 y_2,53,53 = 80.63556941303585 dB
+	 y_2,53,62 = 20.48107957773118 dB
+	 y_2,53,63 = 32.249078665110105 dB
+	 y_2,53,72 = 18.708471328790395 dB
+	 y_2,53,81 = 17.5296593206795 dB
+	 y_2,53,90 = 11.512530765700973 dB
+		SNR medio: 70.6356884811351
+		Usuarios totais: 14
+x_2_67
+	 y_2,67,37 = 23.482056037329002 dB
+	 y_2,67,55 = 18.965414812644127 dB
+	 y_2,67,56 = 33.62554708650438 dB
+	 y_2,67,57 = 30.325764413821943 dB
+	 y_2,67,77 = 25.974697244595845 dB
+	 y_2,67,79 = 8.311864158335396 dB
+	 y_2,67,88 = 30.927154867084923 dB
+	 y_2,67,95 = 12.467717728102514 dB
+	 y_2,67,96 = 13.271770698509158 dB
+	 y_2,67,99 = 13.54195956871817 dB
+		SNR medio: 27.312732725439254
+		Usuarios totais: 37
+x_2_74
+	 y_2,74,50 = 15.908932034523232 dB
+	 y_2,74,60 = 12.659652946410574 dB
+	 y_2,74,64 = 32.65199167760032 dB
+	 y_2,74,73 = 24.09941706210428 dB
+	 y_2,74,74 = 87.90448531252426 dB
+	 y_2,74,75 = 33.696635581707355 dB
+	 y_2,74,82 = 22.108358814361964 dB
+	 y_2,74,83 = 23.161808136035177 dB
+	 y_2,74,85 = 27.830056177345966 dB
+	 y_2,74,93 = 13.966602339662018 dB
+	 y_2,74,94 = 21.648515862659252 dB
+		SNR medio: 77.49059818622557
+		Usuarios totais: 18
+Distances:
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 74 = 2529.8221281347037
+38 : 46 = 894.4271909999159
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 74 = 2262.741699796952
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 74 = 1442.2205101855957
+53 : 67 = 1649.2422502470642
+53 : 74 = 894.4271909999159
+67 : 74 = 1264.9110640673518
+t=3
+x_3_12
+	 y_3,12,1 = 23.002567059900855 dB
+	 y_3,12,2 = 27.582022393240948 dB
+	 y_3,12,3 = 25.856249842192767 dB
+	 y_3,12,5 = 12.411843621321083 dB
+	 y_3,12,10 = 16.17439835586829 dB
+	 y_3,12,12 = 88.38039487781728 dB
+	 y_3,12,14 = 15.332938801589549 dB
+	 y_3,12,20 = 18.186016382847185 dB
+	 y_3,12,21 = 19.896868434699726 dB
+	 y_3,12,22 = 30.733339691624153 dB
+	 y_3,12,23 = 28.68513895067815 dB
+	 y_3,12,30 = 10.93987868928724 dB
+	 y_3,12,32 = 20.867983682353454 dB
+	 y_3,12,34 = 20.52273283965235 dB
+		SNR medio: 76.91913712393068
+		Usuarios totais: 21
+x_3_22
+		Usuarios totais: 0
+x_3_38
+	 y_3,38,16 = 16.084267422702908 dB
+	 y_3,38,17 = 14.56823262211364 dB
+	 y_3,38,18 = 21.98932263980059 dB
+	 y_3,38,19 = 20.95474130800666 dB
+	 y_3,38,27 = 21.012277474118008 dB
+	 y_3,38,28 = 25.939069965934536 dB
+	 y_3,38,48 = 28.229454569504043 dB
+		SNR medio: 23.412671067044876
+		Usuarios totais: 9
+x_3_46
+	 y_3,46,15 = 18.53233898419029 dB
+	 y_3,46,25 = 17.38228807595506 dB
+	 y_3,46,26 = 18.128500093037374 dB
+	 y_3,46,35 = 37.24917257732211 dB
+	 y_3,46,44 = 27.923027600927213 dB
+	 y_3,46,45 = 33.87656944595846 dB
+	 y_3,46,59 = 24.34163326853964 dB
+	 y_3,46,79 = 11.25783640702494 dB
+	 y_3,46,89 = 16.154487289881104 dB
+		SNR medio: 29.944936002172792
+		Usuarios totais: 13
+x_3_52
+		Usuarios totais: 0
+x_3_53
+	 y_3,53,42 = 18.39305578623174 dB
+	 y_3,53,43 = 29.612312236269744 dB
+	 y_3,53,51 = 16.241197381798628 dB
+	 y_3,53,54 = 30.473110775456348 dB
+	 y_3,53,61 = 23.673501505932904 dB
+	 y_3,53,62 = 20.48107957773118 dB
+	 y_3,53,63 = 32.249078665110105 dB
+	 y_3,53,72 = 18.708471328790395 dB
+	 y_3,53,81 = 17.5296593206795 dB
+	 y_3,53,90 = 11.512530765700973 dB
+		SNR medio: 26.343835690749003
+		Usuarios totais: 25
+x_3_67
+	 y_3,67,7 = 6.442201940366147 dB
+	 y_3,67,37 = 23.482056037329002 dB
+	 y_3,67,55 = 18.965414812644127 dB
+	 y_3,67,56 = 33.62554708650438 dB
+	 y_3,67,58 = 29.181411711390197 dB
+	 y_3,67,68 = 32.149397377851 dB
+	 y_3,67,69 = 15.912632009867536 dB
+	 y_3,67,77 = 25.974697244595845 dB
+	 y_3,67,78 = 27.199286145912808 dB
+	 y_3,67,87 = 17.028203341271052 dB
+	 y_3,67,88 = 30.927154867084923 dB
+	 y_3,67,97 = 16.925137354033268 dB
+	 y_3,67,98 = 9.136202367023941 dB
+	 y_3,67,99 = 13.54195956871817 dB
+		SNR medio: 27.235227212295484
+		Usuarios totais: 40
+x_3_68
+		Usuarios totais: 0
+x_3_74
+	 y_3,74,40 = 8.526795791780387 dB
+	 y_3,74,50 = 15.908932034523232 dB
+	 y_3,74,64 = 32.65199167760032 dB
+	 y_3,74,65 = 23.664325806646943 dB
+	 y_3,74,70 = 13.739439754850224 dB
+	 y_3,74,74 = 87.90448531252426 dB
+	 y_3,74,82 = 22.108358814361964 dB
+	 y_3,74,83 = 23.161808136035177 dB
+	 y_3,74,85 = 27.830056177345966 dB
+	 y_3,74,91 = 6.133209787459151 dB
+	 y_3,74,92 = 9.897439040526962 dB
+	 y_3,74,93 = 13.966602339662018 dB
+	 y_3,74,94 = 21.648515862659252 dB
+		SNR medio: 76.76507504523912
+		Usuarios totais: 19
+x_3_92
+		Usuarios totais: 0
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=4
+x_4_12
+	 y_4,12,0 = 21.621993899406533 dB
+	 y_4,12,1 = 23.002567059900855 dB
+	 y_4,12,2 = 27.582022393240948 dB
+	 y_4,12,3 = 25.856249842192767 dB
+	 y_4,12,5 = 12.411843621321083 dB
+	 y_4,12,6 = 13.98727719606029 dB
+	 y_4,12,11 = 30.728790202799587 dB
+	 y_4,12,12 = 88.38039487781728 dB
+	 y_4,12,14 = 15.332938801589549 dB
+	 y_4,12,20 = 18.186016382847185 dB
+	 y_4,12,30 = 10.93987868928724 dB
+	 y_4,12,34 = 20.52273283965235 dB
+		SNR medio: 77.58859978063556
+		Usuarios totais: 24
+x_4_22
+	 y_4,22,4 = 19.71268936923063 dB
+	 y_4,22,7 = 11.274720320156561 dB
+	 y_4,22,10 = 18.57363226231118 dB
+	 y_4,22,22 = 83.11753281048394 dB
+	 y_4,22,31 = 22.907737390724222 dB
+	 y_4,22,32 = 32.07707299633047 dB
+		SNR medio: 75.33606241437893
+		Usuarios totais: 10
+x_4_38
+	 y_4,38,8 = 10.538599320383753 dB
+	 y_4,38,16 = 16.084267422702908 dB
+	 y_4,38,17 = 14.56823262211364 dB
+	 y_4,38,18 = 21.98932263980059 dB
+	 y_4,38,27 = 21.012277474118008 dB
+	 y_4,38,29 = 27.563248072956867 dB
+	 y_4,38,38 = 91.48740747183204 dB
+		SNR medio: 83.03642995624202
+		Usuarios totais: 11
+x_4_46
+	 y_4,46,26 = 18.128500093037374 dB
+	 y_4,46,35 = 37.24917257732211 dB
+	 y_4,46,36 = 28.195217056045138 dB
+	 y_4,46,44 = 27.923027600927213 dB
+	 y_4,46,45 = 33.87656944595846 dB
+	 y_4,46,46 = 78.75678055110744 dB
+		SNR medio: 70.97579387411218
+		Usuarios totais: 17
+x_4_52
+	 y_4,52,40 = 15.5983368799331 dB
+	 y_4,52,41 = 22.278369230891954 dB
+	 y_4,52,51 = 24.377090702476693 dB
+	 y_4,52,60 = 25.333390218241718 dB
+	 y_4,52,62 = 29.028756992881668 dB
+		SNR medio: 25.10628933896271
+		Usuarios totais: 16
+x_4_53
+	 y_4,53,43 = 29.612312236269744 dB
+	 y_4,53,53 = 80.63556941303585 dB
+	 y_4,53,54 = 30.473110775456348 dB
+		SNR medio: 75.8644330130363
+		Usuarios totais: 5
+x_4_67
+	 y_4,67,47 = 21.620213224465033 dB
+	 y_4,67,55 = 18.965414812644127 dB
+	 y_4,67,56 = 33.62554708650438 dB
+	 y_4,67,57 = 30.325764413821943 dB
+	 y_4,67,58 = 29.181411711390197 dB
+	 y_4,67,66 = 23.498987603893852 dB
+	 y_4,67,77 = 25.974697244595845 dB
+	 y_4,67,86 = 14.35094111014486 dB
+	 y_4,67,87 = 17.028203341271052 dB
+	 y_4,67,96 = 13.271770698509158 dB
+	 y_4,67,99 = 13.54195956871817 dB
+		SNR medio: 26.725721168745324
+		Usuarios totais: 37
+x_4_68
+	 y_4,68,69 = 28.921630795392034 dB
+	 y_4,68,78 = 31.416665014319676 dB
+	 y_4,68,79 = 25.635564251244347 dB
+	 y_4,68,89 = 18.372727709721474 dB
+	 y_4,68,98 = 12.22369517452222 dB
+		SNR medio: 27.18885907391418
+		Usuarios totais: 8
+x_4_74
+	 y_4,74,50 = 15.908932034523232 dB
+	 y_4,74,64 = 32.65199167760032 dB
+	 y_4,74,65 = 23.664325806646943 dB
+	 y_4,74,70 = 13.739439754850224 dB
+	 y_4,74,73 = 24.09941706210428 dB
+	 y_4,74,74 = 87.90448531252426 dB
+	 y_4,74,76 = 20.97657316506266 dB
+	 y_4,74,84 = 29.690338753582736 dB
+	 y_4,74,85 = 27.830056177345966 dB
+		SNR medio: 78.36208876309105
+		Usuarios totais: 17
+x_4_92
+	 y_4,92,80 = 14.603522968672891 dB
+	 y_4,92,81 = 20.7306201077334 dB
+	 y_4,92,82 = 31.931045463597655 dB
+	 y_4,92,83 = 28.81944681938178 dB
+	 y_4,92,91 = 31.916865655330994 dB
+	 y_4,92,92 = 90.01784837547831 dB
+	 y_4,92,93 = 25.894436869336488 dB
+	 y_4,92,94 = 24.308093212466034 dB
+	 y_4,92,95 = 13.07403290123247 dB
+		SNR medio: 80.4754436196992
+		Usuarios totais: 13
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=5
+x_5_12
+	 y_5,12,0 = 21.621993899406533 dB
+	 y_5,12,6 = 13.98727719606029 dB
+	 y_5,12,12 = 88.38039487781728 dB
+	 y_5,12,13 = 31.6222067045463 dB
+	 y_5,12,14 = 15.332938801589549 dB
+	 y_5,12,20 = 18.186016382847185 dB
+	 y_5,12,23 = 28.68513895067815 dB
+	 y_5,12,30 = 10.93987868928724 dB
+	 y_5,12,34 = 20.52273283965235 dB
+		SNR medio: 78.8379860976619
+		Usuarios totais: 19
+x_5_22
+	 y_5,22,4 = 19.71268936923063 dB
+	 y_5,22,7 = 11.274720320156561 dB
+	 y_5,22,10 = 18.57363226231118 dB
+	 y_5,22,21 = 28.443047371857062 dB
+	 y_5,22,22 = 83.11753281048394 dB
+	 y_5,22,24 = 19.05057579476376 dB
+	 y_5,22,31 = 22.907737390724222 dB
+	 y_5,22,32 = 32.07707299633047 dB
+	 y_5,22,33 = 26.446741471683964 dB
+		SNR medio: 73.57517567623299
+		Usuarios totais: 22
+x_5_38
+	 y_5,38,8 = 10.538599320383753 dB
+	 y_5,38,9 = 12.615020742031078 dB
+	 y_5,38,16 = 16.084267422702908 dB
+	 y_5,38,17 = 14.56823262211364 dB
+	 y_5,38,18 = 21.98932263980059 dB
+	 y_5,38,19 = 20.95474130800666 dB
+	 y_5,38,27 = 21.012277474118008 dB
+	 y_5,38,28 = 25.939069965934536 dB
+	 y_5,38,29 = 27.563248072956867 dB
+	 y_5,38,38 = 91.48740747183204 dB
+	 y_5,38,39 = 28.056787822717666 dB
+	 y_5,38,48 = 28.229454569504043 dB
+	 y_5,38,49 = 18.702486679277 dB
+		SNR medio: 80.34798273522455
+		Usuarios totais: 21
+x_5_46
+	 y_5,46,15 = 18.53233898419029 dB
+	 y_5,46,25 = 17.38228807595506 dB
+	 y_5,46,26 = 18.128500093037374 dB
+	 y_5,46,35 = 37.24917257732211 dB
+	 y_5,46,36 = 28.195217056045138 dB
+	 y_5,46,44 = 27.923027600927213 dB
+	 y_5,46,45 = 33.87656944595846 dB
+	 y_5,46,46 = 78.75678055110744 dB
+	 y_5,46,59 = 24.34163326853964 dB
+		SNR medio: 69.21490428301101
+		Usuarios totais: 22
+x_5_52
+	 y_5,52,40 = 15.5983368799331 dB
+	 y_5,52,41 = 22.278369230891954 dB
+	 y_5,52,42 = 27.673499751925007 dB
+	 y_5,52,51 = 24.377090702476693 dB
+	 y_5,52,52 = 91.3939982782253 dB
+	 y_5,52,60 = 25.333390218241718 dB
+	 y_5,52,62 = 29.028756992881668 dB
+		SNR medio: 82.94302482681996
+		Usuarios totais: 12
+x_5_53
+	 y_5,53,54 = 30.473110775456348 dB
+	 y_5,53,61 = 23.673501505932904 dB
+	 y_5,53,63 = 32.249078665110105 dB
+	 y_5,53,71 = 21.367254466024065 dB
+		SNR medio: 28.981132451659857
+		Usuarios totais: 5
+x_5_67
+	 y_5,67,37 = 23.482056037329002 dB
+	 y_5,67,55 = 18.965414812644127 dB
+	 y_5,67,56 = 33.62554708650438 dB
+	 y_5,67,57 = 30.325764413821943 dB
+	 y_5,67,58 = 29.181411711390197 dB
+	 y_5,67,66 = 23.498987603893852 dB
+	 y_5,67,67 = 92.33106629770336 dB
+	 y_5,67,77 = 25.974697244595845 dB
+	 y_5,67,87 = 17.028203341271052 dB
+	 y_5,67,96 = 13.271770698509158 dB
+	 y_5,67,99 = 13.54195956871817 dB
+		SNR medio: 81.91715271574495
+		Usuarios totais: 42
+x_5_68
+	 y_5,68,68 = 84.13775996736169 dB
+	 y_5,68,69 = 28.921630795392034 dB
+	 y_5,68,78 = 31.416665014319676 dB
+	 y_5,68,79 = 25.635564251244347 dB
+	 y_5,68,97 = 21.288363519581523 dB
+	 y_5,68,98 = 12.22369517452222 dB
+		SNR medio: 76.35629240454247
+		Usuarios totais: 15
+x_5_74
+	 y_5,74,50 = 15.908932034523232 dB
+	 y_5,74,73 = 24.09941706210428 dB
+	 y_5,74,74 = 87.90448531252426 dB
+	 y_5,74,75 = 33.696635581707355 dB
+	 y_5,74,76 = 20.97657316506266 dB
+	 y_5,74,84 = 29.690338753582736 dB
+		SNR medio: 80.12299880581098
+		Usuarios totais: 7
+x_5_92
+	 y_5,92,72 = 18.95467899595056 dB
+	 y_5,92,80 = 14.603522968672891 dB
+	 y_5,92,81 = 20.7306201077334 dB
+	 y_5,92,82 = 31.931045463597655 dB
+	 y_5,92,83 = 28.81944681938178 dB
+	 y_5,92,90 = 24.036714149750978 dB
+	 y_5,92,92 = 90.01784837547831 dB
+	 y_5,92,94 = 24.308093212466034 dB
+	 y_5,92,95 = 13.07403290123247 dB
+		SNR medio: 80.47543664994362
+		Usuarios totais: 18
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=6
+x_6_12
+	 y_6,12,1 = 23.002567059900855 dB
+	 y_6,12,2 = 27.582022393240948 dB
+	 y_6,12,3 = 25.856249842192767 dB
+	 y_6,12,5 = 12.411843621321083 dB
+	 y_6,12,11 = 30.728790202799587 dB
+	 y_6,12,12 = 88.38039487781728 dB
+	 y_6,12,14 = 15.332938801589549 dB
+	 y_6,12,20 = 18.186016382847185 dB
+	 y_6,12,23 = 28.68513895067815 dB
+	 y_6,12,30 = 10.93987868928724 dB
+	 y_6,12,34 = 20.52273283965235 dB
+		SNR medio: 77.96648897411342
+		Usuarios totais: 20
+x_6_22
+	 y_6,22,4 = 19.71268936923063 dB
+	 y_6,22,7 = 11.274720320156561 dB
+	 y_6,22,10 = 18.57363226231118 dB
+	 y_6,22,21 = 28.443047371857062 dB
+	 y_6,22,22 = 83.11753281048394 dB
+	 y_6,22,24 = 19.05057579476376 dB
+	 y_6,22,32 = 32.07707299633047 dB
+	 y_6,22,33 = 26.446741471683964 dB
+		SNR medio: 74.0866967626335
+		Usuarios totais: 18
+x_6_38
+	 y_6,38,8 = 10.538599320383753 dB
+	 y_6,38,9 = 12.615020742031078 dB
+	 y_6,38,16 = 16.084267422702908 dB
+	 y_6,38,17 = 14.56823262211364 dB
+	 y_6,38,18 = 21.98932263980059 dB
+	 y_6,38,19 = 20.95474130800666 dB
+	 y_6,38,28 = 25.939069965934536 dB
+	 y_6,38,29 = 27.563248072956867 dB
+	 y_6,38,38 = 91.48740747183204 dB
+	 y_6,38,49 = 18.702486679277 dB
+		SNR medio: 81.48741184673888
+		Usuarios totais: 17
+x_6_46
+	 y_6,46,25 = 17.38228807595506 dB
+	 y_6,46,26 = 18.128500093037374 dB
+	 y_6,46,35 = 37.24917257732211 dB
+	 y_6,46,36 = 28.195217056045138 dB
+	 y_6,46,44 = 27.923027600927213 dB
+	 y_6,46,45 = 33.87656944595846 dB
+	 y_6,46,46 = 78.75678055110744 dB
+	 y_6,46,59 = 24.34163326853964 dB
+		SNR medio: 69.72642538379988
+		Usuarios totais: 14
+x_6_52
+	 y_6,52,40 = 15.5983368799331 dB
+	 y_6,52,41 = 22.278369230891954 dB
+	 y_6,52,42 = 27.673499751925007 dB
+	 y_6,52,52 = 91.3939982782253 dB
+	 y_6,52,60 = 25.333390218241718 dB
+	 y_6,52,62 = 29.028756992881668 dB
+		SNR medio: 83.61249185996293
+		Usuarios totais: 11
+x_6_53
+	 y_6,53,43 = 29.612312236269744 dB
+	 y_6,53,53 = 80.63556941303585 dB
+	 y_6,53,54 = 30.473110775456348 dB
+	 y_6,53,61 = 23.673501505932904 dB
+	 y_6,53,63 = 32.249078665110105 dB
+	 y_6,53,71 = 21.367254466024065 dB
+		SNR medio: 72.85420990580101
+		Usuarios totais: 16
+x_6_67
+	 y_6,67,37 = 23.482056037329002 dB
+	 y_6,67,56 = 33.62554708650438 dB
+	 y_6,67,57 = 30.325764413821943 dB
+	 y_6,67,66 = 23.498987603893852 dB
+	 y_6,67,77 = 25.974697244595845 dB
+	 y_6,67,86 = 14.35094111014486 dB
+	 y_6,67,88 = 30.927154867084923 dB
+	 y_6,67,96 = 13.271770698509158 dB
+	 y_6,67,99 = 13.54195956871817 dB
+		SNR medio: 27.88789230436072
+		Usuarios totais: 18
+x_6_68
+	 y_6,68,68 = 84.13775996736169 dB
+	 y_6,68,69 = 28.921630795392034 dB
+	 y_6,68,78 = 31.416665014319676 dB
+	 y_6,68,79 = 25.635564251244347 dB
+	 y_6,68,89 = 18.372727709721474 dB
+	 y_6,68,97 = 21.288363519581523 dB
+	 y_6,68,98 = 12.22369517452222 dB
+		SNR medio: 75.68682565976972
+		Usuarios totais: 12
+x_6_74
+	 y_6,74,50 = 15.908932034523232 dB
+	 y_6,74,64 = 32.65199167760032 dB
+	 y_6,74,65 = 23.664325806646943 dB
+	 y_6,74,70 = 13.739439754850224 dB
+	 y_6,74,73 = 24.09941706210428 dB
+	 y_6,74,74 = 87.90448531252426 dB
+	 y_6,74,75 = 33.696635581707355 dB
+	 y_6,74,76 = 20.97657316506266 dB
+	 y_6,74,84 = 29.690338753582736 dB
+	 y_6,74,85 = 27.830056177345966 dB
+		SNR medio: 77.9045303389435
+		Usuarios totais: 13
+x_6_92
+	 y_6,92,72 = 18.95467899595056 dB
+	 y_6,92,80 = 14.603522968672891 dB
+	 y_6,92,81 = 20.7306201077334 dB
+	 y_6,92,82 = 31.931045463597655 dB
+	 y_6,92,83 = 28.81944681938178 dB
+	 y_6,92,90 = 24.036714149750978 dB
+	 y_6,92,91 = 31.916865655330994 dB
+	 y_6,92,92 = 90.01784837547831 dB
+	 y_6,92,93 = 25.894436869336488 dB
+	 y_6,92,94 = 24.308093212466034 dB
+		SNR medio: 80.01787006194304
+		Usuarios totais: 17
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=7
+x_7_12
+	 y_7,12,0 = 21.621993899406533 dB
+	 y_7,12,2 = 27.582022393240948 dB
+	 y_7,12,3 = 25.856249842192767 dB
+	 y_7,12,5 = 12.411843621321083 dB
+	 y_7,12,11 = 30.728790202799587 dB
+	 y_7,12,12 = 88.38039487781728 dB
+	 y_7,12,13 = 31.6222067045463 dB
+	 y_7,12,14 = 15.332938801589549 dB
+	 y_7,12,23 = 28.68513895067815 dB
+	 y_7,12,30 = 10.93987868928724 dB
+	 y_7,12,34 = 20.52273283965235 dB
+		SNR medio: 77.96649737742948
+		Usuarios totais: 20
+x_7_22
+	 y_7,22,7 = 11.274720320156561 dB
+	 y_7,22,21 = 28.443047371857062 dB
+	 y_7,22,22 = 83.11753281048394 dB
+	 y_7,22,31 = 22.907737390724222 dB
+	 y_7,22,33 = 26.446741471683964 dB
+		SNR medio: 76.1278613395193
+		Usuarios totais: 9
+x_7_38
+	 y_7,38,8 = 10.538599320383753 dB
+	 y_7,38,9 = 12.615020742031078 dB
+	 y_7,38,16 = 16.084267422702908 dB
+	 y_7,38,17 = 14.56823262211364 dB
+	 y_7,38,18 = 21.98932263980059 dB
+	 y_7,38,27 = 21.012277474118008 dB
+	 y_7,38,39 = 28.056787822717666 dB
+	 y_7,38,49 = 18.702486679277 dB
+		SNR medio: 21.369525761270832
+		Usuarios totais: 17
+x_7_46
+	 y_7,46,15 = 18.53233898419029 dB
+	 y_7,46,25 = 17.38228807595506 dB
+	 y_7,46,35 = 37.24917257732211 dB
+	 y_7,46,36 = 28.195217056045138 dB
+	 y_7,46,44 = 27.923027600927213 dB
+	 y_7,46,45 = 33.87656944595846 dB
+	 y_7,46,46 = 78.75678055110744 dB
+		SNR medio: 70.30632950830405
+		Usuarios totais: 11
+x_7_52
+	 y_7,52,40 = 15.5983368799331 dB
+	 y_7,52,41 = 22.278369230891954 dB
+	 y_7,52,51 = 24.377090702476693 dB
+	 y_7,52,62 = 29.028756992881668 dB
+		SNR medio: 25.047608803008032
+		Usuarios totais: 10
+x_7_53
+	 y_7,53,43 = 29.612312236269744 dB
+	 y_7,53,54 = 30.473110775456348 dB
+	 y_7,53,61 = 23.673501505932904 dB
+	 y_7,53,63 = 32.249078665110105 dB
+		SNR medio: 29.935616325637604
+		Usuarios totais: 7
+x_7_67
+	 y_7,67,55 = 18.965414812644127 dB
+	 y_7,67,56 = 33.62554708650438 dB
+	 y_7,67,57 = 30.325764413821943 dB
+	 y_7,67,66 = 23.498987603893852 dB
+	 y_7,67,77 = 25.974697244595845 dB
+	 y_7,67,86 = 14.35094111014486 dB
+	 y_7,67,96 = 13.271770698509158 dB
+		SNR medio: 27.70764659779357
+		Usuarios totais: 19
+x_7_68
+	 y_7,68,68 = 84.13775996736169 dB
+	 y_7,68,69 = 28.921630795392034 dB
+	 y_7,68,78 = 31.416665014319676 dB
+		SNR medio: 79.3665836968609
+		Usuarios totais: 6
+x_7_74
+	 y_7,74,50 = 15.908932034523232 dB
+	 y_7,74,64 = 32.65199167760032 dB
+	 y_7,74,70 = 13.739439754850224 dB
+	 y_7,74,73 = 24.09941706210428 dB
+	 y_7,74,74 = 87.90448531252426 dB
+	 y_7,74,75 = 33.696635581707355 dB
+	 y_7,74,84 = 29.690338753582736 dB
+	 y_7,74,85 = 27.830056177345966 dB
+		SNR medio: 78.87362795207083
+		Usuarios totais: 17
+x_7_92
+	 y_7,92,72 = 18.95467899595056 dB
+	 y_7,92,80 = 14.603522968672891 dB
+	 y_7,92,81 = 20.7306201077334 dB
+	 y_7,92,83 = 28.81944681938178 dB
+	 y_7,92,90 = 24.036714149750978 dB
+	 y_7,92,91 = 31.916865655330994 dB
+	 y_7,92,92 = 90.01784837547831 dB
+		SNR medio: 81.56688006812772
+		Usuarios totais: 13
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=8
+x_8_12
+	 y_8,12,0 = 21.621993899406533 dB
+	 y_8,12,1 = 23.002567059900855 dB
+	 y_8,12,2 = 27.582022393240948 dB
+	 y_8,12,3 = 25.856249842192767 dB
+	 y_8,12,6 = 13.98727719606029 dB
+	 y_8,12,11 = 30.728790202799587 dB
+	 y_8,12,14 = 15.332938801589549 dB
+	 y_8,12,23 = 28.68513895067815 dB
+	 y_8,12,30 = 10.93987868928724 dB
+	 y_8,12,34 = 20.52273283965235 dB
+		SNR medio: 25.326289260525854
+		Usuarios totais: 15
+x_8_22
+	 y_8,22,22 = 83.11753281048394 dB
+	 y_8,22,24 = 19.05057579476376 dB
+		SNR medio: 80.10723455634961
+		Usuarios totais: 2
+x_8_38
+	 y_8,38,8 = 10.538599320383753 dB
+	 y_8,38,17 = 14.56823262211364 dB
+	 y_8,38,18 = 21.98932263980059 dB
+	 y_8,38,19 = 20.95474130800666 dB
+	 y_8,38,28 = 25.939069965934536 dB
+	 y_8,38,29 = 27.563248072956867 dB
+	 y_8,38,38 = 91.48740747183204 dB
+	 y_8,38,49 = 18.702486679277 dB
+		SNR medio: 82.45651179535342
+		Usuarios totais: 12
+x_8_46
+	 y_8,46,15 = 18.53233898419029 dB
+	 y_8,46,26 = 18.128500093037374 dB
+	 y_8,46,35 = 37.24917257732211 dB
+	 y_8,46,44 = 27.923027600927213 dB
+	 y_8,46,46 = 78.75678055110744 dB
+	 y_8,46,59 = 24.34163326853964 dB
+		SNR medio: 70.97563438959887
+		Usuarios totais: 7
+x_8_52
+	 y_8,52,40 = 15.5983368799331 dB
+	 y_8,52,41 = 22.278369230891954 dB
+	 y_8,52,42 = 27.673499751925007 dB
+	 y_8,52,51 = 24.377090702476693 dB
+	 y_8,52,52 = 91.3939982782253 dB
+	 y_8,52,60 = 25.333390218241718 dB
+		SNR medio: 83.6124902039437
+		Usuarios totais: 9
+x_8_53
+	 y_8,53,43 = 29.612312236269744 dB
+	 y_8,53,54 = 30.473110775456348 dB
+	 y_8,53,61 = 23.673501505932904 dB
+	 y_8,53,71 = 21.367254466024065 dB
+		SNR medio: 27.780954161774403
+		Usuarios totais: 7
+x_8_67
+	 y_8,67,37 = 23.482056037329002 dB
+	 y_8,67,47 = 21.620213224465033 dB
+	 y_8,67,57 = 30.325764413821943 dB
+	 y_8,67,58 = 29.181411711390197 dB
+	 y_8,67,66 = 23.498987603893852 dB
+	 y_8,67,67 = 92.33106629770336 dB
+	 y_8,67,86 = 14.35094111014486 dB
+	 y_8,67,87 = 17.028203341271052 dB
+	 y_8,67,88 = 30.927154867084923 dB
+	 y_8,67,99 = 13.54195956871817 dB
+		SNR medio: 82.33107603855049
+		Usuarios totais: 14
+x_8_68
+	 y_8,68,68 = 84.13775996736169 dB
+	 y_8,68,69 = 28.921630795392034 dB
+	 y_8,68,79 = 25.635564251244347 dB
+	 y_8,68,89 = 18.372727709721474 dB
+		SNR medio: 78.11718040391641
+		Usuarios totais: 10
+x_8_74
+	 y_8,74,64 = 32.65199167760032 dB
+	 y_8,74,65 = 23.664325806646943 dB
+	 y_8,74,70 = 13.739439754850224 dB
+	 y_8,74,75 = 33.696635581707355 dB
+	 y_8,74,76 = 20.97657316506266 dB
+	 y_8,74,84 = 29.690338753582736 dB
+	 y_8,74,85 = 27.830056177345966 dB
+		SNR medio: 29.404688912826277
+		Usuarios totais: 12
+x_8_92
+	 y_8,92,80 = 14.603522968672891 dB
+	 y_8,92,81 = 20.7306201077334 dB
+	 y_8,92,82 = 31.931045463597655 dB
+	 y_8,92,83 = 28.81944681938178 dB
+	 y_8,92,91 = 31.916865655330994 dB
+	 y_8,92,93 = 25.894436869336488 dB
+	 y_8,92,94 = 24.308093212466034 dB
+		SNR medio: 28.2534639319128
+		Usuarios totais: 13
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=9
+x_9_12
+	 y_9,12,0 = 21.621993899406533 dB
+	 y_9,12,1 = 23.002567059900855 dB
+	 y_9,12,2 = 27.582022393240948 dB
+	 y_9,12,3 = 25.856249842192767 dB
+	 y_9,12,11 = 30.728790202799587 dB
+	 y_9,12,20 = 18.186016382847185 dB
+	 y_9,12,23 = 28.68513895067815 dB
+	 y_9,12,34 = 20.52273283965235 dB
+		SNR medio: 26.28806177758431
+		Usuarios totais: 11
+x_9_22
+	 y_9,22,10 = 18.57363226231118 dB
+	 y_9,22,22 = 83.11753281048394 dB
+	 y_9,22,24 = 19.05057579476376 dB
+		SNR medio: 78.34632349122887
+		Usuarios totais: 3
+x_9_38
+	 y_9,38,8 = 10.538599320383753 dB
+	 y_9,38,9 = 12.615020742031078 dB
+	 y_9,38,19 = 20.95474130800666 dB
+	 y_9,38,28 = 25.939069965934536 dB
+	 y_9,38,29 = 27.563248072956867 dB
+	 y_9,38,39 = 28.056787822717666 dB
+	 y_9,38,48 = 28.229454569504043 dB
+	 y_9,38,49 = 18.702486679277 dB
+		SNR medio: 24.941449300556783
+		Usuarios totais: 12
+x_9_46
+	 y_9,46,35 = 37.24917257732211 dB
+	 y_9,46,45 = 33.87656944595846 dB
+	 y_9,46,59 = 24.34163326853964 dB
+		SNR medio: 34.27111615382027
+		Usuarios totais: 3
+x_9_52
+	 y_9,52,41 = 22.278369230891954 dB
+	 y_9,52,42 = 27.673499751925007 dB
+	 y_9,52,60 = 25.333390218241718 dB
+		SNR medio: 25.625710073974236
+		Usuarios totais: 5
+x_9_53
+	 y_9,53,54 = 30.473110775456348 dB
+	 y_9,53,61 = 23.673501505932904 dB
+		SNR medio: 28.286888506972122
+		Usuarios totais: 2
+x_9_67
+	 y_9,67,56 = 33.62554708650438 dB
+	 y_9,67,57 = 30.325764413821943 dB
+	 y_9,67,88 = 30.927154867084923 dB
+		SNR medio: 31.87545490053236
+		Usuarios totais: 5
+x_9_68
+	 y_9,68,68 = 84.13775996736169 dB
+	 y_9,68,69 = 28.921630795392034 dB
+	 y_9,68,89 = 18.372727709721474 dB
+	 y_9,68,97 = 21.288363519581523 dB
+	 y_9,68,98 = 12.22369517452222 dB
+		SNR medio: 77.14807667530987
+		Usuarios totais: 6
+x_9_74
+	 y_9,74,50 = 15.908932034523232 dB
+	 y_9,74,64 = 32.65199167760032 dB
+	 y_9,74,65 = 23.664325806646943 dB
+	 y_9,74,70 = 13.739439754850224 dB
+	 y_9,74,76 = 20.97657316506266 dB
+		SNR medio: 26.555182876089674
+		Usuarios totais: 10
+x_9_92
+	 y_9,92,80 = 14.603522968672891 dB
+	 y_9,92,81 = 20.7306201077334 dB
+	 y_9,92,83 = 28.81944681938178 dB
+	 y_9,92,90 = 24.036714149750978 dB
+	 y_9,92,94 = 24.308093212466034 dB
+	 y_9,92,95 = 13.07403290123247 dB
+		SNR medio: 23.83946661385226
+		Usuarios totais: 8
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=10
+x_10_12
+	 y_10,12,0 = 21.621993899406533 dB
+	 y_10,12,3 = 25.856249842192767 dB
+	 y_10,12,6 = 13.98727719606029 dB
+		SNR medio: 22.675384696306846
+		Usuarios totais: 3
+x_10_22
+	 y_10,22,10 = 18.57363226231118 dB
+	 y_10,22,24 = 19.05057579476376 dB
+	 y_10,22,33 = 26.446741471683964 dB
+		SNR medio: 22.963782129310765
+		Usuarios totais: 3
+x_10_38
+	 y_10,38,17 = 14.56823262211364 dB
+	 y_10,38,28 = 25.939069965934536 dB
+	 y_10,38,39 = 28.056787822717666 dB
+	 y_10,38,48 = 28.229454569504043 dB
+	 y_10,38,49 = 18.702486679277 dB
+		SNR medio: 25.56258084867622
+		Usuarios totais: 5
+x_10_46
+	 y_10,46,25 = 17.38228807595506 dB
+	 y_10,46,36 = 28.195217056045138 dB
+	 y_10,46,46 = 78.75678055110744 dB
+		SNR medio: 73.98560933015438
+		Usuarios totais: 3
+x_10_52
+	 y_10,52,41 = 22.278369230891954 dB
+		SNR medio: 22.278369230891954
+		Usuarios totais: 1
+x_10_53
+	 y_10,53,43 = 29.612312236269744 dB
+	 y_10,53,53 = 80.63556941303585 dB
+	 y_10,53,54 = 30.473110775456348 dB
+	 y_10,53,63 = 32.249078665110105 dB
+	 y_10,53,71 = 21.367254466024065 dB
+		SNR medio: 73.64601362524631
+		Usuarios totais: 6
+x_10_67
+	 y_10,67,47 = 21.620213224465033 dB
+	 y_10,67,56 = 33.62554708650438 dB
+	 y_10,67,66 = 23.498987603893852 dB
+	 y_10,67,67 = 92.33106629770336 dB
+	 y_10,67,77 = 25.974697244595845 dB
+	 y_10,67,88 = 30.927154867084923 dB
+		SNR medio: 84.54956473021433
+		Usuarios totais: 6
+x_10_68
+	 y_10,68,69 = 28.921630795392034 dB
+		SNR medio: 28.921630795392034
+		Usuarios totais: 1
+x_10_74
+	 y_10,74,50 = 15.908932034523232 dB
+	 y_10,74,64 = 32.65199167760032 dB
+	 y_10,74,70 = 13.739439754850224 dB
+	 y_10,74,75 = 33.696635581707355 dB
+		SNR medio: 30.259885850052996
+		Usuarios totais: 4
+x_10_92
+	 y_10,92,72 = 18.95467899595056 dB
+	 y_10,92,80 = 14.603522968672891 dB
+	 y_10,92,92 = 90.01784837547831 dB
+	 y_10,92,95 = 13.07403290123247 dB
+		SNR medio: 83.99724901481049
+		Usuarios totais: 5
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+t=11
+x_11_12
+		Usuarios totais: 0
+x_11_22
+		Usuarios totais: 0
+x_11_38
+	 y_11,38,8 = 10.538599320383753 dB
+		SNR medio: 10.538599320383753
+		Usuarios totais: 1
+x_11_46
+		Usuarios totais: 0
+x_11_52
+		Usuarios totais: 0
+x_11_53
+		Usuarios totais: 0
+x_11_67
+		Usuarios totais: 0
+x_11_68
+		Usuarios totais: 0
+x_11_74
+		Usuarios totais: 0
+x_11_92
+		Usuarios totais: 0
+Distances:
+12 : 22 = 400.0
+12 : 38 = 2529.8221281347037
+12 : 46 = 2000.0
+12 : 52 = 1600.0
+12 : 53 = 1649.2422502470642
+12 : 67 = 2828.42712474619
+12 : 68 = 3124.099870362662
+12 : 74 = 2529.8221281347037
+12 : 92 = 3200.0
+22 : 38 = 2433.105012119288
+22 : 46 = 1788.8543819998317
+22 : 52 = 1200.0
+22 : 53 = 1264.9110640673518
+22 : 67 = 2561.2496949731394
+22 : 68 = 2884.4410203711914
+22 : 74 = 2154.0659228538016
+22 : 92 = 2800.0
+38 : 46 = 894.4271909999159
+38 : 52 = 2529.8221281347037
+38 : 53 = 2154.0659228538016
+38 : 67 = 1264.9110640673518
+38 : 68 = 1200.0
+38 : 74 = 2262.741699796952
+38 : 92 = 3394.1125496954282
+46 : 52 = 1649.2422502470642
+46 : 53 = 1264.9110640673518
+46 : 67 = 894.4271909999159
+46 : 68 = 1131.370849898476
+46 : 74 = 1442.2205101855957
+46 : 92 = 2561.2496949731394
+52 : 53 = 400.0
+52 : 67 = 2039.607805437114
+52 : 68 = 2433.105012119288
+52 : 74 = 1131.370849898476
+52 : 92 = 1600.0
+53 : 67 = 1649.2422502470642
+53 : 68 = 2039.607805437114
+53 : 74 = 894.4271909999159
+53 : 92 = 1649.2422502470642
+67 : 68 = 400.0
+67 : 74 = 1264.9110640673518
+67 : 92 = 2332.38075793812
+68 : 74 = 1649.2422502470642
+68 : 92 = 2683.281572999748
+74 : 92 = 1131.370849898476
+
+Média de carros: 8.583333333333334
+--- Done after 1.1967148520549138 hours. ---

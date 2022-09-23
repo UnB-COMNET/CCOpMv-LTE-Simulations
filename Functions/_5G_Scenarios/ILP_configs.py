@@ -500,7 +500,7 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
     hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
     hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else''))
+    hp.writeOutput(f, "${resultdir}/"+ config_name +"/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'-'))
     if cmdenv_config:
       hp.writeSeparation(f, "Cmdenv")
       hp.writeCmdenvConfig(f, config_name= config_name, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name=cmdenv_output_file_name)
@@ -516,7 +516,7 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, multicell_interference=interference)
     hp.writeSlices(f, num_slices= num_slices, iter_name= iter_slice_name)
     hp.writeNumEnbs(f, options= num_enbs_time, iter_name= 'NumEnbs', parallel_name= iter_slice_name)
     hp.writeSeparation(f, "Resource Blocks")
@@ -878,7 +878,6 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
   s_interval= 1000/((target_f*10**6)/(8*p_size)) # ms
 
   network_full_name = hned.dir_to_package(net_dir) + (f'ILP{mode.capitalize()}Net' if network_name == '' else network_name)
-
   extra_sca_vec_name: str
   cmdenv_output_file_name: str
   if interference:
@@ -902,7 +901,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, model_name= "MoreInfoChannelModel", tolerateMaxDistViolation= True, extCell_interference= False, building_height= scen.h_building, nodeb_height= scen.h_enbs,
                            ue_height= scen.h_ues, street_wide= scen.w_street, antennGainEnB= scen.gain_enb, antennaGainUe= scen.gain_ue, bs_noise_figure= scen.enb_noise_figure, ue_noise_figure= scen.ue_noise_figure,
-                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los)
+                           cable_loss= scen.cable_loss, thermalNoise= scen.thermal_noise, fixed_los= scen.los, multicell_interference= interference)
     hp.writeSeparation(f, "Resource Blocks")
     hp.writeResourceBlocksOptions(f, "RBs", num_bands, is5G= True)
     hp.writeSeparation(f, "UEs")
@@ -930,7 +929,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
       hp.writeVectorExtra(f, module= "**.eNB*.cellularNic.channelModel[*]", statistic= "rcvdSinr:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "throughput:vector", value= True)
       hp.writeVectorExtra(f, module= "**.app[*]", statistic= "endToEndDelay:vector", value= True)
-      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'')) #Vec/Sca name
+      hp.writeOutput(f, "${resultdir}/" + config_pattern + "/"+str(min_sinr)+"-${RBs}-${repetition}-${Slice}" + ('-'+extra_sca_vec_name if extra_sca_vec_name != ''else'-')) #Vec/Sca name
       if cmdenv_config:
         hp.writeSeparation(f, "Cmdenv")
         hp.writeCmdenvConfig(f, config_name= config_pattern, min_sinr= min_sinr, performance_display = False, redirect_output= True, output_file_name= cmdenv_output_file_name)

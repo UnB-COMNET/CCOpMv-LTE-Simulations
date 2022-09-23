@@ -433,16 +433,16 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
                         extCell_interference: bool = False, antennGainEnB: int = 18, antennGainMicro: int = 5,
                         antennaGainUe: int = 0, bs_noise_figure: int = 5, cable_loss: int = 2,
                         componentCarrierIndex: int = 0, correlation_distance: int = 50, d2d_interference: bool = True,
-                        delay_rms: str = "363e-9", downlink_interference: bool = False, dynamic_los: bool = False,
+                        delay_rms: str = "363e-9", multicell_interference: bool = False, dynamic_los: bool = False,
                         enable_extCell_los: bool = True, fading: bool = True, fading_paths: int = 6,
                         fixed_los: bool = False, harqReduction: float = 0.2, inside_building: bool = False,
                         lambdaMaxTh: float = 0.2, lambdaMinTh: float = 0.02, lambdaRatioTh: float = 20,
                         rsrqScale: float = 1.0, rsrqShift: float = 22, shadowing: bool = True, targetBler: float = 0.01,
                         thermalNoise: float = -104.5, tolerateMaxDistViolation: bool = False, ue_noise_figure: float = 7,
-                        uplink_interference: bool = False, useRsrqFromLog: bool = False, useTorus: bool = False):
+                        useRsrqFromLog: bool = False, useTorus: bool = False):
   """Writes the channel model submodule configuration in a .ini file."""
 
-  downlink_interference = getOptionsString(["false" if not downlink_interference else "true"], name= 'Inter')
+  downlink_interference = getOptionsString(["false" if not multicell_interference else "true"], name= 'Inter')
   uplink_interference = '${Inter}'
 
   f.write(('**.cellularNic.LteChannelModelType = "{}"\n'
@@ -683,7 +683,7 @@ def writeSnapshotsConfig(f, filename: str = "${resultdir}/${configname}-${iterat
 def writeCmdenvConfig(f, min_sinr: int, config_name: str, output_file_name: str = None, performance_display = False, redirect_output= False):
   """Writes the cmdenv configuration in a .ini file."""
   if output_file_name is None:
-    output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}.out"
+    output_file_name = "${resultdir}/" + config_name + "-cmdout/"+ str(min_sinr) +"-${RBs}-${repetition}-${Slice}-.out"
 
   f.write(('cmdenv-performance-display = {p_display}\n'
            'cmdenv-redirect-output = {r_output}\n'

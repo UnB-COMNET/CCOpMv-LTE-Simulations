@@ -1,4 +1,4 @@
-# Version 28/08/2022
+# Version 13/09/2022
 
 from math import ceil
 from typing import List
@@ -21,20 +21,20 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [0,1,2,3,4,5,6,7,8,9]#
+    chosen_seeds = [2,3,4,5,6,7,10,11,12,13]#
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5,15]
-    modes = ['ga', 'fixed'] # fixed or single or ga
+    min_sinrs = [5, 10, 15]
+    modes = ['fixed', 'single'] # fixed or single or ga
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     csv_dir = '_5G/results'
     extra_dir = ['disaster_percentage','micro_power','chosen_seed']
-    lambda_poisson_gen_users_t_m = 10
+    lambda_poisson_gen_users_t_m = 30
     num_slices = 12
     simtime_move = 1200
     per_slice = True
@@ -58,7 +58,7 @@ def main():
     extra_config_name= "video"
     target_f = 10 #Mbps
     cmdenv_config = True #Redirects cmdenv outputs to a file
-    interference = False #Enables or disables multicell-interference
+    interference = True #Enables or disables multicell-interference
 
     # For the user
     allrun_solver = False # Older version where runs all solvers first
@@ -319,7 +319,8 @@ def run_all(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macr
                 # Semaphore to control the use of the cpu
                 with semaphore_cpucount:
                     print(f'\nExporting .CSV files (Mode: {mode}, Seed: {chosen_seed}).\n')
-                    get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], results_path= project_dir + '/' + csv_dir, extra_config_name= extra_config_name)
+                    get_csv(mode= mode, sim_path= project_dir + '/' + kwargs['sim_dir'], results_path= project_dir + '/' + csv_dir,
+                            extra_config_name= extra_config_name, interference= interference)
 
     else:
         print(f'\nEnding (Seed {chosen_seed}) with only_solver True.\n')
@@ -373,7 +374,7 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
             # Generating config and network files
             print("Generating configuration files - Min Snr: {} - {} (Seed: {})".format(min_sinr, mode.capitalize(), chosen_seed))
             
-            ini_path_sliced = sim_path + '/' + f'{file_name}.ini'
+            ini_path_sliced = sim_path + '/' + f'{file_name}{"_inter" if interference else ""}.ini'
             network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}"
 
             if per_slice:
@@ -427,16 +428,19 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
     return SUCCESS
 
-def get_csv(mode: str, sim_path: str, results_path: str, extra_config_name: str = ''):
+def get_csv(mode: str, sim_path: str, results_path: str, extra_config_name: str = '', interference: bool = False):
     """This function call a scavetool command to create the necessary .csv files"""
 
     check_mode(mode= mode)
 
-    csv_path, sca_vec_dir = genf.gen_csv_path(mode, sim_path, results_path, extra_config_name)
+    csv_path, sca_vec_dir = genf.gen_csv_path(mode, sim_path, results_path, extra_config_name, interference)
 
     print(f'Making {csv_path}.')
 
-    code = subprocess.run(f'scavetool x -o {csv_path} -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {sca_vec_dir}/*-*.sca {sca_vec_dir}/*-*.vec', shell= True)
+    if not interference:
+        code = subprocess.run(f'scavetool x -o {csv_path} -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {sca_vec_dir}/*-*-.sca {sca_vec_dir}/*-*-.vec', shell= True)
+    else:
+        code = subprocess.run(f'scavetool x -o {csv_path} -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" {sca_vec_dir}/*-*-inter.sca {sca_vec_dir}/*-*-inter.vec', shell= True)
 
     code.check_returncode()
 
