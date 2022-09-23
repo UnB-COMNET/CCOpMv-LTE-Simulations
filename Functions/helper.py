@@ -336,12 +336,13 @@ def writeAppVideoUL_varyingUsers(f, numUEs: int, ues_per_slice: list, p_size:int
            '**.server.app[{n}..{f}].serverPort = 4088\n').format(n = n_app * numUEs, f = numUEs*(n_app+1) - 1))
   
   for ue in range(numUEs):
-    values_startTime = len(ues_per_slice)*[999]
-    for slice in range(len(ues_per_slice)):
-      for x in ues_per_slice[slice]:
-        if ue == x:
-          values_startTime[slice] = 0.001
-    f.write('**.server.app[{}].startTime = {}\n'.format(ue,getOptionsString(values= values_startTime, name='', unit='s', parallel= "Slice")))  
+    values_startTime = 999
+    #for slice in range(len(ues_per_slice)):
+    for x in ues_per_slice:
+      if ue == x:
+        values_startTime = 0.001
+
+    f.write('**.server.app[{ue}].startTime = {str}s\n'.format(ue=ue,n= n_app, str = str(values_startTime)))
 
   f.write(('**.ue[*].app[{n}].typename = "UdpVideoStreamServer"\n'
            '**.ue[*].app[{n}].videoSize = 10MiB\n'
@@ -377,12 +378,15 @@ def writeAppVideoDL_varyingUsers(f, numUEs: int, ues_per_slice: list, p_size:int
            '**.ue[*].app[{n}].serverPort = 3088 + ancestorIndex(1) + {g}\n').format(n = n_app, g= numUEs*n_app))
 
   for ue in range(numUEs):
-    values_startTime = len(ues_per_slice)*[999]
-    for slice in range(len(ues_per_slice)):
-      for x in ues_per_slice[slice]:
-        if ue == x:
-          values_startTime[slice] = 0.001
-    f.write('**.ue[{ue}].app[{n}].startTime = {str}\n'.format(ue=ue,n= n_app, str = getOptionsString(values= values_startTime, name='', unit='s', parallel= "Slice")))  
+    #values_startTime = len(ues_per_slice)*[999]
+    values_startTime = 999
+    #for slice in range(len(ues_per_slice)):
+    for x in ues_per_slice:
+      if ue == x:
+        values_startTime = 0.001
+        #values_startTime[slice] = 0.001
+
+    f.write('**.ue[{ue}].app[{n}].startTime = {str}s\n'.format(ue=ue,n= n_app, str = str(values_startTime)))
 
   f.write(('**.server.app[{n}..{f}].typename = "UdpVideoStreamServer"\n'
            '**.server.app[{n}..{f}].videoSize = 10MiB\n'
