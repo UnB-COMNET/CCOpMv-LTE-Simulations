@@ -90,7 +90,8 @@ def parse_results_per_slice(filename: str, max_time: int):
             for line in f:
                 if not line.startswith('---'): 
                     data = [int(x) for x in line.split()]   # data: [t, m, n]
-                    results[data[0]][data[2]] = data[1]
+                    if data[2] >= 0:
+                        results[data[0]][data[2]] = data[1]
                     enbs_time[data[0]].append(data[1])
                     enbs.append(data[1])
                     enbs = np.unique(enbs).tolist()
@@ -134,7 +135,8 @@ def parse_results(filename: str, max_time: int):
         for line in f:
             if not line.startswith('---'): 
                 data = [int(x) for x in line.split()]   # data: [t, m, n]
-                results[data[0]][data[2]] = data[1]
+                if data[2] >= 0:
+                    results[data[0]][data[2]] = data[1]
                 enbs_time[data[0]].append(data[1])
                 enbs.append(data[1])
                 enbs = np.unique(enbs).tolist()

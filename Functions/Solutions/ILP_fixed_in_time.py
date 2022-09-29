@@ -132,6 +132,8 @@ def ccop_mv_MILP(
                             if contador > 0 :
                                 print("\t\tSNR medio:", 10*math.log10(snr_medio/contador))
                             print("\t\tUsuarios totais:", users)
+                            if users == 0:
+                                f.write("{t} {m} {n}\n".format(t= t, m= m, n= -1))
                 print("Distances:")
                 for i in found:
                     for j in found:
