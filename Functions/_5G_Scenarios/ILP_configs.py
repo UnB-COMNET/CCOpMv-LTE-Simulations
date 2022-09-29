@@ -973,9 +973,9 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
       elif app.upper() == "VIDEO":
         hp.writeNumApps(f, numUEs= num_ues, directions= 2, multi= False)
         hp.writeComment(f, text= "Video Streaming UL")
-        hp.writeAppVideoUL_varyingUsers(f, numUEs= num_ues, ues_per_slice= ues_per_slice, p_size= p_size, n_app= 0, mtu= False, s_interval= s_interval)
+        hp.writeAppVideoUL_varyingUsers(f, numUEs= num_ues, ues_per_slice= ues_per_slice[slice], p_size= p_size, n_app= 0, mtu= False, s_interval= s_interval)
         hp.writeComment(f, text= "Video Streaming DL")
-        hp.writeAppVideoDL_varyingUsers(f, numUEs= num_ues, ues_per_slice= ues_per_slice, p_size= p_size, n_app= 1, mtu= True, s_interval= s_interval)
+        hp.writeAppVideoDL_varyingUsers(f, numUEs= num_ues, ues_per_slice= ues_per_slice[slice], p_size= p_size, n_app= 1, mtu= True, s_interval= s_interval)
 
   return config_name_list, num_enbs_time
 
