@@ -538,7 +538,7 @@ def write_file_result(result_dir: str, users_t_m: List[List[int]], distance_mn: 
                 if counter[m] > 0 :
                     print("\t\tSNR medio:", 10*math.log10(mean_snr[m]/counter[m]))
                 print("\t\tUsuarios totais:", total_users[m])
-                if users == 0:
+                if total_users[m] == 0:
                     f.write("{t} {m} {n}\n".format(t= t, m= m, n= -1))
                 
             print("Distances:")
