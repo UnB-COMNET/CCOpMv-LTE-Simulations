@@ -169,13 +169,16 @@ def get_ues_connections(result, ues_coords, ues_per_slice:list, antennas_regions
         for s in range(len(ue)):        
             region = geo.coord2Region(ue[s], size_sector, size_x, size_y)
             
-            for ue_find in ues_per_slice[s]:
-                if ue_find == ue_target:
-                    ue_find = ue_target
-                    break
+            #for ue_find in ues_per_slice[s]:
+            #    if ue_find == ue_target:
+            #        ue_find = ue_target
+            #        break
 
-            if ue_find == ue_target:
-                connections[-1].append(antennas_regions.index(result[s][region])+1)
+            if ue_target in ues_per_slice[s]:
+                if region in result[s]:
+                    connections[-1].append(antennas_regions.index(result[s][region])+1)
+                else:
+                    connections[-1].append(0)
             else:
                 connections[-1].append(1)   # unreal connection; 1 is default
         
@@ -205,15 +208,17 @@ def get_ues_connections_per_slice(result, ues_coords, ues_list: List[int], anten
     for ue in ues_coords:
         region = geo.coord2Region(ue[slice_], size_sector, size_x, size_y)
 
-        for ue_find in ues_list:
-            if ue_find == ue_target:
-                ue_find = ue_target
-                break
+        #for ue_find in ues_list:
+        #    if ue_find == ue_target:
+        #        ue_find = ue_target
+        #        break
         
-        if ue_find == ue_target:
-            connections.append(antennas_regions.index(result[region])+1)
+        if ue_target in ues_list:
+            if region in result:
+                connections.append(antennas_regions.index(result[region])+1)
+            else:
+                connections.append(0)
         else:
-            
             connections.append(1)   # unreal connection; 1 is default
 
         ue_target += 1
