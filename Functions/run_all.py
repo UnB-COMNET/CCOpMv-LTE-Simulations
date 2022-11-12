@@ -58,7 +58,7 @@ def main():
     extra_config_name= "video"
     target_f = 10 #Mbps
     cmdenv_config = True #Redirects cmdenv outputs to a file
-    interference = True #Enables or disables multicell-interference
+    interference = False #Enables or disables multicell-interference
 
     # For the user
     allrun_solver = False # Older version where runs all solvers first

@@ -7,6 +7,13 @@ import matplotlib.pyplot as plt
 from scipy.stats import poisson
 from random import choice, randint, seed, random
 
+MODES_NEW_NAMES = {
+    'varying': 'VID',
+    'single': 'TID',
+    'fixed': 'AID',
+    'ga': 'AGD'
+}
+
 # TODO: Use OmNET absolute path.
 def get_frameworks_path():
     user = 'juliano'
@@ -213,8 +220,8 @@ def get_ues_connections_per_slice(result, ues_coords, ues_list: List[int], anten
         #        ue_find = ue_target
         #        break
         
-        if ue_target in ues_list:
-            if region in result:
+        if ue_target in ues_list: #Se for um UE ativo
+            if region in result: #Se sua região estiver nos resultados
                 connections.append(antennas_regions.index(result[region])+1)
             else:
                 connections.append(0)

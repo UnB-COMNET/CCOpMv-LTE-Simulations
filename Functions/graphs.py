@@ -6,7 +6,6 @@ Importar as bibliotecas do Pandas, Numpy, Sklearn
 """
 
 import csv
-from turtle import width
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -15,6 +14,7 @@ from pathlib import Path
 from typing import Dict, List, Union
 import general_functions as genf
 from errors import check_mode
+import sys
 
 """## Sobre:
 
@@ -139,33 +139,81 @@ def gen_ues_data_single(data, num_ues: int, directions: int, multi: bool = False
 
   return new_data
 
-def unite_slices (processed_data, id_info, repetition, inifile= None, dropna = True, slice_op= 'mean'):
+def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list, ues_per_slice: dict, slice_op= 'mean'):
 
-  data = pd.concat([processed_data, id_info], axis= 1).assign(repetition = repetition)
-  if inifile is not None:
-    data = data.assign(inifile= inifile)
+  dropna = False
 
-  noslice_data = pd.DataFrame()
+  noslice_data: pd.DataFrame
 
+  seeds = []
+
+  for name in processed_data.index:
+    p = re.compile(r'seed_\d+')
+    m = p.search(name)
+    if m:
+      numbers = re.compile(r'\d+')
+      seed = numbers.search(m.group())
+      seeds.append(int(seed.group()))
+    else:
+      print('ERROR: Não foi possível determinar a seed.')
+
+  data = pd.concat([processed_data, extra_info[id_columns]], axis= 1).assign(seed=seeds, Slice=extra_info['Slice'].astype(int))
+
+  new_data = data.copy()
+  #tuples_to_na = []
+
+  print('Identifying not active UEs.')
+  for _seed in np.unique(seeds):
+    list_slices = ues_per_slice[str(_seed)]
+    for i in range(len(list_slices)):
+      tmp_sel = new_data[new_data['seed'] == _seed]
+      selected = tmp_sel[tmp_sel['Slice'] == i]
+      #na_columns = []
+      for column in selected.columns:
+        p = re.compile(fr'ue\[\d+\]')
+        m = p.search(column)
+        if m is not None: #If its not a extra info column
+          p2 = re.compile(r'\d+')
+          m2 = p2.search(m.group())
+          if m2 is not None and int(m2.group()) not in list_slices[i]:
+            #print('UE:', m2.group())
+            #na_columns.append(column)
+            #tuples_to_na.append((selected.index, column))
+            new_data.loc[selected.index, column] = np.nan
+            #selected[column] = [np.nan for _ in selected[m.group]]
+  
+  #print(new_data.columns.duplicated().sum())
+  #print('Removing not active UEs.')
+  #for t in tuples_to_na:
+  #  new_data.loc[t[0], t[1]] = np.nan          
+  
   if slice_op == 'mean':
-    noslice_data = data.groupby(id_info.columns.tolist() + ["repetition"] + (["inifile"] if inifile is not None else []), dropna = dropna).mean()
+    noslice_data = new_data.groupby(id_columns, dropna = dropna).mean()
   elif slice_op == 'sum':
-    noslice_data = data.groupby(id_info.columns.tolist() + ["repetition"] + (["inifile"] if inifile is not None else []), dropna = dropna).sum()
+    noslice_data = new_data.groupby(id_columns, dropna = dropna).sum()
   elif slice_op == 'std':
-    noslice_data = data.groupby(id_info.columns.tolist() + ["repetition"] +  (["inifile"] if inifile is not None else []), dropna = dropna).std()
+    noslice_data = new_data.groupby(id_columns, dropna = dropna).std()
+  else:
+    print('ERRORRRRR')
+
+  #print('Inside unite: ', noslice_data)
+  noslice_data = noslice_data.drop(columns=['Slice', 'seed'])
+  #print('New Data: ',new_data.drop(columns=id_columns + ['Slice', 'seed']).sum().sum())
+  #print('Data: ',noslice_data.sum().sum())
 
   return noslice_data
 
-def compute_cov (data, columns: List, dropna: bool = True):
+def compute_cov (data: pd.DataFrame, id_columns: List):
+  dropna = False
 
-  mean_data = data.groupby(columns, dropna= dropna).mean()
+  mean_data = data.groupby(id_columns, dropna= dropna).mean()
 
-  std_data = data.groupby(columns, dropna= dropna).std()
+  std_data = data.groupby(id_columns, dropna= dropna).std()
 
   cov_data = std_data/mean_data
 
   mean_data.columns = pd.MultiIndex.from_product([['Mean'], mean_data.columns])
-
+  #print('Mean Data: ',mean_data.sum().sum())
   std_data.columns = pd.MultiIndex.from_product([['Std'], std_data.columns])
 
   cov_data.columns = pd.MultiIndex.from_product([['COV'], cov_data.columns])
@@ -177,23 +225,29 @@ def compute_cov (data, columns: List, dropna: bool = True):
   return new_data
   #return new_data.reset_index(new_data.index.nlevels-1)
 
-def getCOV(data, extra_info, color_column, preRunattr, dropna: bool = True, unite: bool = True, slice_op: str= 'mean', same_ue: bool= True):
+def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list = ['Inter', 'RBs', 'min_snr_used', 'repetition', 'inifile'], unite: bool = True, slice_op: str= 'mean', ues_per_slice: dict= None):
 
+  #print(f'\nUes por slice: {ues_per_slice}\n')
+  #print(f'\nData index: {data.index}\n\n')
+  #print(f'\nData columns: {data.columns}\n\n')
+  #print(f'Data: {data}')
+  tmp: pd.DataFrame
+  
   if unite:
-    tmp = unite_slices(data, extra_info, preRunattr['repetition'], preRunattr['inifile'], dropna, slice_op)
+    tmp = unite_slices(processed_data=data, id_columns=id_columns, extra_info=extra_info, slice_op=slice_op, ues_per_slice=ues_per_slice)
+    #print('By unite: ', tmp) 
   else:
-    if same_ue:
-      tmp = pd.concat([data, extra_info], axis= 1)
-    else:
-      tmp = pd.concat([data, extra_info, preRunattr['inifile']], axis= 1)
+    tmp = pd.concat([data, extra_info[id_columns]], axis= 1)
 
-  new_data = compute_cov(tmp, extra_info.columns.tolist() + ([] if same_ue else ['inifile']), dropna)
+  #print('Before cov: ', tmp)
+  if 'repetition' in id_columns:
+    id_columns.remove('repetition')
+  new_data = compute_cov(tmp, id_columns=id_columns)
 
-  colors = new_data.index.get_level_values(color_column).tolist()
+  print('Data: ', new_data.sum().sum())
+  print('Shape: ',new_data.shape)
 
-  names = new_data.index.get_level_values('n_obj').tolist()
-
-  return new_data, colors, names
+  return new_data
 
 def processInitialData(initial_data):
 
@@ -216,10 +270,8 @@ def processInitialData(initial_data):
 
   """Itervar processing"""
   preItervar = itervar.pivot('run', columns='attrname', values='attrvalue').astype({"sched": object})
-  preItervar = preItervar.drop(["sched", "Slice"], axis= 1)
   num_enbs = pd.DataFrame()
   num_enbs["NumEnbs"] = preItervar["NumEnbs"].astype({"NumEnbs": float})
-  preItervar = preItervar.drop(["NumEnbs"], axis= 1)
 
   """Runattr processing"""
   preRunattr = runattr.pivot('run', columns='attrname', values='attrvalue').astype({"repetition": int})
@@ -234,7 +286,7 @@ def processInitialData(initial_data):
   preData = preScalar.assign(qname = preScalar.module + '.' + preScalar.name)
   newData = preData.pivot('run', columns='qname', values='value')
 
-  extra_info = preItervar.assign(min_snr_used = newData.index.str.findall(r'\d+').str[0])
+  extra_info = preItervar.assign(min_snr_used = newData.index.str.findall(r'\d+').str[0], repetition = preRunattr['repetition'], inifile = preRunattr['inifile'])
 
   return preItervar, preRunattr, preVector, preScalar, extra_info, num_enbs
 
@@ -242,7 +294,7 @@ def get_data_vector_mean(data, operation= np.mean):
   data = data.applymap(lambda x: operation(list(map(float, x.split()))), na_action= 'ignore')
   return data
 
-def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= True):
+def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, ues_per_slice: dict= None):
 
   results_throughput = []
   results_enb = []
@@ -253,18 +305,24 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
   results_enddelay = []
   value_keys = []
 
+  id_columns = ['Inter', 'RBs', 'min_snr_used', 'repetition', 'inifile']#TODO: do this better according to inputs
+
   for n in range(len(csvs)):
     preItervar, preRunattr, preVector, preScalar, extra_info, num_enbs = processInitialData(csvs[n])
 
+    print('Getting throughput.')
     tmp_throughput = get_data_from_vector('throughput:vector', "ue", preVector)['vecvalue']
     data_throughput = get_data_vector_mean(tmp_throughput)
-    throughput, _, _ = getCOV(data_throughput.fillna(0), extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= same_ue)
+    throughput = getCOV(data=data_throughput.fillna(0), extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice)
+    #print('Side by func: ', throughput['Mean']) 
 
-    enbs, _, _ = getCOV(num_enbs, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= True)
-    hist_enbs = unite_slices(num_enbs, extra_info, preRunattr['repetition'], preRunattr['inifile'], dropna= True, slice_op= 'mean')
+    print('Getting eNBs.')
+    enbs = getCOV(data=num_enbs, extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice)
+    hist_enbs = unite_slices(processed_data=num_enbs, extra_info=extra_info, id_columns=id_columns, slice_op= 'mean', ues_per_slice= ues_per_slice)
 
+    print('Getting SINR.')
     data_sinr = get_data_from_scalar("rcvdSinr:mean", "ue", preScalar)
-    sinr, _, _ = getCOV(data_sinr.fillna(-10), extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= same_ue)
+    sinr = getCOV(data=data_sinr.fillna(-10), extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice)
 
     results_throughput.append(throughput)
     results_enb.append(enbs)
@@ -274,17 +332,17 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
     if extra:
       tmp_enddelay = get_data_from_vector('endToEndDelay:vector', "ue", preVector)['vecvalue']
       data_enddelay = get_data_vector_mean(tmp_enddelay)
-      enddelay, _, _ = getCOV(data_enddelay, extra_info, 'min_snr_used', unite= True, preRunattr = preRunattr, same_ue= same_ue)
+      enddelay = getCOV(data=data_enddelay, extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice)
 
       results_enddelay.append(enddelay)
 
       data_rcvd_packets = get_data_from_scalar("packetReceived:count", "ue", preScalar)
-      rcvd_packets, _, _ = getCOV(data_rcvd_packets, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr, same_ue= same_ue)
+      rcvd_packets, _, _ = getCOV(data=data_rcvd_packets, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', ues_per_slice= ues_per_slice)
 
       results_rcvd_packets.append(rcvd_packets)
 
       data_packets_sent = get_data_from_scalar("packetSent:count", "server", preScalar)
-      packets_sent, _, _ = getCOV(data_packets_sent, extra_info, 'min_snr_used', unite= True, slice_op= 'sum', preRunattr = preRunattr, same_ue= same_ue)
+      packets_sent, _, _ = getCOV(data=data_packets_sent, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', ues_per_slice= ues_per_slice)
 
       results_packets_sent.append(packets_sent)
 
@@ -297,11 +355,14 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, same_ue: bool= 
   names = dict_ids.keys()
 
   all_throughput = pd.concat(results_throughput, keys= value_keys, names= names)
+  #print('Inside func: ', all_throughput['Mean']) 
   all_sinr = pd.concat(results_sinr, keys= value_keys, names= names)
   all_enb_mean = pd.concat(results_enb, keys= value_keys, names= names)
   all_enb_hist = pd.concat(results_enb_hist, keys= value_keys, names= names)
   #all_enb = pd.DataFrame({'Mean': all_enb_mean['Mean'], 'Std': all_enb_std['Mean']})
   all_enb = all_enb_mean
+
+  #print(all_throughput.index)
 
   if extra:
     all_enddelay = pd.concat(results_enddelay, keys= value_keys, names= names)
@@ -986,7 +1047,8 @@ def process_csv(filename, app='video'):
     fig.show()
 
 def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_dir: str, sim_dir: str, csv_dir: str, images_dir: str= "Images", extra_config_name: str= '',
-                            extra_dir: List[str] = [], height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, interference: bool= False, **kwargs):
+                            extra_dir: List[str] = [], height: int= 500, width: int= 700, cov: bool= True, interference: bool= False,
+                            lambda_poisson: int = 30, num_slices: int = 12, **kwargs):
   """## **Comparing**"""
 
   modes = genf.verify_modes(modes)
@@ -997,7 +1059,10 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
     csv_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
   Path(images_dir).mkdir(parents=True, exist_ok=True)
 
+  extra = False
+
   data_frames = {}
+  ues_per_slice = {}
   for mode in modes:
     data_frames[mode] = pd.DataFrame()
     for chosen_seed in chosen_seeds:
@@ -1007,47 +1072,66 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
       results_path = project_dir + '/' + csv_dir_full
       csv_path, _ = genf.gen_csv_path(mode= mode, sim_path= sim_path, results_path= results_path, extra_config_name= extra_config_name, interference=interference)
       new_data_frame = pd.read_csv(csv_path)
+      new_data_frame['run'] = new_data_frame['run'].astype(str) + f'_seed_{chosen_seed}'
       print(csv_path)
       data_frames[mode] = pd.concat([data_frames[mode], new_data_frame])
+      #print(f'New data frame index: {new_data_frame.index}')
+      #print(f'Result data frame index: {data_frames[mode].index}')
+
+      users_t_m = genf.gen_users_t_m(chosen_seed, lambda_poisson = lambda_poisson, num_slices=num_slices)     
+      ues_per_slice[str(chosen_seed)] = genf.gen_ue_per_slice(chosen_seed, users_t_m, num_slices=num_slices)
 
   """### Mode1 x Mode2 (power 30 dBm)"""
+  all_throughput: pd.DataFrame
+  all_sinr: pd.DataFrame
+  all_enb: pd.DataFrame
+  all_enb_hist: pd.DataFrame
+  all_enddelay: pd.DataFrame
+  all_rcvd_packets: pd.DataFrame
+  all_packets_sent: pd.DataFrame
+  
+  if extra:
+    all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[mode] for mode in modes], {'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
+                                                                                                                            extra= extra, ues_per_slice= ues_per_slice)
+  else:
+    all_throughput, all_sinr, all_enb, all_enb_hist = compare_csvs_video([data_frames[mode] for mode in modes], {'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]}, extra= extra, ues_per_slice= ues_per_slice)
+    #print('Not extra: ', all_throughput['Mean'])  
 
-  all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[mode] for mode in modes], {'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
-                                                                                                                          extra= True, same_ue= same_ue)
+  #print(all_throughput['Mean'].index.get_level_values('n_obj'))                                                                                                       
 
-  #print(all_throughput['Mean'].size)                                                                                                         
+  print('Plotting throughput.')
 
   lines = all_throughput.index.get_level_values("min_snr_used").tolist()
 
   names = all_throughput.index.get_level_values('n_obj').tolist()
 
-  colors = all_throughput.index.get_level_values("ILP").tolist()
+  colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_throughput.index.get_level_values("ILP").tolist()]
 
   facet = all_throughput.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Mean (Bps)", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                title= "UEs Throughput DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Mean (Bps)", "line_dash": "Min Snr Used (dB)", "color": "Solver Type", "facet_col": "Power"}, markers= False, lines= True,
+                title= "UEs Throughput DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values()})
   
   fig.write_image(images_dir+"/"+"thr_ilptype.svg", height= height, width= width)
 
   if cov:
-    fig = px.ecdf(all_throughput, x='COV', color = colors, labels= {"COV": "Throughput:Mean COV", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                  title= "UEs Throughput COV DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+    fig = px.ecdf(all_throughput, x='COV', color = colors, labels= {"COV": "Throughput:Mean COV", "line_dash": "Min Snr Used (dB)", "color": "Solver Type", "facet_col": "Power"}, markers= False, lines= True,
+                  title= "UEs Throughput COV DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values()})
 
     fig.write_image(images_dir+"/"+"thr_ilptype_cov.svg", height= height, width= width)
 
   #median_data = tmp_thr.groupby(["min_snr_used", "ILP", "RBs"], dropna = False).median()
-
+  print('Plotting eNBs.')
   shape = all_enb.index.get_level_values("min_snr_used").tolist()
 
   names = all_enb.index.get_level_values('n_obj').tolist()
 
-  colors = all_enb.index.get_level_values("ILP").tolist()
+  colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_enb.index.get_level_values("ILP").tolist()]
 
   facet = all_enb.index.get_level_values("Power").tolist()
 
-  fig = px.bar(all_enb, x= colors, y= "Mean", color= colors, labels= {"x" : "Min Snr Used (dB)" ,"pattern_shape" : "ILP Type", "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "ILP Type"},
-              title= "Mean Num Enbs per Simulation", hover_name = names, error_y = "Std", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+  fig = px.bar(all_enb, x= colors, y= "Mean", color= colors, labels= {"x" : "Solver Type" ,"pattern_shape" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "Solver Type"},
+              title= "Mean Num Enbs per Simulation", hover_name = names, error_y = "Std", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values()})
 
   fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height, width= width)
 
@@ -1058,88 +1142,90 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   for n in tmp:
     tmp_enb_hist = all_enb_hist.xs(n, level='min_snr_used')
 
-    shape = tmp_enb_hist.index.get_level_values("ILP").tolist()
+    shape = [genf.MODES_NEW_NAMES[m.lower()] for m in tmp_enb_hist.index.get_level_values("ILP").tolist()]
 
     facet = tmp_enb_hist.index.get_level_values("Power").tolist()
 
-    fig = px.histogram(tmp_enb_hist, x= 'NumEnbs', height= height, width= width, labels= {"x" : "Number eNBs" ,"pattern_shape" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "ILP Type"},
-                       title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+    fig = px.histogram(tmp_enb_hist, x= 'NumEnbs', height= height, width= width, labels= {"x" : "Number eNBs" ,"pattern_shape" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "Solver Type"},
+                       title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values()})
 
     fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
 
   sp = np.sqrt(((30-1)*0.9660918**2 + (30-1)*0.8164966**2)/(30+30-2))
   t = (3.4 - 3)/(sp * np.sqrt(2/30))
   #print(t)
-
+  print('Plotting SINR.')
   lines = all_sinr.index.get_level_values("min_snr_used").tolist()
 
   names = all_sinr.index.get_level_values('n_obj').tolist()
 
-  colors = all_sinr.index.get_level_values("ILP").tolist()
+  colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_sinr.index.get_level_values("ILP").tolist()]
 
   facet = all_sinr.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Sinr:Mean (dB)", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                title= "UE Sinr DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Sinr:Mean (dB)", "line_dash": "Min Snr Used (dB)", "color": "Solver Type", "facet_col": "Power"}, markers= False, lines= True,
+                title= "UE Sinr DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values()})
 
   fig.write_image(images_dir+"/"+"sinr_ilptype.svg", height= height, width= width)
 
   if cov:
-    fig = px.ecdf(all_sinr, x='COV', color = colors, labels= {"COV": "Sinr:Mean COV", "color": "Min Snr Used (dB)", "line_dash": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                  title= "UE Sinr DL COV - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+    fig = px.ecdf(all_sinr, x='COV', color = colors, labels= {"COV": "Sinr:Mean COV", "color": "Min Snr Used (dB)", "line_dash": "Solver Type", "facet_col": "Power"}, markers= False, lines= True,
+                  title= "UE Sinr DL COV - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values()})
 
     fig.write_image(images_dir+"/"+"sinr_ilptype_cov.svg", height= height, width= width)
 
-  lines = all_enddelay.index.get_level_values("min_snr_used").tolist()
+  if extra:
 
-  names = all_enddelay.index.get_level_values('n_obj').tolist()
+    lines = all_enddelay.index.get_level_values("min_snr_used").tolist()
 
-  colors = all_enddelay.index.get_level_values("ILP").tolist()
+    names = all_enddelay.index.get_level_values('n_obj').tolist()
 
-  facet = all_enddelay.index.get_level_values("Power").tolist()
+    colors = all_enddelay.index.get_level_values("ILP").tolist()
 
-  fig = px.ecdf(all_enddelay, x='Mean', color = colors, labels= {"Mean": "Delay (s)", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                title= "End to End Delay of each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+    facet = all_enddelay.index.get_level_values("Power").tolist()
 
-  fig.write_image(images_dir+"/"+"edd_ilptype.svg", height= height, width= width)
+    fig = px.ecdf(all_enddelay, x='Mean', color = colors, labels= {"Mean": "Delay (s)", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
+                  title= "End to End Delay of each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  if cov:
-    fig = px.ecdf(all_enddelay, x='COV', color = colors, labels= {"COV": "COV", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                  title= "End to End Delay COV of each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+    fig.write_image(images_dir+"/"+"edd_ilptype.svg", height= height, width= width)
 
-    fig.write_image(images_dir+"/"+"edd_ilptype_cov.svg", height= height, width= width)
+    if cov:
+      fig = px.ecdf(all_enddelay, x='COV', color = colors, labels= {"COV": "COV", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
+                    title= "End to End Delay COV of each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  lines = all_rcvd_packets.index.get_level_values("min_snr_used").tolist()
+      fig.write_image(images_dir+"/"+"edd_ilptype_cov.svg", height= height, width= width)
 
-  names = all_rcvd_packets.index.get_level_values('n_obj').tolist()
+    lines = all_rcvd_packets.index.get_level_values("min_snr_used").tolist()
 
-  colors = all_rcvd_packets.index.get_level_values("ILP").tolist()
+    names = all_rcvd_packets.index.get_level_values('n_obj').tolist()
 
-  facet = all_rcvd_packets.index.get_level_values("Power").tolist()
+    colors = all_rcvd_packets.index.get_level_values("ILP").tolist()
 
-  fig = px.ecdf(all_rcvd_packets, x='Mean', color = colors, labels= {"Mean": "Number of Received Packets", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                title= "Received packets by each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+    facet = all_rcvd_packets.index.get_level_values("Power").tolist()
 
-  fig.write_image(images_dir+"/"+"rcvdpkt_ilptype.svg", height= height, width= width)
+    fig = px.ecdf(all_rcvd_packets, x='Mean', color = colors, labels= {"Mean": "Number of Received Packets", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
+                  title= "Received packets by each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
 
-  lines = all_packets_sent.index.get_level_values("min_snr_used").tolist()
+    fig.write_image(images_dir+"/"+"rcvdpkt_ilptype.svg", height= height, width= width)
 
-  names = all_packets_sent.index.get_level_values('n_obj').tolist()
+    lines = all_packets_sent.index.get_level_values("min_snr_used").tolist()
 
-  colors = all_packets_sent.index.get_level_values("ILP").tolist()
+    names = all_packets_sent.index.get_level_values('n_obj').tolist()
 
-  facet = all_packets_sent.index.get_level_values("Power").tolist()
+    colors = all_packets_sent.index.get_level_values("ILP").tolist()
 
-  fig = px.ecdf(all_packets_sent, x='Mean', color = colors, labels= {"Mean": "Number of Packets Sent", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
-                title= "Packets sent to each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+    facet = all_packets_sent.index.get_level_values("Power").tolist()
 
-  fig.write_image(images_dir+"/"+"pktsent_ilptype.svg", height= height, width= width)
+    fig = px.ecdf(all_packets_sent, x='Mean', color = colors, labels= {"Mean": "Number of Packets Sent", "line_dash": "Min Snr Used (dB)", "color": "ILP Type", "facet_col": "Power"}, markers= False, lines= True,
+                  title= "Packets sent to each UE DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": ["5", "10", "15"]})
+
+    fig.write_image(images_dir+"/"+"pktsent_ilptype.svg", height= height, width= width)
 
   return
 
 def comparing_video_powers(chosen_seeds: List[int], modes: Union[List[str], str], micro_powers: List[int], project_dir: str, sim_dir: str, csv_dir: str,
                            images_dir: str= "Images", extra_config_name: str= '', extra_dir: List[str] = [], height: int= 500, width: int= 700,
-                           same_ue: bool= True, cov: bool= True, **kwargs):
+                           cov: bool= True, **kwargs):
 
   #Accepting list or a single mode str
   if type(modes) is list:
@@ -1151,10 +1237,10 @@ def comparing_video_powers(chosen_seeds: List[int], modes: Union[List[str], str]
   #Comparing for each mode
   for mode in modes:
     comparing_video_powers_singlemode(chosen_seeds= chosen_seeds, mode= mode, micro_powers= micro_powers, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
-                                      extra_config_name= extra_config_name, extra_dir = extra_dir, height= height, width= width, same_ue= same_ue, cov= cov, **kwargs)
+                                      extra_config_name= extra_config_name, extra_dir = extra_dir, height= height, width= width, cov= cov, **kwargs)
 
 def comparing_video_powers_singlemode(chosen_seeds: List[int], mode: str, micro_powers: List[int], project_dir: str, sim_dir: str, csv_dir: str, images_dir: str= "Images",
-                                      extra_config_name: str= '', extra_dir: List[str] = [], height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, **kwargs):
+                                      extra_config_name: str= '', extra_dir: List[str] = [], height: int= 500, width: int= 700, cov: bool= True, **kwargs):
   """### Comparing Powers"""
 
   check_mode(mode)
@@ -1184,7 +1270,7 @@ def comparing_video_powers_singlemode(chosen_seeds: List[int], mode: str, micro_
 
   all_throughput, all_sinr, all_enb, all_enb_hist = compare_csvs_video([data_frames[micro_power] for micro_power in micro_powers],
                                                                        {'ILP' : [mode.capitalize() for _ in micro_powers], 'Power': [micro_power for micro_power in micro_powers]},
-                                                                       extra= False, same_ue= same_ue)
+                                                                       extra= False)
   colors = all_throughput.index.get_level_values("min_snr_used").tolist()
 
   names = all_throughput.index.get_level_values('n_obj').tolist()
@@ -1283,7 +1369,7 @@ def comparing_voip():
   fig.show()
 
 def comparing_interference(chosen_seeds: List[int], mode: str, project_dir: str, sim_dir: str, csv_dir: str, images_dir: str= "Images", extra_config_name: str= '',
-                           extra_dir: List[str] = [], height: int= 500, width: int= 700, same_ue: bool= True, cov: bool= True, **kwargs):
+                           extra_dir: List[str] = [], height: int= 500, width: int= 700, cov: bool= True, **kwargs):
   
   check_mode(mode)
 
@@ -1307,7 +1393,7 @@ def comparing_interference(chosen_seeds: List[int], mode: str, project_dir: str,
       data_frames[inter] = pd.concat([data_frames[inter], new_data_frame])
 
   all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video([data_frames[inter] for inter in [False, True]], {'ILP' : [mode.capitalize() for _ in [False, True]], 'Power': [30 for _ in [False, True]]},
-                                                                                                                          extra= True, same_ue= same_ue)
+                                                                                                                          extra= True)
 
   # Throughput
 
@@ -1402,8 +1488,8 @@ def hist_ues_slice():
 
 
 if __name__ == "__main__":
-  chosen_seeds = [2,3,4,5,6,7,10,11,12,13]
-  modes = ['single', 'fixed', 'ga'] 
+  chosen_seeds = [3]#[2,3,4,5,6,7,10,11,12,13]
+  modes = ['fixed']#['single', 'fixed', 'ga'] 
   #num_ues= 60
   extra_dir = ['disaster_percentage','micro_power']
   disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
@@ -1415,22 +1501,28 @@ if __name__ == "__main__":
   extra_config_name= "video"
   height= 500
   width= 1200
-  same_ue = True #Considera UEs diferentes se utilizam diferentes seeds (pois cada seed tem um inifile diferente)
   cov = False #Cria as imagens do COV ou não
   interference = False
+  num_slices = 12
+  lambda_poisson_gen_users_t_m = 30
+
   kwargs = {'disaster_percentage': disaster_percentage, 'micro_power': micro_power}
 
   comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
-                          extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, same_ue= same_ue, cov= cov, interference= interference,
+                          extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, cov= cov, interference= interference,
+                          lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices,
                           **kwargs)#Disaster and micropower as **kwargs
   
-  comparing_interference(chosen_seeds=chosen_seeds, mode='fixed', project_dir=project_dir, sim_dir=sim_dir, csv_dir=csv_dir, images_dir=images_dir,
-                         extra_config_name=extra_config_name, extra_dir=extra_dir, height=height, width=width, same_ue=same_ue, cov=cov,
-                         **kwargs)
+  #comparing_interference(chosen_seeds=chosen_seeds, mode='fixed', project_dir=project_dir, sim_dir=sim_dir, csv_dir=csv_dir, images_dir=images_dir,
+  #                       extra_config_name=extra_config_name, extra_dir=extra_dir, height=height, width=width, cov=cov,
+  #                       **kwargs)
 
   #comparing_video_powers(chosen_seeds= chosen_seeds, modes= modes, micro_powers= [30], project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
-  #                      extra_config_name= extra_config_name, extra_dir = ['disaster_percentage'], height= height, width= width, same_ue= same_ue, cov= cov,
+  #                      extra_config_name= extra_config_name, extra_dir = ['disaster_percentage'], height= height, width= width, cov= cov,
   #                       **{'disaster_percentage': disaster_percentage})#Disaster as **kwarg
+
+  #users_t_m = genf.gen_users_t_m(chosen_seed, lambda_poisson = lambda_poisson_gen_users_t_m, num_slices=num_slices)     
+  #ues_per_slice = genf.gen_ue_per_slice(chosen_seed, users_t_m, num_slices=num_slices)
 
   print('Done.')
   
