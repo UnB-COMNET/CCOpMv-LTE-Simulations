@@ -27,7 +27,7 @@ def main():
     size_sector = 400
     n_macros = 1
     min_sinrs = [5, 10, 15]
-    modes = ['fixed', 'single'] # fixed or single or ga
+    modes = ['fixed', 'single', 'ga'] # fixed or single or ga
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'

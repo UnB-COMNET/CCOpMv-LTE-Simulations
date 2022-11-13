@@ -1,6 +1,6 @@
 -------------Calculating Solution (this may take a while)
 +++++++++++++++++++Min Sinr: 10 dB (ga)
-+++++++++++++++++++With backhaul constraint. Start: 2022-09-14 01:35:10
++++++++++++++++++++With backhaul constraint. Start: 2022-11-12 16:49:49
 
 Parameters:
 - chosen seed 4
@@ -5020,4 +5020,4 @@ Distances:
 95 : 99 = 1600.0
 
 Média de carros: 12.416666666666666
---- Done after 0.6432337528467178 hours. ---
+--- Done after 0.7483597748809391 hours. ---
