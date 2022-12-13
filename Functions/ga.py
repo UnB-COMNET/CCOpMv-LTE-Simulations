@@ -325,9 +325,7 @@ def fitness(solution, solution_idx):
            if _antennas_last_result[m] == 1 and solution[m] != 1:
                 return 0, None
 
-    # Must provide a minimum amount of SINR to all users
     map_of_service = genf.get_map_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
-
     
     # Must be connected to the backhaul
     cleared = []
@@ -341,6 +339,7 @@ def fitness(solution, solution_idx):
                         cleared.append(m)
                     if n not in cleared and n != _first_antenna_region:
                         cleared.append(n)
+                        
     # Compares the sorted cleared array with the sorted antennas regions without the first antenna
     sorted_antennas = np.sort(antennas_regions, kind= "heapsort")
     sorted_cleared = np.sort(cleared + [_first_antenna_region], kind= "heapsort")
@@ -486,6 +485,7 @@ def fitness_connections(solution, solution_idx):
         if snr_value < _min_sinr_w:
             return 0
 
+    #RETIRAR?
     # Constraint - if antenna in m then serve m
     for i in range(num_genes):
         n = users_regions[i] #Region of the gene i of the genome

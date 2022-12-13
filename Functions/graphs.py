@@ -53,7 +53,7 @@ App: UDP Video Streaming (INET)
 
 Data generated using the command: 
 
-    scavetool x -o ilp_varying_sliced_video.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" ilp_varying_sliced_*_VIDEO/*-*.sca ilp_varying_sliced_*_VIDEO/*-*.vec
+    opp_scavetool x -o ilp_varying_sliced_video.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" ilp_varying_sliced_*_VIDEO/*-*.sca ilp_varying_sliced_*_VIDEO/*-*.vec
 """
 
 def get_data_from_scalar (data_name: str, module: str, scalar_data):
@@ -1158,7 +1158,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   facet = all_enb.index.get_level_values("Power").tolist()
 
   fig = px.bar(all_enb, x= x, y= "Mean", color= colors, labels= {"x" : "Min Snr Used (dB)" , "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "Solver Type"},
-              title= "Mean Num Enbs per Simulation", hover_name = names, error_y = "Std", barmode = 'group', facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
+              title= "Mean Num Enbs per Simulation", hover_name = names, error_y = "Std", barmode = 'group', facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order})
 
   fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height, width= width)
 

@@ -482,64 +482,6 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
                 counter += 1
 
     return missing
-"""
-def get_missing_solutions(chosen_seeds: List[int], min_sinrs: List[int], modes: List[str],\
-                          extra_dir: List[str], micro_power: int, disaster_percentage: int) -> List[tuple]:
-     This function returns the solver solutions that were not computed yet
-    missing = []
-    for chosen_seed in chosen_seeds:
-        result_dir = 'Solutions' + '/{}_{}'.format(extra_dir[0],disaster_percentage) + '/{}_{}'.format(extra_dir[1],micro_power) + '/chosen_seed_{}'.format(chosen_seed)
-        for mode in modes:
-            for min_sinr in min_sinrs:
-                # Looking for case: 
-                done = compare_last_line(genf.gen_solver_result_filename(result_dir,mode,min_sinr),'--- Done ---\n')
-                if done is not True:
-                    missing.append((chosen_seed,mode,min_sinr,disaster_percentage))
 
-    return missing
-"""
-"""
-def get_missing_snapshots(chosen_seeds: List[int], move_config_name: str):
-    missing = []
-    for chosen_seed in chosen_seeds:
-        xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
-        done = compare_last_line(xml_filename, '<!--Done-->\n')
-        if done is not True:
-            missing.append(chosen_seed)
-    return missing
-"""
-"""
-def run_missing_solutions(missing_solutions: List[tuple], size_x: int, size_y: int, size_sector: int, n_macros: int,
-                          result_dir: str, move_config_name: str, min_dis: int, first_antenna_region: int, min_time: int,
-                          micro_power: int, num_slices: int, extra_dir: List[str], kwargs: dict):
-    This function runs the solver for a list of missing cases. It uses parallelism. 
-    
-    if missing_solutions != []:
-        print("Running solver for {} missing solutions".format(len(missing_solutions)))
-
-        # Making directories
-        for chosen_seed in kwargs['chosen_seed']:
-            kwargs['chosen_seed'] = chosen_seed
-            kwargs['result_dir'] = result_dir
-            for param in extra_dir:
-                kwargs['result_dir'] += '/' + param + f'_{kwargs[param]}'
-                Path(kwargs['result_dir']).mkdir(parents=True, exist_ok=True)
-          
-        with parallel_backend('loky'):
-            Parallel(n_jobs=cpu_count())(delayed(gen_ilp_info)(chosen_seed, size_x, size_y, size_sector, n_macros, genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True),
-                                                               min_sinr, 'Solutions' + '/{}_{}'.format(extra_dir[0],disaster_percentage) + '/{}_{}'.format(extra_dir[1],micro_power) + '/chosen_seed_{}'.format(chosen_seed),
-                                                               mode, min_dis, first_antenna_region, min_time, micro_power, num_slices, disaster_percentage)
-                                                               for chosen_seed, mode, min_sinr, disaster_percentage in missing_solutions)
-"""
-"""
-def run_missing_snapshots(missing_snapshots: List[int], size_x: int, size_y: int, size_sector: int, n_macros: int, project_dir: str,\
-                          sim_dir: str, move_config_name: str, num_slices):
-    if missing_snapshots != []:
-        print("Running movement simulation for {} seeds".format(len(missing_snapshots)))
-        with parallel_backend('loky'):
-            Parallel(n_jobs=cpu_count())(delayed(run_movement_simulation)(project_dir + '/' + sim_dir + '/' + genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= False),
-                                                                          chosen_seed, size_x, size_y, size_sector, n_macros, move_config_name, num_slices, cpu_count())
-                                                                          for chosen_seed in missing_snapshots)
-"""    
 if __name__ == "__main__": 
     main()

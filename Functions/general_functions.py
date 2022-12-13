@@ -8,10 +8,10 @@ from scipy.stats import poisson
 from random import choice, randint, seed, random
 
 MODES_NEW_NAMES = {
-    'varying': 'VID',
-    'single': 'TID',
-    'fixed': 'AID',
-    'ga': 'AGD'
+    'varying': 'VID',# Varying ILP Deployment
+    'single': 'TID',# Traditional ILP Deployment
+    'fixed': 'AID',# Additive ILP Deployment
+    'ga': 'PGD'# Predicative GA Deployment
 }
 
 # TODO: Use OmNET absolute path.
