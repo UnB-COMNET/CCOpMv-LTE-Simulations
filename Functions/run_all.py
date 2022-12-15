@@ -14,6 +14,7 @@ import geometry as geo
 import general_functions as genf
 import sys
 import traceback
+import errors
 
 SUCCESS = 'SUCCESS'
 
@@ -385,8 +386,9 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
 
                 if config_name_sliced_list == None and num_enbs_time == None:
                     #There was a not feasible solution
-                    print("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
-                    return None
+                    raise errors.SolutionNotFeasible("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
+                    #print("The case seed {}, mode {}, min sinr {} dB, {}%% disaster is not feasible.".format(chosen_seed, mode, min_sinr, disaster_percentage))
+                    #return None
 
                 for slice in range(len(num_enbs_time)):
                     network_name = f"ILP{mode.capitalize()}Net{str(min_sinr)}Slice{str(slice)}"
