@@ -15,6 +15,7 @@ from typing import Dict, List, Union
 import general_functions as genf
 from errors import check_mode
 import sys
+import plotly.graph_objs as go
 
 """## Sobre:
 
@@ -56,7 +57,7 @@ Data generated using the command:
     opp_scavetool x -o ilp_varying_sliced_video.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" ilp_varying_sliced_*_VIDEO/*-*.sca ilp_varying_sliced_*_VIDEO/*-*.vec
 """
 
-def get_data_from_scalar (data_name: str, module: str, scalar_data):
+def get_data_from_scalar (data_name: str, module: str, scalar_data) -> pd.DataFrame:
 
   raw_module = scalar_data.apply(lambda x: x["module"][x["module"].find('.')+1:], axis=1)
 
@@ -66,7 +67,7 @@ def get_data_from_scalar (data_name: str, module: str, scalar_data):
 
   data = pre_data[raw_module.str.match(module)]
   data = data[data["name"].str.startswith(data_name)]
-  data = data.pivot('run', columns='qname', values='value')
+  data = data.pivot(index='run', columns='qname', values='value')
   #count = num_ues*num_macros - data.isnull().sum(axis=1)
 
   return data
@@ -81,7 +82,7 @@ def get_data_from_vector (data_name: str, module: str, vector_data):
 
   data = pre_data[raw_module.str.match(module)]
   data = data[data["name"].str.startswith(data_name)]
-  data = data.pivot('run', columns='qname', values=['vecvalue', 'vectime'])
+  data = data.pivot(index='run', columns='qname', values=['vecvalue', 'vectime'])
   #count = num_ues*num_macros - data.isnull().sum(axis=1)
 
   return data
@@ -139,7 +140,7 @@ def gen_ues_data_single(data, num_ues: int, directions: int, multi: bool = False
 
   return new_data
 
-def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list, ues_per_slice: dict, slice_op= 'mean'):
+def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list, nonactive_ues: pd.DataFrame, ues_per_slice: dict, slice_op= 'mean'):
 
   dropna = False
 
@@ -168,24 +169,28 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
     for i in range(len(list_slices)):
       tmp_sel = new_data[new_data['seed'] == _seed]
       selected = tmp_sel[tmp_sel['Slice'] == i]
-      #na_columns = []
-      for column in selected.columns:
-        p = re.compile(fr'ue\[\d+\]')
-        m = p.search(column)
-        if m is not None: #If its not a extra info column
-          p2 = re.compile(r'\d+')
-          m2 = p2.search(m.group())
-          if m2 is not None and int(m2.group()) not in list_slices[i]:
-            #print('UE:', m2.group())
-            #na_columns.append(column)
-            #tuples_to_na.append((selected.index, column))
-            new_data.loc[selected.index, column] = np.nan
-            #selected[column] = [np.nan for _ in selected[m.group]]
-  
-  #print(new_data.columns.duplicated().sum())
-  #print('Removing not active UEs.')
-  #for t in tuples_to_na:
-  #  new_data.loc[t[0], t[1]] = np.nan          
+      #print(f'Slice: {i}')
+      for min_snr in extra_info['min_snr_used'].unique():
+        #print(f'MinSnr: {min_snr}')
+        tmp_sel = new_data[new_data['seed'] == _seed]
+        tmp_sel2 = tmp_sel[tmp_sel['min_snr_used'] == min_snr]
+        selected = tmp_sel2[tmp_sel2['Slice'] == i]
+        for column in selected.columns:
+          p = re.compile(fr'ue\[\d+\]')
+          m = p.search(column)
+          if m is not None: #If its not a extra info column
+            p2 = re.compile(r'\d+')
+            m2 = p2.search(m.group())
+            if m2 is not None:
+              if int(m2.group()) not in list_slices[i]:
+                new_data.loc[selected.index, column] = np.nan
+              else:
+                isnt_active = np.all(nonactive_ues.loc[(_seed, i, int(min_snr)), int(m2.group())])
+                if isinstance(isnt_active, pd.DataFrame) or isinstance(isnt_active, pd.Series):
+                  print("ERROR: missing aditional id values for nonactive_ues")
+                if isnt_active:
+                  new_data.loc[selected.index, column] = np.nan
+                  pass
   
   if slice_op == 'mean':
     noslice_data = new_data.groupby(id_columns, dropna = dropna).mean()
@@ -235,8 +240,8 @@ def compute_cov (data: pd.DataFrame, id_columns: List):
   return new_data
   #return new_data.reset_index(new_data.index.nlevels-1)
 
-def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list = ['Inter', 'RBs', 'min_snr_used', 'repetition', 'inifile'], unite: bool = True,
-           slice_op: str= 'mean', ues_per_slice: dict= None, count_enb: bool = False):
+def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, ues_per_slice: dict, nonactive_ues: pd.DataFrame, id_columns: list = ['Inter', 'RBs', 'min_snr_used', 'repetition', 'inifile'],
+           unite: bool = True, slice_op: str= 'mean', count_enb: bool = False):
 
   #print(f'\nUes por slice: {ues_per_slice}\n')
   #print(f'\nData index: {data.index}\n\n')
@@ -246,7 +251,7 @@ def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list = ['In
   
   if unite:
     #print(f'\nAntes Unite: {data[data==np.nan]}, {data.shape}')
-    tmp = unite_slices(processed_data=data, id_columns=id_columns, extra_info=extra_info, slice_op=slice_op, ues_per_slice=ues_per_slice)
+    tmp = unite_slices(processed_data=data, id_columns=id_columns, extra_info=extra_info, slice_op=slice_op, nonactive_ues=nonactive_ues, ues_per_slice=ues_per_slice)
     #print(f'\nDepois Unite: {tmp[tmp==np.nan]}, {tmp.shape}')
   else:
     tmp = pd.concat([data, extra_info[id_columns]], axis= 1)
@@ -287,12 +292,12 @@ def processInitialData(initial_data):
   repetitions = int(runattr[runattr["attrname"] == 'repetition']["attrvalue"].max()) + 1 #Número de repetições feitas
 
   """Itervar processing"""
-  preItervar = itervar.pivot('run', columns='attrname', values='attrvalue').astype({"sched": object})
+  preItervar = itervar.pivot(index='run', columns='attrname', values='attrvalue').astype({"sched": object})
   num_enbs = pd.DataFrame()
   num_enbs["NumEnbs"] = preItervar["NumEnbs"].astype({"NumEnbs": float})
 
   """Runattr processing"""
-  preRunattr = runattr.pivot('run', columns='attrname', values='attrvalue').astype({"repetition": int})
+  preRunattr = runattr.pivot(index='run', columns='attrname', values='attrvalue').astype({"repetition": int})
 
   """Vector data pre-processing"""
   preVector = vector[vector.module != "_runattrs_"]
@@ -302,7 +307,7 @@ def processInitialData(initial_data):
   #.sctp with duplicated entries (?) than removed
   preScalar = preScalar[~preScalar["module"].str.endswith("sctp")]
   preData = preScalar.assign(qname = preScalar.module + '.' + preScalar.name)
-  newData = preData.pivot('run', columns='qname', values='value')
+  newData = preData.pivot(index='run', columns='qname', values='value')
 
   extra_info = preItervar.assign(min_snr_used = newData.index.str.findall(r'\d+').str[0], repetition = preRunattr['repetition'], inifile = preRunattr['inifile'])
 
@@ -312,7 +317,41 @@ def get_data_vector_mean(data: pd.DataFrame, operation= np.mean):
   data = data.applymap(lambda x: operation(list(map(float, x.split()))), na_action= 'ignore')
   return data
 
-def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, ues_per_slice: dict= None):
+#Considera que acha um unico valor para uma combinação de seed, slice, ue e min_snr_used
+def get_nonactiveapp_ues(data_packets_sent: pd.DataFrame, extra_info: pd.DataFrame):
+
+  user_app_status = {}
+  seeds = []
+  ues_numbers = []
+
+  for name in data_packets_sent.index:
+    p = re.compile(r'seed_\d+')
+    m = p.search(name)
+    if m:
+      numbers = re.compile(r'\d+')
+      seed = numbers.search(m.group())
+      seeds.append(int(seed.group()))
+    else:
+      print('ERROR: Não foi possível determinar a seed.')
+
+  for s in data_packets_sent.columns:
+    p = re.compile(r'\d+')
+    m = p.search(s)
+    if m:
+      ues_numbers.append(int(m.group()))
+    else:
+      print('ERROR: Não foi possível determinar o número do UE.')
+
+  tmp_data_1: pd.DataFrame = data_packets_sent.assign(**{"Slice": extra_info['Slice'].astype(int), "Seed": seeds, "MinSnr": extra_info['min_snr_used'].astype(int)})
+  result = tmp_data_1.set_index(["Seed", "Slice", "MinSnr", tmp_data_1.index]).sort_index() == 0
+  result.columns = np.array(ues_numbers) - min(ues_numbers)
+
+  #print(result)
+  #print(result.loc[(3, 1, 10), 182])
+
+  return result
+
+def compare_csvs_video(csvs, dict_ids: dict, ues_per_slice: dict, extra: bool= False):
 
   results_throughput = []
   results_enb = []
@@ -328,24 +367,29 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, ues_per_slice: 
   for n in range(len(csvs)):
     preItervar, preRunattr, preVector, preScalar, extra_info, num_enbs = processInitialData(csvs[n])
 
+
+    data_packets_sent = get_data_from_scalar("packetSent:count", "server", preScalar)
+    nonactive_ues = get_nonactiveapp_ues(data_packets_sent, extra_info)
+
     print('Getting throughput.')
     #print(f'\Vector: {preVector[preVector==np.nan]}, {preVector.shape}')
     tmp_throughput = get_data_from_vector('throughput:vector', "ue", preVector)['vecvalue']
     data_throughput = get_data_vector_mean(tmp_throughput)
-    throughput = getCOV(data=data_throughput.fillna(0), extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice)
+    throughput = getCOV(data=data_throughput.fillna(0), extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
     #pd.set_option('display.max_columns', None)  # or 1000
     #pd.set_option('display.max_rows', None)  # or 1000
     #pd.set_option('display.max_colwidth', None)  # or 199
     #print('Zeroes: ', throughput[throughput['Mean'] == 0].index.to_series())
 
     print('Getting eNBs.')
-    enbs = getCOV(data=num_enbs, extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice, count_enb=True)
-    hist_enbs = unite_slices(processed_data=num_enbs, extra_info=extra_info, id_columns=id_columns, slice_op= 'mean', ues_per_slice= ues_per_slice)
+    enbs = getCOV(data=num_enbs, extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, count_enb=True, ues_per_slice=ues_per_slice)
+    hist_enbs = unite_slices(processed_data=num_enbs, extra_info=extra_info, id_columns=id_columns, slice_op= 'mean', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
     #print(f'\nColumns: {enbs.columns}\nObj: {enbs.index.get_level_values("n_obj")}\nInifile: {enbs.index.get_level_values("inifile")}\n')
 
     print('Getting SINR.')
     data_sinr = get_data_from_scalar("rcvdSinr:mean", "ue", preScalar)
-    sinr = getCOV(data=data_sinr.fillna(-10), extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice)
+    sinr = getCOV(data=data_sinr.fillna(-10), extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+
 
     results_throughput.append(throughput)
     results_enb.append(enbs)
@@ -355,17 +399,16 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, ues_per_slice: 
     if extra:
       tmp_enddelay = get_data_from_vector('endToEndDelay:vector', "ue", preVector)['vecvalue']
       data_enddelay = get_data_vector_mean(tmp_enddelay)
-      enddelay = getCOV(data=data_enddelay, extra_info=extra_info, id_columns=id_columns, unite= True, ues_per_slice= ues_per_slice)
+      enddelay = getCOV(data=data_enddelay, extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
 
       results_enddelay.append(enddelay)
 
       data_rcvd_packets = get_data_from_scalar("packetReceived:count", "ue", preScalar)
-      rcvd_packets, _, _ = getCOV(data=data_rcvd_packets, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', ues_per_slice= ues_per_slice)
+      rcvd_packets, _, _ = getCOV(data=data_rcvd_packets, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
 
       results_rcvd_packets.append(rcvd_packets)
 
-      data_packets_sent = get_data_from_scalar("packetSent:count", "server", preScalar)
-      packets_sent, _, _ = getCOV(data=data_packets_sent, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', ues_per_slice= ues_per_slice)
+      packets_sent, _, _ = getCOV(data=data_packets_sent, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
 
       results_packets_sent.append(packets_sent)
 
@@ -378,7 +421,8 @@ def compare_csvs_video(csvs, dict_ids: dict, extra: bool= False, ues_per_slice: 
   names = dict_ids.keys()
 
   all_throughput = pd.concat(results_throughput, keys= value_keys, names= names)
-  #print('Inside func: ', all_throughput['Mean']) 
+  #print(f'Inside func: {(all_throughput["Mean"] == 0).sum()}/{len(all_throughput["Mean"])}')
+  #print((all_throughput["Mean"] == 0)[(all_throughput["Mean"] == 0) == True])
   all_sinr = pd.concat(results_sinr, keys= value_keys, names= names)
   all_enb = pd.concat(results_enb, keys= value_keys, names= names)
   all_enb_hist = pd.concat(results_enb_hist, keys= value_keys, names= names)
@@ -1137,8 +1181,9 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   facet = all_throughput.index.get_level_values("Power").tolist()
 
   fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Mean (Bps)", "line_dash": "Min Snr Used (dB)", "color": "Solver Type", "facet_col": "Power"}, markers= False, lines= True,
-                title= "UEs Throughput DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
-  
+                title= "UEs Throughput DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
+                range_x=(0,10**7))
+
   fig.write_image(images_dir+"/"+"thr_ilptype.svg", height= height, width= width)
 
   if cov:
@@ -1191,7 +1236,12 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   facet = all_sinr.index.get_level_values("Power").tolist()
 
   fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Sinr:Mean (dB)", "line_dash": "Min Snr Used (dB)", "color": "Solver Type", "facet_col": "Power"}, markers= False, lines= True,
-                title= "UE Sinr DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
+                title= "UE Sinr DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
+                range_x=(-10, 35))
+
+  default_lines = ['solid', 'dot','dash', 'longdash', 'dashdot', 'longdashdot']
+  for i in range(len(snr_order)):
+    fig.add_vline(x=int(snr_order[i]), line_width=1, line_dash=default_lines[i], line_color="gray", name=snr_order[i])
 
   fig.write_image(images_dir+"/"+"sinr_ilptype.svg", height= height, width= width)
 
@@ -1515,8 +1565,8 @@ def hist_ues_slice():
 
 
 if __name__ == "__main__":
-  chosen_seeds = [5,6]#[2,3,4,5,6,7,10,11,12,13]
-  modes = ['fixed']#['single', 'fixed', 'ga'] 
+  chosen_seeds = [2,3,4,5,6,7,10,11,12,13]
+  modes = ['single', 'fixed', 'ga'] 
   #num_ues= 60
   extra_dir = ['disaster_percentage','micro_power']
   disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
