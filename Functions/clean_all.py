@@ -24,17 +24,26 @@ def clean_all(chosen_seeds: list[int], result_dir: str, project_dir: str, sim_di
 
         for param in extra_dir:
             result_dir = os.path.join(result_dir, (f'{param}_{kwargs[param]}' if param in kwargs else ''))
-            sim_dir = os.path.join(sim_dir, (f'{param}_{kwargs[param]}' if param in kwargs else ''))
+            sim_dir = os.path.join(project_dir, sim_dir, (f'{param}_{kwargs[param]}' if param in kwargs else ''))
         
         sim_dir_full = os.path.join(sim_dir, f'chosen_seed_{chosen_seed}')
         result_dir_full = os.path.join(result_dir, f'chosen_seed_{chosen_seed}')
         xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
 
-        shutil.rmtree(xml_filename)
-        shutil.rmtree(result_dir_full)
-        Path(result_dir_full).mkdir(parents=True)
-        shutil.rmtree(sim_dir_full)
-        Path(sim_dir_full).mkdir(parents=True)
+        if os.path.isfile(xml_filename):
+            os.remove(xml_filename)
+        else:
+            print(f'Cannot find file "{xml_filename}"')
+        if os.path.isdir(result_dir_full):
+            shutil.rmtree(result_dir_full)
+            Path(result_dir_full).mkdir(parents=True)
+        else:
+            print(f'Cannot find dir "{result_dir_full}"')
+        if os.path.isdir(sim_dir_full):
+            shutil.rmtree(sim_dir_full)
+            Path(sim_dir_full).mkdir(parents=True)
+        else:
+            print(f'Cannot find dir "{sim_dir_full}"')
 
 if __name__ == "__main__":
     main()
