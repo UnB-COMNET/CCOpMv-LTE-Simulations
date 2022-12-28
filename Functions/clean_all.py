@@ -21,13 +21,15 @@ def clean_all(chosen_seeds: list[int], result_dir: str, project_dir: str, sim_di
               move_config_name: str, extra_dir: list[str], **kwargs):
 
     for chosen_seed in chosen_seeds:
+        new_result_dir= result_dir
+        new_sim_dir= sim_dir
 
         for param in extra_dir:
-            result_dir = os.path.join(result_dir, (f'{param}_{kwargs[param]}' if param in kwargs else ''))
-            sim_dir = os.path.join(project_dir, sim_dir, (f'{param}_{kwargs[param]}' if param in kwargs else ''))
+            new_result_dir = os.path.join(new_result_dir, (f'{param}_{kwargs[param]}' if param in kwargs else ''))
+            new_sim_dir = os.path.join(new_sim_dir, (f'{param}_{kwargs[param]}' if param in kwargs else ''))
         
-        sim_dir_full = os.path.join(sim_dir, f'chosen_seed_{chosen_seed}')
-        result_dir_full = os.path.join(result_dir, f'chosen_seed_{chosen_seed}')
+        sim_dir_full = os.path.join(project_dir, new_sim_dir, f'chosen_seed_{chosen_seed}')
+        result_dir_full = os.path.join(new_result_dir, f'chosen_seed_{chosen_seed}')
         xml_filename = genf.gen_movement_filename(move_config_name, chosen_seed, snapshot= True)
 
         if os.path.isfile(xml_filename):
