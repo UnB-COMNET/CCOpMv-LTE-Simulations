@@ -6,8 +6,8 @@ class InvalidResult(Exception):
 
 def check_mode(mode: str):
     '''Checks if the mode passed as argument is valid. Raises an InvalidMode exception if not valid.'''
-    if mode != 'varying' and mode != 'fixed' and mode != 'single' and mode != 'tid' and mode != 'aid' and mode != 'ga':
-        raise(InvalidMode('Mode is not varying, fixed, single or ga.'))
+    if mode != 'varying' and mode != 'fixed' and mode != 'single' and mode != 'tid' and mode != 'aid' and mode != 'ga' and mode != 'gwo':
+        raise(InvalidMode('Mode is not varying, fixed, single, ga or gwo.'))
 
 class ErrorPackage:
     def __init__(self, exc_info, pname, pid, **kwargs):
