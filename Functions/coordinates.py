@@ -17,6 +17,23 @@ class Coordinate:
     def __str__(self):
         return (f'({self.x}, {self.y}, {self.z})')
 
+    def __add__(self, other):
+        return Coordinate(self.x + other.x, self.y + other.y, self.z + other.z)
+    
+    def __sub__(self, other):
+        return Coordinate(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __mul__(self, other):
+        if isinstance(other, int) or isinstance(other,float):
+            return Coordinate(self.x * other, self.y * other, self.z * other)
+
+    def __rmul__(self, other):
+        if isinstance(other, int) or isinstance(other,float):
+            return Coordinate(self.x * other, self.y * other, self.z * other)
+
+    def __abs__(self):
+        return Coordinate(abs(self.x), abs(self.y), abs(self.z))
+
 class PolarCoordinate:
     def __init__(self, r, phi):
         self.r = r
