@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Union
 from matplotlib import use
 import numpy as np
 import geometry as geo
@@ -55,6 +55,8 @@ def verify_modes(modes: List[str]):
             verif_modes.append('single')
         elif mode.lower() == 'ga':
             verif_modes.append('ga')
+        elif mode.lower() == 'gwo':
+            verif_modes.append('gwo')
 
     return np.unique(verif_modes).tolist()
 
@@ -245,6 +247,12 @@ def plot_scenario(scen: geo.MapChess, title: str):
     plt.ylim(0, 4000)
     plt.show()
     print("Plot")
+
+def print_map_mn(scen: geo.MapChess, map_name: str, values: List[List[Union[int,float]]]):
+    print(map_name)
+    num_sector = int(scen.size_y/scen.size_sector)
+    for i in range(num_sector):
+        print(values[i*num_sector:num_sector*(i+1)])   
 
 def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False):
     """Get a map with the antennas that would serve each region.
