@@ -2,6 +2,7 @@ from pathlib import Path
 import os
 import shutil
 import general_functions as genf
+from typing import List
 
 def main():
     result_dir = "Solutions"
@@ -17,8 +18,8 @@ def main():
     clean_all(chosen_seeds=chosen_seeds, result_dir=result_dir, project_dir=project_dir,
               sim_dir=sim_dir, move_config_name=move_config_name, extra_dir=extra_dir, **kwargs)
 
-def clean_all(chosen_seeds: list[int], result_dir: str, project_dir: str, sim_dir: str,
-              move_config_name: str, extra_dir: list[str], **kwargs):
+def clean_all(chosen_seeds: List[int], result_dir: str, project_dir: str, sim_dir: str,
+              move_config_name: str, extra_dir: List[str], **kwargs):
 
     for chosen_seed in chosen_seeds:
         new_result_dir= result_dir
