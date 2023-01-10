@@ -1,6 +1,6 @@
 # Import the necessary modules and libraries
 import numpy as np
-from typing import List, Callable
+from typing import List, Callable, Dict
 import geometry as geo
 from helper_xml import get_map_ues_time
 import general_functions as genf
@@ -12,6 +12,7 @@ import random
 import math
 from sinr_comput import linear_to_db
 import errors
+from sklearn.metrics import mean_squared_error
 
 _users_t_m = []
 _antennas_last_result = []
@@ -21,6 +22,7 @@ _min_sinr_w = 0
 _min_dis = 0
 _first_antenna_region = 0
 _max_users_per_antenna_m = []
+_center_section = 0
 
 _last_antennas_regions = []
 
@@ -36,23 +38,27 @@ def main():
     micro_power = 30 #dBm
     result_dir = "Solutions"
     extra_dir = ['disaster_percentage', 'micro_power']
-    num_slices = 10
     min_sinr = 5
-    #mode = 'single'
-    #is_micro = True #Keep True
     disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
     move_config_name = 'ilp_move_users'
     min_dis = 2000
+    lambda_poisson_gen_users_t_m = 30
+    slice_time = 1
+    simtime_move = 1200
+    num_slices = 12
 
     run_ga_solvers(chosen_seeds=chosen_seeds, size_x= size_x, size_y=size_y, size_sector=size_sector, n_macros=n_macros,
                    move_config_name=move_config_name, result_dir=result_dir, min_sinr=min_sinr, num_slices=num_slices, #mode=mode,
-                   extra_dir=extra_dir, micro_power= micro_power, min_dis= min_dis,
+                   extra_dir=extra_dir, micro_power= micro_power, min_dis= min_dis, slice_time=slice_time,
+                   lambda_poisson_gen_users_t_m=lambda_poisson_gen_users_t_m, simtime_move=simtime_move,
                    disaster_percentage= disaster_percentage) #Disaster as an extra argument in **kwargs to use with extra_dir
   
 
 def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int,n_macros: int, move_config_name: str,
                    result_dir: str, min_sinr: int, num_slices: int, extra_dir: List[str], micro_power: int, #mode: str,
-                   min_dis: int, is_micro: bool = True, **kwargs):
+                   lambda_poisson_gen_users_t_m: int, min_dis: int, simtime_move: int, slice_time: int, is_micro: bool = True,
+                   
+                   **kwargs):
 
     params = locals() #get local variables in the beginning of the function (the parameters in this case)
     results = []
@@ -74,7 +80,7 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
 
         #Initiating scenario
         scen = geo.MapChess(size_y = size_y, size_x = size_x, size_sector = size_sector, carrier_frequency= 0.7, chosen_seed= chosen_seed, scenario= "URBAN_MICROCELL" if is_micro else "URBAN_MACROCELL",
-                            enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9, num_slices= num_slices)
+                            enb_tx_power= micro_power if is_micro else 46, h_enbs= 18, gain_ue= -1, enb_noise_figure= 9, num_slices= num_slices, simtime_move = simtime_move, slice_time = slice_time)
 
         #Placing UEs
         scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro= 60)
@@ -83,22 +89,13 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
 
         distance_mn = scen.getRegionsDistanceMatrix()
 
-        users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename)
+        tmp_users = genf.gen_users_t_m(chosen_seed, lambda_poisson = lambda_poisson_gen_users_t_m, num_slices=num_slices)             
+        ues_per_slice = genf.gen_ue_per_slice(chosen_seed, tmp_users, num_slices=num_slices)
+        users_t_m = get_map_ues_time(scen= scen, xml_filename= xml_filename, ues_per_slice=ues_per_slice)
 
         snr_map_mn = scen.getSinrMap()
 
         max_users_antenna_m = [60 for i in range(scen.n_sectors)]
-
-        #optimized_byslice, antennas_regions_byslice, num_enbs_time = genf.parse_results_per_slice(genf.gen_solver_result_filename(full_result_dir, mode, min_sinr), num_slices)
-
-        #if optimized_byslice == None and antennas_regions_byslice == None and num_enbs_time == None:
-            #There was a not feasible solution
-        #    print(f'\nNot feasable solution in case: Seed {chosen_seed}, Mode: traditional (single). Ignoring this case.\n')
-        #    continue
-
-        #antennas_m = [0 for _ in range(num_sectors)]
-        #for region in antennas_regions_byslice[-1]:
-        #    antennas_m[region] = 1
 
         first_antenna_region = genf.gen_first_antenna_region(chosen_seed=chosen_seed, n_sectors=scen.n_sectors)
         print(f'Seed: {chosen_seed}. First Antenna Region: {first_antenna_region}.')
@@ -109,11 +106,6 @@ def run_ga_solvers(chosen_seeds: List[int], size_x: int, size_y: int, size_secto
         results.append(result)
 
         print(f'Done after {(time() - start_time)/(60*60)} hours. (Seed: {chosen_seed})')
-
-        #print(f'\n{full_result_dir}')
-        #print(antennas_regions_byslice[-1])
-        #scen.placeAntennas(antennas_regions_byslice[-1])
-        #genf.plot_scenario(scen= scen, title= f'{full_result_dir}')
 
 def ga_solver(num_regions: int, users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]], fitness_func,
               first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int], result_dir: str):
@@ -140,6 +132,20 @@ def ga_solver(num_regions: int, users_t_m: List[List[int]], distance_mn: List[Li
 
     global _antennas_last_result
     _antennas_last_result = [ 0 if m != first_antenna_region else 1 for m in range(num_regions)]
+
+    #center section
+    min_std = np.inf
+    center_section = -1
+    for m in range(int(np.ceil(len(distance_mn)/2))):
+        value = np.mean(distance_mn[m])
+        if value < min_std:
+            min_std = value
+            center_section = m
+
+    global _center_section
+    _center_section = center_section
+
+    print(center_section)
 
     for i in range(num_slices):
         
@@ -260,8 +266,15 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
     ga_instance.run()
 
     solution, solution_fitness, solution_idx = ga_instance.best_solution()
+
+    coverage_score_size = math.floor(math.log10(num_genes))+1
+    eccentricity_score_size = math.floor(math.log10(np.amax(_distance_mn)))+1
+    number_antennas = num_genes - solution_fitness//10**(coverage_score_size+eccentricity_score_size)
+    coverage_regions = (solution_fitness//10**(eccentricity_score_size)) % 10**coverage_score_size
+
     print("Parameters of the best solution : {solution}".format(solution=solution))
-    print("Number of antennas of the best solution = {solution_fitness}".format(solution_fitness=num_genes - solution_fitness))
+    print(f"Number of antennas of the best solution = {number_antennas}")
+    print(f"Number of covered regions of the best solution = {coverage_regions}")
     print("Index of the best solution : {solution_idx}".format(solution_idx=solution_idx))
     #print(f"Percentage of optimal: {solution_fitness/(M*T) * 100}%")
     print(f"Total generations: {ga_instance.generations_completed}.")
@@ -272,31 +285,9 @@ def run_genetic(base_genome: List[int], fitness_func: Callable[..., float], on_g
 
     antennas_regions = np.ravel(np.argwhere(solution > 0))
 
-    # # Must be connected to the backhaul
-    # cleared = []
-    # for m in antennas_regions:
-    #     if m in cleared or m == _first_antenna_region:
-    #         continue
-    #     for n in antennas_regions:
-    #         if m!=n:
-    #             if _distance_mn[m][n] <= _min_dis:
-    #                 if m not in cleared:
-    #                     cleared.append(m)
-    #                 if n not in cleared and n != _first_antenna_region:
-    #                     cleared.append(n)
-
-    # print(f'Cleared: {np.sort(cleared, kind= "heapsort")}.\nAntennas: {np.sort(antennas_regions, kind= "heapsort")}')
-    # print(f'Distances:')
-
     for i in range(len(antennas_regions)):
         for j in range(i+1, len(antennas_regions)):
             print(f'\n{antennas_regions[i]} : {antennas_regions[j]} => {_distance_mn[antennas_regions[i]][antennas_regions[j]]}')
-
-    #for key in regions_of_service:
-    #    print(f'Antenna: {key}. Number Regions: {len(regions_of_service[key])}.\n\tRegions: {regions_of_service[key]}.')
-
-    #print('Solutions: ', ga_instance.solutions.tolist())
-    #print('Connections: ', _connection_results)
 
     if _connection_results[solution_idx][1] != solution_idx:
         raise errors.InvalidResult(f"connection result idx ({_connection_results[solution_idx][1]}) is different from solution idx ({solution_idx}).")
@@ -316,8 +307,6 @@ def fitness(solution, solution_idx):
     """Evaluates how good a solution is.
     """
     num_genes = len(solution)
-    fitness_score = (num_genes - sum(solution))#Antennas per time #+ M*M*T
-
     antennas_regions = np.ravel(np.argwhere(np.array(solution) > 0))
 
     # After installed an antenna can never be removed
@@ -325,7 +314,7 @@ def fitness(solution, solution_idx):
            if _antennas_last_result[m] == 1 and solution[m] != 1:
                 return 0, None
 
-    map_of_service = genf.get_map_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False)
+    map_of_service = genf.get_map_of_service(antennas_regions=antennas_regions, metric_map_mn= _snr_map_mn, minimization= False, old=False)
     
     # Must be connected to the backhaul
     cleared = []
@@ -347,7 +336,7 @@ def fitness(solution, solution_idx):
         return 0, None
 
     users_regions = np.ravel(np.argwhere(np.array(_users_t_m[0]) > 0))
-    base_connections_genome = [map_of_service[n] for n in users_regions]
+    base_connections_genome = [map_of_service[n]['antenna'] for n in users_regions]
     global _last_antennas_regions
     _last_antennas_regions = antennas_regions
     connect_solution, connect_fitness_score = run_genetic_connections(base_genome=base_connections_genome, fitness_func=fitness_connections, gene_space=antennas_regions)
@@ -355,6 +344,21 @@ def fitness(solution, solution_idx):
     connect_dict = {}
     for i in range(len(users_regions)):
         connect_dict[str(users_regions[i])] = connect_solution[i]
+
+    #Fitness score computation
+    antennas_score = (num_genes - sum(solution))
+    coverage_score_size = math.floor(math.log10(num_genes))+1
+    coverage_score = coverage_area_score(map_of_service=map_of_service, threshold_metric=_min_sinr_w)
+    eccentricity_score_size = math.floor(math.log10(np.amax(_distance_mn)))+1
+    ecc_score = eccentricity_score(distance_m_n=_distance_mn, antennas_regions=antennas_regions,
+                                   center_section=_center_section)
+    norm_metric_score = metric_error_score(connect_dict=connect_dict, metric_map_mn=_snr_map_mn,
+                                           targeted_metric=_min_sinr_w)
+
+    fitness_score = (antennas_score * 10**(coverage_score_size+eccentricity_score_size)) + \
+                    (coverage_score * 10**(eccentricity_score_size)) + \
+                    ecc_score + \
+                    norm_metric_score
 
     return fitness_score * connect_fitness_score, connect_dict
 
@@ -550,6 +554,48 @@ def write_file_result(result_dir: str, users_t_m: List[List[int]], distance_mn: 
         print("\nMédia de carros:", mean/len(antennas_regions_byslice))
 
         f.write("--- Done ---\n")
+
+def coverage_area_score(map_of_service: List[Dict], threshold_metric, maximum: bool = False):
+    count = 0
+    for sector in map_of_service:
+        if not maximum:
+            if sector["metric"] > threshold_metric:
+                count += 1
+        else:
+            if sector["metric"] < threshold_metric:
+                count += 1
+
+    return count
+
+def eccentricity_score(distance_m_n: List[List[float]], antennas_regions: List[int], center_section: int):
+    
+    number_antennas = len(antennas_regions)
+    max_dist = np.amax(distance_m_n)
+
+    total_center_distance = 0
+    for sector in antennas_regions:
+        total_center_distance += distance_m_n[sector][center_section]
+    
+    score = max_dist - total_center_distance/number_antennas
+
+    return score
+
+def metric_error_score(connect_dict: Dict[str,int], metric_map_mn: List[List], targeted_metric):
+    #root mean square error
+    l_target_metric = [targeted_metric for _ in range(len(connect_dict))]
+    l_real_metric = []
+    for n, m in connect_dict.items():
+        l_real_metric.append(metric_map_mn[m][int(n)])
+
+    rmse = mean_squared_error(l_real_metric, l_target_metric, squared=False)
+
+    max_dif = 3*targeted_metric #forced max value
+    if rmse >= max_dif:
+        rmse = max_dif
+    
+    normalized_rmse = rmse/max_dif * (1-10**-9) #between 0 and 1-10**9
+
+    return normalized_rmse
 
 if __name__ == '__main__':
     main()

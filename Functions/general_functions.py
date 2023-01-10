@@ -254,7 +254,7 @@ def print_map_mn(scen: geo.MapChess, map_name: str, values: List[List[Union[int,
     for i in range(num_sector):
         print(values[i*num_sector:num_sector*(i+1)])   
 
-def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False):
+def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False, old: bool = True):
     """Get a map with the antennas that would serve each region.
 
     Args:
@@ -263,7 +263,8 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int
         minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
 
     Returns:
-        List with the antennas region that serves each index/region.
+        if old is True: List with the antennas regions that serves each index/region.
+        else: List with dicts with antennas region ("antenna") and the metric value ("metric") that serves each index/region.
     """
     metrics_of_service = {}
 
@@ -285,7 +286,10 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int
         metrics_of_service[str(m)][~comp_array] = np.inf if minimization else -np.inf #Inverts comp_array because we want the values of m that lost to n
         metrics_of_service[str(n)][comp_array] = np.inf if minimization else -np.inf #Changing the values of n that lose to those of m
     
-    map_of_service = [ -1 for _ in range(len(metric_map_mn[-1]))]
+    if old:
+        map_of_service = [ -1 for _ in range(len(metric_map_mn[-1]))]
+    else:
+        map_of_service = [{"antenna": -1, "metric": -1} for _ in range(len(metric_map_mn[-1]))]
 
     for key in metrics_of_service:
         if minimization:
@@ -293,10 +297,17 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int
         else:
             served_sectors = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
         for i in served_sectors:
-                map_of_service[i] = key
+                if old:
+                    map_of_service[i] = key
+                else:
+                    map_of_service[i] = {"antenna": int(key), "metric": metric_map_mn[int(key)][i]}
 
-    if -1 in map_of_service:
-        raise(ValueError('One region is not served in Map Of Service with value -1.'))
+    if old:
+        if -1 in map_of_service:
+            raise(ValueError('One region is not served in Map Of Service with value -1.'))
+    else:
+        if {"antenna": -1, "metric": -1} in map_of_service:
+            raise(ValueError('One region is not served in Map Of Service with values -1.'))
 
     return map_of_service
 
