@@ -3382,3 +3382,481 @@ Running case fixed 5 dB, seed 18, micro power 30, disaster percentage 0.
 -------------Generating sinr map
 Running Solver - Min Snr: 5 - Fixed (Seed: 18)
 -------------Generating ues map
+Generating configuration files - Min Snr: 5 - Fixed (Seed: 2)
+Executing Simulations - Min Snr: 5 - Fixed (Seed: 2)
+runs  -r 0, ilp_fixed_sliced_5_video_slice0
+Processing time (ilp_fixed_sliced_5_video_slice0):  87.18649244308472
+runs  -r 0, ilp_fixed_sliced_5_video_slice1
+Processing time (ilp_fixed_sliced_5_video_slice1):  162.10480451583862
+runs  -r 0, ilp_fixed_sliced_5_video_slice2
+Processing time (ilp_fixed_sliced_5_video_slice2):  206.91173911094666
+runs  -r 0, ilp_fixed_sliced_5_video_slice3
+Processing time (ilp_fixed_sliced_5_video_slice3):  262.94273495674133
+runs  -r 0, ilp_fixed_sliced_5_video_slice4
+Processing time (ilp_fixed_sliced_5_video_slice4):  362.18686509132385
+runs  -r 0, ilp_fixed_sliced_5_video_slice5
+Processing time (ilp_fixed_sliced_5_video_slice5):  379.28612899780273
+runs  -r 0, ilp_fixed_sliced_5_video_slice6
+Processing time (ilp_fixed_sliced_5_video_slice6):  334.87160420417786
+runs  -r 0, ilp_fixed_sliced_5_video_slice7
+Processing time (ilp_fixed_sliced_5_video_slice7):  310.9379379749298
+runs  -r 0, ilp_fixed_sliced_5_video_slice8
+Processing time (ilp_fixed_sliced_5_video_slice8):  243.8396520614624
+runs  -r 0, ilp_fixed_sliced_5_video_slice9
+Processing time (ilp_fixed_sliced_5_video_slice9):  225.67552304267883
+runs  -r 0, ilp_fixed_sliced_5_video_slice10
+Processing time (ilp_fixed_sliced_5_video_slice10):  188.19336485862732
+runs  -r 0, ilp_fixed_sliced_5_video_slice11
+Processing time (ilp_fixed_sliced_5_video_slice11):  104.40056872367859
+
+Running case fixed 10 dB, seed 18, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 10 - Fixed (Seed: 18)
+-------------Generating ues map
+Generating configuration files - Min Snr: 10 - Fixed (Seed: 18)
+Executing Simulations - Min Snr: 10 - Fixed (Seed: 18)
+runs  -r 0, ilp_fixed_sliced_10_video_slice0
+Processing time (ilp_fixed_sliced_10_video_slice0):  94.73983716964722
+runs  -r 0, ilp_fixed_sliced_10_video_slice1
+Processing time (ilp_fixed_sliced_10_video_slice1):  218.69447565078735
+runs  -r 0, ilp_fixed_sliced_10_video_slice2
+Processing time (ilp_fixed_sliced_10_video_slice2):  219.79773044586182
+runs  -r 0, ilp_fixed_sliced_10_video_slice3
+Processing time (ilp_fixed_sliced_10_video_slice3):  309.36421489715576
+runs  -r 0, ilp_fixed_sliced_10_video_slice4
+Processing time (ilp_fixed_sliced_10_video_slice4):  344.54716634750366
+runs  -r 0, ilp_fixed_sliced_10_video_slice5
+Processing time (ilp_fixed_sliced_10_video_slice5):  359.882205247879
+runs  -r 0, ilp_fixed_sliced_10_video_slice6
+Processing time (ilp_fixed_sliced_10_video_slice6):  344.8159682750702
+runs  -r 0, ilp_fixed_sliced_10_video_slice7
+Processing time (ilp_fixed_sliced_10_video_slice7):  295.36372685432434
+runs  -r 0, ilp_fixed_sliced_10_video_slice8
+Processing time (ilp_fixed_sliced_10_video_slice8):  237.2997236251831
+runs  -r 0, ilp_fixed_sliced_10_video_slice9
+Processing time (ilp_fixed_sliced_10_video_slice9):  205.7006537914276
+runs  -r 0, ilp_fixed_sliced_10_video_slice10
+Processing time (ilp_fixed_sliced_10_video_slice10):  161.01821041107178
+runs  -r 0, ilp_fixed_sliced_10_video_slice11
+Processing time (ilp_fixed_sliced_10_video_slice11):  72.87810945510864
+
+Running case fixed 15 dB, seed 18, micro power 30, disaster percentage 0.
+
+Solver ilp_fixed_sliced_15 already computed. (Seed: 18)
+Generating configuration files - Min Snr: 15 - Fixed (Seed: 18)
+Executing Simulations - Min Snr: 15 - Fixed (Seed: 18)
+runs  -r 0, ilp_fixed_sliced_15_video_slice0
+Processing time (ilp_fixed_sliced_15_video_slice0):  92.43323683738708
+runs  -r 0, ilp_fixed_sliced_15_video_slice1
+Processing time (ilp_fixed_sliced_15_video_slice1):  244.0424838066101
+runs  -r 0, ilp_fixed_sliced_15_video_slice2
+Processing time (ilp_fixed_sliced_15_video_slice2):  320.9658398628235
+runs  -r 0, ilp_fixed_sliced_15_video_slice3
+Processing time (ilp_fixed_sliced_15_video_slice3):  417.04306054115295
+runs  -r 0, ilp_fixed_sliced_15_video_slice4
+Processing time (ilp_fixed_sliced_15_video_slice4):  444.8607106208801
+runs  -r 0, ilp_fixed_sliced_15_video_slice5
+Processing time (ilp_fixed_sliced_15_video_slice5):  461.9384243488312
+runs  -r 0, ilp_fixed_sliced_15_video_slice6
+Processing time (ilp_fixed_sliced_15_video_slice6):  438.3512887954712
+runs  -r 0, ilp_fixed_sliced_15_video_slice7
+Processing time (ilp_fixed_sliced_15_video_slice7):  392.0057101249695
+runs  -r 0, ilp_fixed_sliced_15_video_slice8
+Processing time (ilp_fixed_sliced_15_video_slice8):  345.6515836715698
+runs  -r 0, ilp_fixed_sliced_15_video_slice9
+Processing time (ilp_fixed_sliced_15_video_slice9):  274.7607219219208
+runs  -r 0, ilp_fixed_sliced_15_video_slice10
+Processing time (ilp_fixed_sliced_15_video_slice10):  229.77969098091125
+runs  -r 0, ilp_fixed_sliced_15_video_slice11
+Processing time (ilp_fixed_sliced_15_video_slice11):  100.05965042114258
+
+Running case single 10 dB, seed 18, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 10 - Single (Seed: 18)
+-------------Generating ues map
+Generating configuration files - Min Snr: 10 - Single (Seed: 18)
+Executing Simulations - Min Snr: 10 - Single (Seed: 18)
+runs  -r 0, ilp_single_sliced_10_video_slice0
+Processing time (ilp_single_sliced_10_video_slice0):  92.6548101902008
+runs  -r 0, ilp_single_sliced_10_video_slice1
+Processing time (ilp_single_sliced_10_video_slice1):  86.58587908744812
+runs  -r 0, ilp_single_sliced_10_video_slice2
+Processing time (ilp_single_sliced_10_video_slice2):  78.8178162574768
+runs  -r 0, ilp_single_sliced_10_video_slice3
+Processing time (ilp_single_sliced_10_video_slice3):  74.3697714805603
+runs  -r 0, ilp_single_sliced_10_video_slice4
+Processing time (ilp_single_sliced_10_video_slice4):  75.72054719924927
+runs  -r 0, ilp_single_sliced_10_video_slice5
+Processing time (ilp_single_sliced_10_video_slice5):  73.93298888206482
+runs  -r 0, ilp_single_sliced_10_video_slice6
+Processing time (ilp_single_sliced_10_video_slice6):  74.1081132888794
+runs  -r 0, ilp_single_sliced_10_video_slice7
+Processing time (ilp_single_sliced_10_video_slice7):  75.78242254257202
+runs  -r 0, ilp_single_sliced_10_video_slice8
+Processing time (ilp_single_sliced_10_video_slice8):  84.11232089996338
+runs  -r 0, ilp_single_sliced_10_video_slice9
+Processing time (ilp_single_sliced_10_video_slice9):  94.70646238327026
+runs  -r 0, ilp_single_sliced_10_video_slice10
+Processing time (ilp_single_sliced_10_video_slice10):  86.53603935241699
+runs  -r 0, ilp_single_sliced_10_video_slice11
+Processing time (ilp_single_sliced_10_video_slice11):  53.11876344680786
+
+Running case single 5 dB, seed 18, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 5 - Single (Seed: 18)
+-------------Generating ues map
+Generating configuration files - Min Snr: 5 - Single (Seed: 18)
+Executing Simulations - Min Snr: 5 - Single (Seed: 18)
+runs  -r 0, ilp_single_sliced_5_video_slice0
+Processing time (ilp_single_sliced_5_video_slice0):  100.29119515419006
+runs  -r 0, ilp_single_sliced_5_video_slice1
+Processing time (ilp_single_sliced_5_video_slice1):  85.10316109657288
+runs  -r 0, ilp_single_sliced_5_video_slice2
+Processing time (ilp_single_sliced_5_video_slice2):  82.44761037826538
+runs  -r 0, ilp_single_sliced_5_video_slice3
+Processing time (ilp_single_sliced_5_video_slice3):  86.0012137889862
+runs  -r 0, ilp_single_sliced_5_video_slice4
+Processing time (ilp_single_sliced_5_video_slice4):  70.4881649017334
+runs  -r 0, ilp_single_sliced_5_video_slice5
+Processing time (ilp_single_sliced_5_video_slice5):  65.53237915039062
+runs  -r 0, ilp_single_sliced_5_video_slice6
+Processing time (ilp_single_sliced_5_video_slice6):  72.07251739501953
+runs  -r 0, ilp_single_sliced_5_video_slice7
+Processing time (ilp_single_sliced_5_video_slice7):  77.80272221565247
+runs  -r 0, ilp_single_sliced_5_video_slice8
+Processing time (ilp_single_sliced_5_video_slice8):  88.6135151386261
+runs  -r 0, ilp_single_sliced_5_video_slice9
+Processing time (ilp_single_sliced_5_video_slice9):  92.50863456726074
+runs  -r 0, ilp_single_sliced_5_video_slice10
+Processing time (ilp_single_sliced_5_video_slice10):  87.23687744140625
+runs  -r 0, ilp_single_sliced_5_video_slice11
+Processing time (ilp_single_sliced_5_video_slice11):  61.35127282142639
+
+Running case single 15 dB, seed 18, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 15 - Single (Seed: 18)
+-------------Generating ues map
+Generating configuration files - Min Snr: 15 - Single (Seed: 18)
+Executing Simulations - Min Snr: 15 - Single (Seed: 18)
+runs  -r 0, ilp_single_sliced_15_video_slice0
+Processing time (ilp_single_sliced_15_video_slice0):  92.81218123435974
+runs  -r 0, ilp_single_sliced_15_video_slice1
+Processing time (ilp_single_sliced_15_video_slice1):  94.41126751899719
+runs  -r 0, ilp_single_sliced_15_video_slice2
+Processing time (ilp_single_sliced_15_video_slice2):  92.33781886100769
+runs  -r 0, ilp_single_sliced_15_video_slice3
+Processing time (ilp_single_sliced_15_video_slice3):  89.47010064125061
+runs  -r 0, ilp_single_sliced_15_video_slice4
+Processing time (ilp_single_sliced_15_video_slice4):  81.8045015335083
+runs  -r 0, ilp_single_sliced_15_video_slice5
+Processing time (ilp_single_sliced_15_video_slice5):  68.72355127334595
+runs  -r 0, ilp_single_sliced_15_video_slice6
+Processing time (ilp_single_sliced_15_video_slice6):  64.96752214431763
+runs  -r 0, ilp_single_sliced_15_video_slice7
+Processing time (ilp_single_sliced_15_video_slice7):  74.45142436027527
+runs  -r 0, ilp_single_sliced_15_video_slice8
+Processing time (ilp_single_sliced_15_video_slice8):  89.50331854820251
+runs  -r 0, ilp_single_sliced_15_video_slice9
+Processing time (ilp_single_sliced_15_video_slice9):  88.17739939689636
+runs  -r 0, ilp_single_sliced_15_video_slice10
+Processing time (ilp_single_sliced_15_video_slice10):  82.43077111244202
+runs  -r 0, ilp_single_sliced_15_video_slice11
+Processing time (ilp_single_sliced_15_video_slice11):  62.20131802558899
+
+Running case fixed 5 dB, seed 19, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 5 - Fixed (Seed: 19)
+-------------Generating ues map
+Generating configuration files - Min Snr: 5 - Fixed (Seed: 10)
+Executing Simulations - Min Snr: 5 - Fixed (Seed: 10)
+runs  -r 0, ilp_fixed_sliced_5_video_slice0
+Processing time (ilp_fixed_sliced_5_video_slice0):  87.26259756088257
+runs  -r 0, ilp_fixed_sliced_5_video_slice1
+Processing time (ilp_fixed_sliced_5_video_slice1):  179.18346858024597
+runs  -r 0, ilp_fixed_sliced_5_video_slice2
+Processing time (ilp_fixed_sliced_5_video_slice2):  211.95341444015503
+runs  -r 0, ilp_fixed_sliced_5_video_slice3
+Processing time (ilp_fixed_sliced_5_video_slice3):  271.7599883079529
+runs  -r 0, ilp_fixed_sliced_5_video_slice4
+Processing time (ilp_fixed_sliced_5_video_slice4):  317.3361132144928
+runs  -r 0, ilp_fixed_sliced_5_video_slice5
+Processing time (ilp_fixed_sliced_5_video_slice5):  374.5228624343872
+runs  -r 0, ilp_fixed_sliced_5_video_slice6
+Processing time (ilp_fixed_sliced_5_video_slice6):  336.246595621109
+runs  -r 0, ilp_fixed_sliced_5_video_slice7
+Processing time (ilp_fixed_sliced_5_video_slice7):  271.1965651512146
+runs  -r 0, ilp_fixed_sliced_5_video_slice8
+Processing time (ilp_fixed_sliced_5_video_slice8):  261.94102907180786
+runs  -r 0, ilp_fixed_sliced_5_video_slice9
+Processing time (ilp_fixed_sliced_5_video_slice9):  204.1739022731781
+runs  -r 0, ilp_fixed_sliced_5_video_slice10
+Processing time (ilp_fixed_sliced_5_video_slice10):  159.3169105052948
+runs  -r 0, ilp_fixed_sliced_5_video_slice11
+Processing time (ilp_fixed_sliced_5_video_slice11):  39.99063420295715
+
+Running case fixed 10 dB, seed 19, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 10 - Fixed (Seed: 19)
+-------------Generating ues map
+Generating configuration files - Min Snr: 5 - Fixed (Seed: 13)
+Executing Simulations - Min Snr: 5 - Fixed (Seed: 13)
+runs  -r 0, ilp_fixed_sliced_5_video_slice0
+Processing time (ilp_fixed_sliced_5_video_slice0):  102.64203882217407
+runs  -r 0, ilp_fixed_sliced_5_video_slice1
+Processing time (ilp_fixed_sliced_5_video_slice1):  171.0821852684021
+runs  -r 0, ilp_fixed_sliced_5_video_slice2
+Processing time (ilp_fixed_sliced_5_video_slice2):  225.9963948726654
+runs  -r 0, ilp_fixed_sliced_5_video_slice3
+Generating configuration files - Min Snr: 10 - Fixed (Seed: 19)
+Executing Simulations - Min Snr: 10 - Fixed (Seed: 19)
+runs  -r 0, ilp_fixed_sliced_10_video_slice0
+Processing time (ilp_fixed_sliced_5_video_slice3):  268.5794446468353
+runs  -r 0, ilp_fixed_sliced_5_video_slice4
+Processing time (ilp_fixed_sliced_10_video_slice0):  89.546226978302
+runs  -r 0, ilp_fixed_sliced_10_video_slice1
+Processing time (ilp_fixed_sliced_10_video_slice1):  188.39167594909668
+runs  -r 0, ilp_fixed_sliced_10_video_slice2
+Processing time (ilp_fixed_sliced_5_video_slice4):  297.17585706710815
+runs  -r 0, ilp_fixed_sliced_5_video_slice5
+Processing time (ilp_fixed_sliced_10_video_slice2):  248.38729977607727
+runs  -r 0, ilp_fixed_sliced_10_video_slice3
+Processing time (ilp_fixed_sliced_5_video_slice5):  367.67037773132324
+runs  -r 0, ilp_fixed_sliced_5_video_slice6
+Processing time (ilp_fixed_sliced_10_video_slice3):  277.9059488773346
+runs  -r 0, ilp_fixed_sliced_10_video_slice4
+Processing time (ilp_fixed_sliced_5_video_slice6):  323.69684505462646
+runs  -r 0, ilp_fixed_sliced_5_video_slice7
+Processing time (ilp_fixed_sliced_10_video_slice4):  323.8450617790222
+runs  -r 0, ilp_fixed_sliced_10_video_slice5
+Processing time (ilp_fixed_sliced_5_video_slice7):  310.9670660495758
+runs  -r 0, ilp_fixed_sliced_5_video_slice8
+Processing time (ilp_fixed_sliced_10_video_slice5):  367.2536416053772
+runs  -r 0, ilp_fixed_sliced_10_video_slice6
+Processing time (ilp_fixed_sliced_5_video_slice8):  254.84053468704224
+runs  -r 0, ilp_fixed_sliced_5_video_slice9
+Processing time (ilp_fixed_sliced_10_video_slice6):  355.4071900844574
+runs  -r 0, ilp_fixed_sliced_10_video_slice7
+Processing time (ilp_fixed_sliced_5_video_slice9):  225.77781653404236
+runs  -r 0, ilp_fixed_sliced_5_video_slice10
+Processing time (ilp_fixed_sliced_5_video_slice10):  163.953999042511
+runs  -r 0, ilp_fixed_sliced_5_video_slice11
+Processing time (ilp_fixed_sliced_5_video_slice11):  101.04528999328613
+
+Running case single 5 dB, seed 19, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 5 - Single (Seed: 19)
+-------------Generating ues map
+Generating configuration files - Min Snr: 5 - Single (Seed: 19)
+Executing Simulations - Min Snr: 5 - Single (Seed: 19)
+runs  -r 0, ilp_single_sliced_5_video_slice0
+Processing time (ilp_fixed_sliced_10_video_slice7):  293.5379672050476
+runs  -r 0, ilp_fixed_sliced_10_video_slice8
+Processing time (ilp_single_sliced_5_video_slice0):  85.24070191383362
+runs  -r 0, ilp_single_sliced_5_video_slice1
+Processing time (ilp_single_sliced_5_video_slice1):  90.3053150177002
+runs  -r 0, ilp_single_sliced_5_video_slice2
+Processing time (ilp_single_sliced_5_video_slice2):  55.8146436214447
+runs  -r 0, ilp_single_sliced_5_video_slice3
+Processing time (ilp_fixed_sliced_10_video_slice8):  237.36410284042358
+runs  -r 0, ilp_fixed_sliced_10_video_slice9
+Processing time (ilp_single_sliced_5_video_slice3):  51.82428979873657
+runs  -r 0, ilp_single_sliced_5_video_slice4
+Processing time (ilp_single_sliced_5_video_slice4):  50.92172908782959
+runs  -r 0, ilp_single_sliced_5_video_slice5
+Processing time (ilp_single_sliced_5_video_slice5):  38.67561745643616
+runs  -r 0, ilp_single_sliced_5_video_slice6
+Processing time (ilp_single_sliced_5_video_slice6):  42.53014898300171
+runs  -r 0, ilp_single_sliced_5_video_slice7
+Processing time (ilp_fixed_sliced_10_video_slice9):  201.69464755058289
+runs  -r 0, ilp_fixed_sliced_10_video_slice10
+Processing time (ilp_single_sliced_5_video_slice7):  45.92042303085327
+runs  -r 0, ilp_single_sliced_5_video_slice8
+Processing time (ilp_single_sliced_5_video_slice8):  60.57982873916626
+runs  -r 0, ilp_single_sliced_5_video_slice9
+Processing time (ilp_single_sliced_5_video_slice9):  66.0989043712616
+runs  -r 0, ilp_single_sliced_5_video_slice10
+Processing time (ilp_fixed_sliced_10_video_slice10):  138.61185717582703
+runs  -r 0, ilp_fixed_sliced_10_video_slice11
+Processing time (ilp_single_sliced_5_video_slice10):  75.40066003799438
+runs  -r 0, ilp_single_sliced_5_video_slice11
+Processing time (ilp_fixed_sliced_10_video_slice11):  82.51800870895386
+
+Running case fixed 15 dB, seed 19, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 15 - Fixed (Seed: 19)
+-------------Generating ues map
+Processing time (ilp_single_sliced_5_video_slice11):  62.431320905685425
+
+Running case single 10 dB, seed 19, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 10 - Single (Seed: 19)
+-------------Generating ues map
+Generating configuration files - Min Snr: 10 - Single (Seed: 19)
+Executing Simulations - Min Snr: 10 - Single (Seed: 19)
+runs  -r 0, ilp_single_sliced_10_video_slice0
+Processing time (ilp_single_sliced_10_video_slice0):  107.93186807632446
+runs  -r 0, ilp_single_sliced_10_video_slice1
+Processing time (ilp_single_sliced_10_video_slice1):  164.46443390846252
+runs  -r 0, ilp_single_sliced_10_video_slice2
+Processing time (ilp_single_sliced_10_video_slice2):  161.91194605827332
+runs  -r 0, ilp_single_sliced_10_video_slice3
+Processing time (ilp_single_sliced_10_video_slice3):  141.18054246902466
+runs  -r 0, ilp_single_sliced_10_video_slice4
+Processing time (ilp_single_sliced_10_video_slice4):  114.0478765964508
+runs  -r 0, ilp_single_sliced_10_video_slice5
+Processing time (ilp_single_sliced_10_video_slice5):  102.84770274162292
+runs  -r 0, ilp_single_sliced_10_video_slice6
+Processing time (ilp_single_sliced_10_video_slice6):  99.78891706466675
+runs  -r 0, ilp_single_sliced_10_video_slice7
+Processing time (ilp_single_sliced_10_video_slice7):  118.3734917640686
+runs  -r 0, ilp_single_sliced_10_video_slice8
+Processing time (ilp_single_sliced_10_video_slice8):  151.19472932815552
+runs  -r 0, ilp_single_sliced_10_video_slice9
+Processing time (ilp_single_sliced_10_video_slice9):  118.93754601478577
+runs  -r 0, ilp_single_sliced_10_video_slice10
+Processing time (ilp_single_sliced_10_video_slice10):  87.55238819122314
+runs  -r 0, ilp_single_sliced_10_video_slice11
+Processing time (ilp_single_sliced_10_video_slice11):  78.14160680770874
+
+Running case single 15 dB, seed 19, micro power 30, disaster percentage 0.
+
+-------------Generating sinr map
+Running Solver - Min Snr: 15 - Single (Seed: 19)
+-------------Generating ues map
+Generating configuration files - Min Snr: 15 - Single (Seed: 19)
+Executing Simulations - Min Snr: 15 - Single (Seed: 19)
+runs  -r 0, ilp_single_sliced_15_video_slice0
+Processing time (ilp_single_sliced_15_video_slice0):  90.18179249763489
+runs  -r 0, ilp_single_sliced_15_video_slice1
+Processing time (ilp_single_sliced_15_video_slice1):  156.6048228740692
+runs  -r 0, ilp_single_sliced_15_video_slice2
+Processing time (ilp_single_sliced_15_video_slice2):  135.71621370315552
+runs  -r 0, ilp_single_sliced_15_video_slice3
+Generating configuration files - Min Snr: 15 - Fixed (Seed: 19)
+Executing Simulations - Min Snr: 15 - Fixed (Seed: 19)
+runs  -r 0, ilp_fixed_sliced_15_video_slice0
+Processing time (ilp_single_sliced_15_video_slice3):  126.7156195640564
+runs  -r 0, ilp_single_sliced_15_video_slice4
+Processing time (ilp_fixed_sliced_15_video_slice0):  83.8808286190033
+runs  -r 0, ilp_fixed_sliced_15_video_slice1
+Processing time (ilp_single_sliced_15_video_slice4):  92.8896005153656
+runs  -r 0, ilp_single_sliced_15_video_slice5
+Processing time (ilp_single_sliced_15_video_slice5):  84.29808902740479
+runs  -r 0, ilp_single_sliced_15_video_slice6
+Processing time (ilp_fixed_sliced_15_video_slice1):  233.82939410209656
+runs  -r 0, ilp_fixed_sliced_15_video_slice2
+Processing time (ilp_single_sliced_15_video_slice6):  82.81202006340027
+runs  -r 0, ilp_single_sliced_15_video_slice7
+Processing time (ilp_single_sliced_15_video_slice7):  99.78615164756775
+runs  -r 0, ilp_single_sliced_15_video_slice8
+Processing time (ilp_single_sliced_15_video_slice8):  129.83435702323914
+runs  -r 0, ilp_single_sliced_15_video_slice9
+Processing time (ilp_fixed_sliced_15_video_slice2):  320.81384229660034
+runs  -r 0, ilp_fixed_sliced_15_video_slice3
+Processing time (ilp_single_sliced_15_video_slice9):  109.22545552253723
+runs  -r 0, ilp_single_sliced_15_video_slice10
+Processing time (ilp_single_sliced_15_video_slice10):  84.85947608947754
+runs  -r 0, ilp_single_sliced_15_video_slice11
+Processing time (ilp_single_sliced_15_video_slice11):  62.07493281364441
+
+Exporting .CSV files (Mode: fixed, Seed: 12).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_12/ilp_fixed_sliced_video.csv.
+Exported 121584 scalars, 20392 vectors, 14184 histograms
+
+Exporting .CSV files (Mode: fixed, Seed: 2).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_2/ilp_fixed_sliced_video.csv.
+Processing time (ilp_fixed_sliced_15_video_slice3):  365.0395441055298
+runs  -r 0, ilp_fixed_sliced_15_video_slice4
+Exported 121052 scalars, 20737 vectors, 14112 histograms
+
+Exporting .CSV files (Mode: fixed, Seed: 10).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_10/ilp_fixed_sliced_video.csv.
+Exported 112991 scalars, 19401 vectors, 13176 histograms
+
+Exporting .CSV files (Mode: fixed, Seed: 13).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_13/ilp_fixed_sliced_video.csv.
+Processing time (ilp_fixed_sliced_15_video_slice4):  416.2239091396332
+runs  -r 0, ilp_fixed_sliced_15_video_slice5
+Exported 120400 scalars, 20985 vectors, 14040 histograms
+
+Exporting .CSV files (Mode: single, Seed: 12).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_12/ilp_single_sliced_video.csv.
+Exported 120804 scalars, 15724 vectors, 14184 histograms
+
+Exporting .CSV files (Mode: single, Seed: 2).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_2/ilp_single_sliced_video.csv.
+Exported 120492 scalars, 17693 vectors, 14112 histograms
+
+Exporting .CSV files (Mode: single, Seed: 10).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_10/ilp_single_sliced_video.csv.
+Processing time (ilp_fixed_sliced_15_video_slice5):  474.3874866962433
+runs  -r 0, ilp_fixed_sliced_15_video_slice6
+Exported 112296 scalars, 16071 vectors, 13176 histograms
+
+Exporting .CSV files (Mode: single, Seed: 13).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_13/ilp_single_sliced_video.csv.
+Exported 119520 scalars, 15831 vectors, 14040 histograms
+Processing time (ilp_fixed_sliced_15_video_slice6):  432.4948983192444
+runs  -r 0, ilp_fixed_sliced_15_video_slice7
+Processing time (ilp_fixed_sliced_15_video_slice7):  380.47446179389954
+runs  -r 0, ilp_fixed_sliced_15_video_slice8
+Processing time (ilp_fixed_sliced_15_video_slice8):  315.27387022972107
+runs  -r 0, ilp_fixed_sliced_15_video_slice9
+Processing time (ilp_fixed_sliced_15_video_slice9):  255.03687691688538
+runs  -r 0, ilp_fixed_sliced_15_video_slice10
+Processing time (ilp_fixed_sliced_15_video_slice10):  192.0619251728058
+runs  -r 0, ilp_fixed_sliced_15_video_slice11
+Processing time (ilp_fixed_sliced_15_video_slice11):  127.42374777793884
+Generating configuration files - Min Snr: 5 - Fixed (Seed: 6)
+Executing Simulations - Min Snr: 5 - Fixed (Seed: 6)
+runs  -r 0, ilp_fixed_sliced_5_video_slice0
+Processing time (ilp_fixed_sliced_5_video_slice0):  72.48943901062012
+runs  -r 0, ilp_fixed_sliced_5_video_slice1
+Processing time (ilp_fixed_sliced_5_video_slice1):  125.10653233528137
+runs  -r 0, ilp_fixed_sliced_5_video_slice2
+Processing time (ilp_fixed_sliced_5_video_slice2):  160.92867851257324
+runs  -r 0, ilp_fixed_sliced_5_video_slice3
+Processing time (ilp_fixed_sliced_5_video_slice3):  239.95042657852173
+runs  -r 0, ilp_fixed_sliced_5_video_slice4
+Processing time (ilp_fixed_sliced_5_video_slice4):  264.20868372917175
+runs  -r 0, ilp_fixed_sliced_5_video_slice5
+Processing time (ilp_fixed_sliced_5_video_slice5):  293.22016286849976
+runs  -r 0, ilp_fixed_sliced_5_video_slice6
+Processing time (ilp_fixed_sliced_5_video_slice6):  265.9531466960907
+runs  -r 0, ilp_fixed_sliced_5_video_slice7
+Processing time (ilp_fixed_sliced_5_video_slice7):  240.27009630203247
+runs  -r 0, ilp_fixed_sliced_5_video_slice8
+Processing time (ilp_fixed_sliced_5_video_slice8):  195.32175874710083
+runs  -r 0, ilp_fixed_sliced_5_video_slice9
+Processing time (ilp_fixed_sliced_5_video_slice9):  166.25918531417847
+runs  -r 0, ilp_fixed_sliced_5_video_slice10
+Processing time (ilp_fixed_sliced_5_video_slice10):  110.829017162323
+runs  -r 0, ilp_fixed_sliced_5_video_slice11
+Processing time (ilp_fixed_sliced_5_video_slice11):  71.43683242797852
+
+Exporting .CSV files (Mode: fixed, Seed: 6).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_6/ilp_fixed_sliced_video.csv.
+Exported 115469 scalars, 19661 vectors, 13464 histograms
+
+Exporting .CSV files (Mode: single, Seed: 6).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_6/ilp_single_sliced_video.csv.
+Exported 114744 scalars, 15515 vectors, 13464 histograms
