@@ -9,7 +9,7 @@ def main():
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
     move_config_name = 'ilp_move_users'
-    chosen_seeds = [2,3,4,5,6,7,10,11,12,13]
+    chosen_seeds = range(20)
     extra_dir = ['disaster_percentage','micro_power']
     disaster_percentage = 0
     micro_power = 30 #dBm
