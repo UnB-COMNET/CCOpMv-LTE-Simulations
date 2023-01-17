@@ -254,38 +254,28 @@ def print_map_mn(scen: geo.MapChess, map_name: str, values: List[List[Union[int,
     for i in range(num_sector):
         print(values[i*num_sector:num_sector*(i+1)])   
 
-def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn, min_sinr_w, max_users_per_antenna_m, with_unconnected: bool = False):
+def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn, min_sinr_w, max_users_per_antenna_m, ignore_unconnected: bool = False):
     connect_dict = {}
     antennas_regions_list = [geo.Region(region,0,max_users_per_antenna_m[region],[]) for region in antennas_regions]
     isSaturated = True
     users_regions_list = [None]
-    #print("\n\n\n")
+    
     while len(users_regions_list):
         if isSaturated:
-            #print("Obtem o mapa de serviço baseado nas antenas atuais: ", [region.index for region in antennas_regions_list])
-            if with_unconnected:
-                map_of_service = get_map_of_service([region.index for region in antennas_regions_list], snr_map_mn, min_sinr_w, minimization=False, threshold=True, full=True)
-            else:
-                map_of_service = get_map_of_service([region.index for region in antennas_regions_list], snr_map_mn, min_sinr_w, minimization=False, threshold=True, full=True)
+            map_of_service = get_map_of_service([region.index for region in antennas_regions_list], snr_map_mn, min_sinr_w, minimization=False, threshold=True, full=True)
             users_regions_list = [geo.Region(region,users_m[region],None,map_of_service[region]) for region in users_regions]
             users_regions_list.sort(key=lambda x: x.num_serving_antennas, reverse=False)
-            #for k in users_regions_list:
-                #print(k)
+    
         isSaturated = False
-        #if with_unconnected: print("mapa de servico", map_of_service)
-        #print("(Re)Iniciando analise")
         for usr_region in users_regions_list:
-            #if with_unconnected: print("usr: ", usr_region)            
+            #if ignore_unconnected: print("usr: ", usr_region)            
             if usr_region.serving_antennas == []:
-                #print(connect_dict)
-                #print(usr_region)
                 #print("Algum usuario nao atendido por nenhuma antena")
-                if not with_unconnected:
+                if not ignore_unconnected:
                     return None
                 else:
-                    #print("antes", len(users_regions_list))
+                    #print(f"Usuario em {usr_region.index} nao pode ser atendido por nenhuma antena.")
                     users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
-                    #print("apos", len(users_regions_list))
                     continue
             
             #print(f"\n{usr_region.num_users} usuarios no setor {usr_region.index} atendido por: ", usr_region.serving_antennas)
@@ -295,9 +285,12 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
                 ant_region = list(filter(lambda x: x.index == usr_region.index, antennas_regions_list))[0]
                 ant_region.num_users += usr_region.num_users
                 
-                #TODO: incluir caso do with_unconnected
                 if ant_region.num_users > ant_region.max_users:
-                    if with_unconnected : print("Limite de usuário excedido")
+                    # NOTE: Mesmo que esteja sendo usada para avaliar as conexoes em slices futuros (ignore_unconnected),
+                    # se cair no caso de que o numero de  usuarios da regiao em que ha uma antena for maior que max_users
+                    # entao nao e uma solucao valida, pois fixar uma antena nesse local impossibilitaria de encontrar
+                    # alguma solucao valida por causa da restricao de que uma antena serve aos usuarios do proprio setor 
+                    #if ignore_unconnected : print("Limite de usuário excedido")                    
                     return None
 
                 #print("Connectando with...")
@@ -316,37 +309,49 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
 
                 continue
             
-            if usr_region.num_serving_antennas == 1:
+            if usr_region.num_serving_antennas == 1:                
                 ant_region = list(filter(lambda x: x.index == int(usr_region.serving_antennas[0]), antennas_regions_list))[0]
-                ant_region.num_users += usr_region.num_users
                 
-                #TODO: incluir caso do with_unconnected
-                if ant_region.num_users > ant_region.max_users:
-                    if with_unconnected : print("Limite de usuário excedido")
-                    return None
-                #print("Conectando with...")
-                #print(ant_region)
+                if ant_region.num_users + usr_region.num_users > ant_region.max_users:
+                    #if ignore_unconnected : print(f"Limite de usuário excedido (*). Não foi possivel conectar o usuario em {usr_region.index}")
+                    if not ignore_unconnected:
+                        return None
+                    else:
+                        users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                        continue
 
-                connect_dict[usr_region.index] = ant_region.index
-                users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
-                users_regions = users_regions[~np.isin(users_regions, usr_region.index)]
+                else:
+                    #if ignore_unconnected:
+                    #    print("\nlista de antenas antes")
+                    #    for k in range(len(antennas_regions_list)):
+                    #        print("Ant: ", antennas_regions_list[k])
+                    ant_region.num_users += usr_region.num_users
+                    #if ignore_unconnected:
+                    #    print("\nlista de antenas depois")
+                    #    for k in range(len(antennas_regions_list)):
+                    #        print("Ant': ", antennas_regions_list[k])
+                    #    print('\n')
+                    connect_dict[usr_region.index] = ant_region.index
+                    users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                    users_regions = users_regions[~np.isin(users_regions, usr_region.index)]
 
-                #print("Conexões_2: ", connect_dict)
-                if ant_region.num_users == ant_region.max_users:
-                    #print("Antena saturada!!!")
-                    antennas_regions_list = [x for x in antennas_regions_list if x.index != ant_region.index]
-                    isSaturated = True
-                    break
+                    #print("Conexões_2: ", connect_dict)
+                    if ant_region.num_users == ant_region.max_users:
+                        #print("Antena saturada!!!")
+                        antennas_regions_list = [x for x in antennas_regions_list if x.index != ant_region.index]
+                        isSaturated = True
+                        break
                 
             else:
                 tmp = [x for x in antennas_regions_list if str(x.index) in usr_region.serving_antennas]
                 tmp.sort(key=lambda x: x.num_users, reverse=True)
-                #for k in range(len(tmp)):
-                    #print(tmp[k])
+                #if ignore_unconnected:
+                #    for k in range(len(tmp)):
+                #        print("Ant:", tmp[k])
         
                 while len(tmp):                    
                     if tmp[0].num_users + usr_region.num_users <= tmp[0].max_users:
-                        #print("Buscando conectar com uma antena que ja possui ", tmp[0].num_users, " usuarios.")
+                        #if ignore_unconnected: print("Buscando conectar com uma antena que ja possui ", tmp[0].num_users, " usuarios.")
                         tmp = [x for x in tmp if x.num_users == tmp[0].num_users]
 
                         snr = -np.infty
@@ -354,13 +359,20 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
                             if snr_map_mn[k.index][usr_region.index] > snr:
                                 ant_index = k.index
                                 snr = snr_map_mn[k.index][usr_region.index]
-                        #print("Conectando com ", k.index)
+                        #if ignore_unconnected: print("Conectando com ", k.index)
                         for ant_region in antennas_regions_list:
                             if ant_region.index == ant_index:#int(usr_region.serving_antennas[0]):
                                 break
-                        
+                        #if ignore_unconnected:
+                        #    print("\nlista de antenas antes")
+                        #    for k in range(len(antennas_regions_list)):
+                        #        print("Ant: ", antennas_regions_list[k])
                         ant_region.num_users += usr_region.num_users
-                        #print(ant_region)
+                        #if ignore_unconnected:
+                        #    print("\nlista de antenas depois")
+                        #    for k in range(len(antennas_regions_list)):
+                        #        print("Ant': ", antennas_regions_list[k])
+                        #    print('\n')
                         
                         connect_dict[usr_region.index] = ant_region.index
                         users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
@@ -368,7 +380,6 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
 
                         #print("Conexões_3: ", connect_dict)
                         if ant_region.num_users == ant_region.max_users:
-                            #print("Antena saturada")
                             antennas_regions_list = [x for x in antennas_regions_list if x.index != ant_region.index]
                             isSaturated = True
 
@@ -380,13 +391,18 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
                 if isSaturated:
                     break
 
-                if not with_unconnected:
-                    if len(tmp) == 0:
+                if len(tmp) == 0:
+                    if not ignore_unconnected:
                         #print("Nao foi possivel conectar com nenhuma antena dentre as possiveis")
                         return None      
-                else:
-                    pass              
-        
+                    else:
+                        #print(f"Limite de usuário excedido. Não foi possivel conectar os {usr_region.num_users} usuarios em {usr_region.index}")
+                        #print("Lista de antenas.")
+                        for k in range(len(antennas_regions_list)):
+                            print(antennas_regions_list[k])
+                        users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                        continue         
+            
     #print("Saindo do loop")
     return connect_dict
     
