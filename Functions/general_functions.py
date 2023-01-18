@@ -254,12 +254,12 @@ def print_map_mn(scen: geo.MapChess, map_name: str, values: List[List[Union[int,
     for i in range(num_sector):
         print(values[i*num_sector:num_sector*(i+1)])   
 
-def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn, min_sinr_w, max_users_per_antenna_m, ignore_unconnected: bool = False):
+def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn, min_sinr_w, max_users_per_antenna_m, ignore_unconnected: bool = False, verbose: bool = False):
     connect_dict = {}
     antennas_regions_list = [geo.Region(region,0,max_users_per_antenna_m[region],[]) for region in antennas_regions]
     isSaturated = True
     users_regions_list = [None]
-    
+    if verbose: print("MinSINR: ", min_sinr_w)
     while len(users_regions_list):
         if isSaturated:
             map_of_service = get_map_of_service([region.index for region in antennas_regions_list], snr_map_mn, min_sinr_w, minimization=False, threshold=True, full=True)
@@ -270,7 +270,7 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
         for usr_region in users_regions_list:
             #if ignore_unconnected: print("usr: ", usr_region)            
             if usr_region.serving_antennas == []:
-                #print("Algum usuario nao atendido por nenhuma antena")
+                if verbose: print("Algum usuario nao atendido por nenhuma antena")
                 if not ignore_unconnected:
                     return None
                 else:
@@ -290,7 +290,7 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
                     # se cair no caso de que o numero de  usuarios da regiao em que ha uma antena for maior que max_users
                     # entao nao e uma solucao valida, pois fixar uma antena nesse local impossibilitaria de encontrar
                     # alguma solucao valida por causa da restricao de que uma antena serve aos usuarios do proprio setor 
-                    #if ignore_unconnected : print("Limite de usuário excedido")                    
+                    #if ignore_unconnected : print("Limite de usuário excedido")
                     return None
 
                 #print("Connectando with...")
@@ -313,7 +313,7 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
                 ant_region = list(filter(lambda x: x.index == int(usr_region.serving_antennas[0]), antennas_regions_list))[0]
                 
                 if ant_region.num_users + usr_region.num_users > ant_region.max_users:
-                    #if ignore_unconnected : print(f"Limite de usuário excedido (*). Não foi possivel conectar o usuario em {usr_region.index}")
+                    if verbose: print(f"Limite de usuário excedido (*). Não foi possivel conectar o usuario em {usr_region.index}")
                     if not ignore_unconnected:
                         return None
                     else:
@@ -382,7 +382,6 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
                         if ant_region.num_users == ant_region.max_users:
                             antennas_regions_list = [x for x in antennas_regions_list if x.index != ant_region.index]
                             isSaturated = True
-
                         break
                     else:
                         # Descarta a antena para tentar com a proxima possibilidade
@@ -393,7 +392,7 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
 
                 if len(tmp) == 0:
                     if not ignore_unconnected:
-                        #print("Nao foi possivel conectar com nenhuma antena dentre as possiveis")
+                        if verbose: print("Nao foi possivel conectar com nenhuma antena dentre as possiveis")
                         return None      
                     else:
                         #print(f"Limite de usuário excedido. Não foi possivel conectar os {usr_region.num_users} usuarios em {usr_region.index}")

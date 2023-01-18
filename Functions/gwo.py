@@ -14,6 +14,7 @@ import math
 class wolf:
     def __init__(self, fitness_func, antennas_regions: List[int], users_regions: List[int], dimension: int, scenario: geo.MapChess, seed: int, id: int):
         self.id = id
+        self.seed = seed
         self.rnd = random.Random(seed)
         self.fitness_func = fitness_func
         self.position = [0 for i in range(dimension)]
@@ -52,9 +53,9 @@ class wolf:
 
     def __str__(self) -> str:
         try:
-            str = f'Wolf {self.id}. Fitness: {self.fitness}, {self.fitness_snr}'
+            str = f'Wolf {self.id} ({self.seed}). Fitness: {self.fitness}, {self.fitness_snr}'
         except(AttributeError):
-            str = f'Wolf {self.id}. Fitness: {self.fitness}'
+            str = f'Wolf {self.id} ({self.seed}). Fitness: {self.fitness}'
         
         for i in range(len(self.position)):
             str += f'\n\t{self.position[i]}. Region: {geo.coord2Region(self.position[i], self.scenario.size_sector, self.scenario.size_x, self.scenario.size_y)}'
@@ -191,7 +192,7 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
         _users_t_m = users_t_m
         _distance_mn = distance_mn
         _min_dis = min_dis
-        _first_antenna_region = first_antenna_region
+        _first_antenna_region = first_antenna_region        
         
         # mapa de usuários totais: TODO transformar em função
         _users_m = scenario.n_sectors*[0]
@@ -219,10 +220,8 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
             
             dimension = len(antennas_regions)
 
-            _wolf = wolf(fitness_gwo, antennas_regions, users_regions, dimension, scenario, None, None) # The wolf represents the current scenario
-            
-            # TODO: verificar se dá para deixar essa parte aleatoria considerando que na durante a avaliação do cenário o lobo que o 
-            #       representa não tem dimensao. A fitness dependerá apenas das antenas listadas em antennas_regions
+            _wolf = wolf(fitness_gwo_cov, antennas_regions, users_regions, dimension, scenario, None, None) # The wolf represents the current scenario
+            #population = [wolf(fitness_func, antennas_regions, users_regions, wolf_dimension, scenario, seed_base + i, i) for i in range(pack_size)]
             for dim in range(dimension):
                 coord = geo.region2Coord(antennas_regions[dim],scenario.size_sector, scenario.size_x, scenario.size_y)
                 _wolf.setPosition(dim, coord.x, coord.y)
@@ -230,17 +229,14 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
             _wolf.updateFitness(np.array([],dtype='int64'), users_regions)           # update fitness nao teve ter antenas já instaladas, pois _wolf já as implementa
             
             map_of_service = genf.get_map_of_service(antennas_regions,_snr_map_mn, minimization=False)
-            
-            # NOTE: no slice 0, coloca apenas a antena inicial. Implementa 1 lobo de dimensao 0+1 para avaliar a fitness.
-            # Se atender aos requisitos (fitness != 0), entao passa para o proximo slice.
-            # Senao, e preciso chamar gwo() para criar 100 lobos com dimensao+1.
-            # Ex. 100 lobos com dim = 1, i.e., 1 antena adicional. Como considerar as antenas já instaladas e imutáveis?
-            # Solucao: a lista de antenas atuais no mapa sera uma entrada. Ela so é atualizada, i.e., o mapa, quando o lobo alfa for encontrado (e valido)
-            
+                     
+            pack_size_per_dimension = 250
+            pack_size = 300
+            max_iter = 200
             if _wolf.fitness == 0:                
                 dimension = 1           
                 while(dimension < 10):                
-                    solution = run_gwo(scenario, antennas_regions, users_regions, 200, dimension, 10, fitness_func)
+                    solution = run_gwo(scenario, antennas_regions, users_regions, pack_size, dimension, max_iter, fitness_func)
                     
                     if solution.fitness != 0:
                         print("Best solution: ", solution)                    
@@ -251,15 +247,19 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
                         results.append(np.ravel(np.argwhere(np.array(antennas_map) > 0)))
                         break
                     else:
-                        # fitness == 0, run GWO again
-                        dimension+=1
                         if dimension == max_dimension:
-                            print("Unfeasible")
+                            print("Not feasible")
                             return None
+                    
+                    dimension+=1           
             else:
                 results.append(antennas_regions)
                 print("The set of antennas serves the scenario in the respective slice.")
-    
+    """
+    for k in range(len(results)):
+        print(results[k])
+        print(connections[k])
+    exit()#"""
     # Writing the log and result files
     with open(genf.gen_solver_result_filename(result_dir, 'gwo', math.ceil(sc.linear_to_db(min_sinr_w))), 'w') as f:
         num_vehicles = 0
@@ -272,7 +272,9 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
             print("t=%d"%t)    
             antennas_regions = results[t]
             users_regions = np.ravel(np.argwhere(np.array(users_t_m[t]) > 0))
-            connections = genf.get_dict_of_connections(antennas_regions, users_regions, users_t_m[t],_snr_map_mn, _min_sinr_w, _max_users_per_antenna_m)
+            print("Antennas:", antennas_regions)
+            print("Users:", users_regions)
+            connections = genf.get_dict_of_connections(antennas_regions, users_regions, users_t_m[t],_snr_map_mn, _min_sinr_w, _max_users_per_antenna_m, verbose=True)
             for antenna in antennas_regions:
                 print(f"$x_{{{t},{antenna}}}$")
                 users_regions = [key for key, value in connections.items() if value == antenna]
@@ -280,7 +282,7 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
                 mean_snr = 0
                 for region in users_regions:
                     snr = sc.linear_to_db(_snr_map_mn[antenna][region])
-                    print(f"\t$y_{{{t},{antenna},{region}}}$ = {snr} dB")
+                    print(f"\t $y_{{{t},{antenna},{region}}}$ = {snr} dB")
                     mean_snr += snr
                     num_users += users_t_m[t][region]
                     f.write(f"{t} {antenna} {region}\n")
@@ -288,7 +290,7 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
                 if len(users_regions) > 0:
                     mean_snr /= num_users
                     print("\t\tSNR medio: ", mean_snr)
-                print("\t\tUsuario totais: ", num_users)
+                print("\t\tUsuarios totais:", num_users)
 
                 if num_users == 0:
                     f.write(f"{t} {antenna} -1\n")
@@ -310,15 +312,16 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
     print("\tMax iter", max_iter)
     print("\tantennas_regions: ", antennas_regions)
     print("\tusers_regions: ", users_regions)
+    rnd = random.Random()                    
+    seed_base = rnd.randint(1000,100000)     
+    print("\tSeed_base: ", seed_base)
+    
     # NOTE: perde-se o controle das seeds utilizadas para gerar a populacao inicial do GWO
-    rnd = random.Random()
-    seed_base = rnd.randint(1000,100000)
+    
     
     # create n random wolves
     population = [wolf(fitness_func, antennas_regions, users_regions, wolf_dimension, scenario, seed_base + i, i) for i in range(pack_size)]
-    
-    
-    # TODO: verificar como usar uma seed para cada slice. Variavel global?
+        
     rnd = random.Random(scenario.chosen_seed)
 
     population = sorted(population, key = lambda temp: temp.fitness, reverse=True)
@@ -328,11 +331,11 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
     print("initial_alpha: ", alpha_wolf)
     print("initial_beta: ", beta_wolf)
     print("initial_delta: ", delta_wolf, "\n")
-
+    
     wolf_list = []
     iter = 0
     while iter < max_iter:
-        verbose = False
+        verbose = True
         #print("alpha: ", alpha_wolf)
         # after every 10 iterations
         # print iteration number and best fitness value so far
@@ -400,14 +403,18 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
                 #X_new[i].position[j].scalarMultiply(1/3)
 
                 if verbose == True and population[i].id in wolf_list: print("Xnew", Xnew.position[j])
-                if Xnew.position[j].x < 0:
-                    Xnew.position[j].x = 0
-                if Xnew.position[j].x > scenario.size_x:
-                    Xnew.position[j].x = scenario.size_x
-                if Xnew.position[j].y < 0:
-                    Xnew.position[j].y = 0                      
-                if Xnew.position[j].y > scenario.size_y:
-                    Xnew.position[j].y = scenario.size_y
+                # Reflexion
+                while Xnew.position[j].x < 0 or Xnew.position[j].x > scenario.size_x:
+                    if Xnew.position[j].x < 0:
+                        Xnew.position[j].x = -Xnew.position[j].x
+                    else:
+                        Xnew.position[j].x = 2*scenario.size_x - Xnew.position[j].x
+
+                while Xnew.position[j].y < 0 or Xnew.position[j].y > scenario.size_y:
+                    if Xnew.position[j].y < 0:
+                        Xnew.position[j].y = -Xnew.position[j].y
+                    else:
+                        Xnew.position[j].y = 2*scenario.size_y - Xnew.position[j].y
 
                 #if verbose == True and population[i].id in wolf_list: print("X ", if verbose == True and population[i].id in wolf_list: print(population[i].position[0]))
                 #if verbose == True and population[i].id in wolf_list: print(A1[2*j], A1[2*j+1])
@@ -415,7 +422,6 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
                 if verbose == True and population[i].id in wolf_list: print("\n")
             
             #updating X_new fitness
-            #wolf_list = []
             Xnew.updateFitness(antennas_regions, users_regions)
             if verbose == True and population[i].id in wolf_list: print("X: ", population[i])
             if verbose == True and population[i].id in wolf_list: print("X_new: ", Xnew)
@@ -427,7 +433,6 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
                 if verbose == True and population[i].id in wolf_list: print(population[i])
 
             if verbose == True and population[i].id in wolf_list: print("\n")
-            verbose = False
 
         population = sorted(population, key = lambda temp: temp.fitness, reverse=True)
         
@@ -442,9 +447,9 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
         # escolhendo como alfa o que tiver maior fitness:
         alpha_wolf, beta_wolf, delta_wolf = copy.copy(population[: 3])
 
-        #if alpha_wolf != last_alpha_wolf:
-        #    print(f"Alpha wolf has been updated. iter = {iter}")
-        #    print("New alpha wolf: ", alpha_wolf)
+        if alpha_wolf.fitness != last_alpha_wolf.fitness:
+            print(f"The alpha wolf has been updated to a position with higher fitness. iter = {iter}")
+            print("New alpha wolf: ", alpha_wolf)
         
         iter += 1
 
@@ -454,9 +459,6 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
            
  
 #-------------------------
-
-def evaluate_slice(antennas_regions, users_regionss):
-    pass
 
 def fitness_gwo_cov(position, antennas_regions, users_regions, scenario: geo.MapChess, verbose:bool = False):
     #print("Calculando fitness_3")
