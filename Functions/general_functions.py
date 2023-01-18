@@ -8,10 +8,10 @@ from scipy.stats import poisson
 from random import choice, randint, seed, random
 
 MODES_NEW_NAMES = {
-    'varying': 'VID',
-    'single': 'TID',
-    'fixed': 'AID',
-    'ga': 'AGD'
+    'varying': 'VID',# Varying ILP Deployment
+    'single': 'TID',# Traditional ILP Deployment
+    'fixed': 'AID',# Additive ILP Deployment
+    'ga': 'PGD'# Predicative GA Deployment
 }
 
 # TODO: Use OmNET absolute path.
@@ -422,7 +422,8 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int
               
 
     Returns:
-        List with the antennas region that serves each index/region.
+        if old is True: List with the antennas regions that serves each index/region.
+        else: List with dicts with antennas region ("antenna") and the metric value ("metric") that serves each index/region.
     """
     metrics_of_service = {}
 
