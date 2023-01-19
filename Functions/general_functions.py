@@ -11,7 +11,8 @@ MODES_NEW_NAMES = {
     'varying': 'VID',# Varying ILP Deployment
     'single': 'TID',# Traditional ILP Deployment
     'fixed': 'AID',# Additive ILP Deployment
-    'ga': 'PGD'# Predicative GA Deployment
+    'ga': 'PGD',# Predicative GA Deployment
+    'gwo': 'PGWO' #Progressive GWO
 }
 
 # TODO: Use OmNET absolute path.
