@@ -593,7 +593,7 @@ def metric_error_score(connect_dict: Dict[str,int], metric_map_mn: List[List], t
     if rmse >= max_dif:
         rmse = max_dif
     
-    normalized_rmse = rmse/max_dif * (1-10**-9) #between 0 and 1-10**9
+    normalized_rmse = (max_dif-rmse)/max_dif * (1-10**-9) #between 0 and 1-10**9
 
     return normalized_rmse
 
