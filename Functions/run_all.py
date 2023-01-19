@@ -474,7 +474,7 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
     for band in num_bands:
         for slice in range(num_slices):
             for repetition in range(repetitions):
-                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}{("-"+extra_out_name) if extra_out_name != "" else ""}.out'
+                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}{("-"+extra_out_name) if extra_out_name != "" else "-"}.out'
                 done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
                 if not done:
                     missing.append(counter)
