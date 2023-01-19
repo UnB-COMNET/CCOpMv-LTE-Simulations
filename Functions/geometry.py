@@ -10,6 +10,23 @@ from numpy import arctan, matrix
 from sinr_comput import compute_sinr
 from coordinates import Coordinate, PolarCoordinate
 
+class Region:
+    """"""
+    def __init__(self,index, num_users, max_users, serving_antennas):
+        self.index = index
+        self.num_users = num_users
+        self.max_users = max_users
+        self.serving_antennas = serving_antennas
+        self.num_serving_antennas = len(serving_antennas)
+
+    def setServingAntennas(self, serving_antennas):
+        self.serving_antennas = serving_antennas
+        self.num_serving_antennas = len(serving_antennas)
+
+    def __str__(self) -> str:
+        return f"Region {self.index}\n\tNum users: {self.num_users}\n\tServing antennas: {self.serving_antennas}"
+
+
 class Smallcell:
     """Represents a Smallcell region, composed of a center, antennas and UEs"""
     

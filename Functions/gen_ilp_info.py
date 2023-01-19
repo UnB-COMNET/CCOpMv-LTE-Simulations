@@ -97,7 +97,7 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
 
         # Generating default parameters
         seed(chosen_seed)
-        max_user_antenna_m = [60 for i in range(scen.n_sectors)]
+        max_user_antenna_m = [40 for i in range(scen.n_sectors)]
         antennas_map_m = [(0 if random() < disaster_percentage/100 else 1) for i in range(scen.n_sectors)]
         min_snr_m = [db_to_linear(min_sinr) for _ in range(scen.n_sectors)]
         distance_mn = scen.getRegionsDistanceMatrix()
@@ -159,7 +159,7 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
 
         elif mode == "gwo":
             gwo.gwo_solver(scenario = scen, num_regions=scen.n_sectors, users_t_m=users_t_m, distance_mn=distance_mn, min_dis=min_dis, 
-                        snr_map_mn=sinr_map, min_sinr_w=db_to_linear(min_sinr), first_antenna_region=first_antenna_region,
+                        antenasmap_m= antennas_map_m, snr_map_mn=sinr_map, min_sinr_w=db_to_linear(min_sinr), first_antenna_region=first_antenna_region,
                         result_dir=result_dir, max_users_per_antenna_m=max_user_antenna_m, num_slices=num_slices)
 
 

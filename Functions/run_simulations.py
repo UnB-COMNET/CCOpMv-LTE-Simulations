@@ -78,7 +78,7 @@ def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1,
 
 def execute(cpu_num, ini_path,config_name, runs):
   frame_path = genf.get_frameworks_path()
-  if runs != []:
+  if runs != '':
     print('runs', runs, config_name)
     arg = ('cd ../Network_CCOpMv\n'
           f'opp_runall -j{cpu_num} ./Network_CCOpMv -f ' + ini_path + r' -u Cmdenv -c ' + config_name + runs + rf' -n .:{frame_path}/inet4/src:{frame_path}/inet4/examples:{frame_path}/inet4/tutorials:{frame_path}/inet4/showcases:{frame_path}/Simu5G-1.1.0/simulations:{frame_path}/Simu5G-1.1.0/src')

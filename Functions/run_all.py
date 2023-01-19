@@ -21,13 +21,13 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [2,3,4,5,6,7,10,11,12,13]#
+    chosen_seeds = [2,3,4,5,6,7,10,11,12,13]
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5, 10, 15]
-    modes = ['fixed', 'single', 'ga'] # fixed or single or ga
+    min_sinrs = [5,10,15]
+    modes = ['gwo'] # fixed or single or ga
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
@@ -474,7 +474,7 @@ def get_missing_simulations(mode: str, num_bands: List[int], repetitions: int, s
     for band in num_bands:
         for slice in range(num_slices):
             for repetition in range(repetitions):
-                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}{("-"+extra_out_name) if extra_out_name != "" else ""}.out'
+                filename = f'{sim_resultdir}/{config_pattern}-cmdout/{min_sinr}-{band}-{repetition}-{slice}{("-"+extra_out_name) if extra_out_name != "" else "-"}.out'
                 done = compare_last_line(filename, '[INFO]\tClear all sockets\n')
                 if not done:
                     missing.append(counter)

@@ -9,6 +9,8 @@ import numpy as np
 from errors import check_mode
 import general_functions as genf
 
+SCHED="PF"#MAXCI
+
 def ilp_move_users(scen: geo.MapChess, filename: str, n_macros: int = 2, n_ues_macro: int = 60, ues_per_slice = list, config_name: str= 'ilp_move_users'):
   """This function generates a .ini file to watch users mobility behaviour.
   
@@ -530,7 +532,7 @@ def ilp_sliced_ini(scen: geo.MapChess, filename, n_macros: int = 2, ues_per_slic
     #hp.writeConnectUE(f, UEs= [num_ues], ENBs= [1])
     hp.writeConnectOptions(f, list_connections= connections, parallel_var= iter_slice_name)
     hp.writeComment(f, text= "Scheduler")
-    hp.writeSchedulingOptions(f, sched= ['MAXCI'])
+    hp.writeSchedulingOptions(f, sched= [SCHED], alpha= 0 if SCHED == 'PF' else None)
     hp.writeSeparation(f, "Scenario")
     hp.writeComment(f, text= "eNodeBs")
     hp.writeMultiScenarios(f, object_name= 'eNB', num= num_enbs, scenario= scen.scenario, for5g= True)
@@ -908,7 +910,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
     hp.writeNumUEs(f, num_ues)
     #hp.writeConnectOptions(f, list_connections= connections, parallel_var= iter_slice_name)
     hp.writeComment(f, text= "Scheduler")
-    hp.writeSchedulingOptions(f, sched= ['MAXCI'])
+    hp.writeSchedulingOptions(f, sched= [SCHED], alpha= 0 if SCHED == 'PF' else None)
     hp.writeSeparation(f, "Scenario")
     #hp.writeComment(f, text= "UEs")
     hp.writeScenarioPerso(f, num_and_scen=[(num_ues, scen.scenario)], for5g= True)

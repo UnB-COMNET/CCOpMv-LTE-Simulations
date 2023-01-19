@@ -8,10 +8,10 @@ from scipy.stats import poisson
 from random import choice, randint, seed, random
 
 MODES_NEW_NAMES = {
-    'varying': 'VID',
-    'single': 'TID',
-    'fixed': 'AID',
-    'ga': 'AGD'
+    'varying': 'VID',# Varying ILP Deployment
+    'single': 'TID',# Traditional ILP Deployment
+    'fixed': 'AID',# Additive ILP Deployment
+    'ga': 'PGD'# Predicative GA Deployment
 }
 
 # TODO: Use OmNET absolute path.
@@ -254,16 +254,176 @@ def print_map_mn(scen: geo.MapChess, map_name: str, values: List[List[Union[int,
     for i in range(num_sector):
         print(values[i*num_sector:num_sector*(i+1)])   
 
-def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], minimization: bool= False):
+def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn, min_sinr_w, max_users_per_antenna_m, ignore_unconnected: bool = False, verbose: bool = False):
+    connect_dict = {}
+    antennas_regions_list = [geo.Region(region,0,max_users_per_antenna_m[region],[]) for region in antennas_regions]
+    isSaturated = True
+    users_regions_list = [None]
+    if verbose: print("MinSINR: ", min_sinr_w)
+    while len(users_regions_list):
+        if isSaturated:
+            map_of_service = get_map_of_service([region.index for region in antennas_regions_list], snr_map_mn, min_sinr_w, minimization=False, threshold=True, full=True)
+            users_regions_list = [geo.Region(region,users_m[region],None,map_of_service[region]) for region in users_regions]
+            users_regions_list.sort(key=lambda x: x.num_serving_antennas, reverse=False)
+    
+        isSaturated = False
+        for usr_region in users_regions_list:
+            #if ignore_unconnected: print("usr: ", usr_region)            
+            if usr_region.serving_antennas == []:
+                if verbose: print("Algum usuario nao atendido por nenhuma antena")
+                if not ignore_unconnected:
+                    return None
+                else:
+                    #print(f"Usuario em {usr_region.index} nao pode ser atendido por nenhuma antena.")
+                    users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                    continue
+            
+            #print(f"\n{usr_region.num_users} usuarios no setor {usr_region.index} atendido por: ", usr_region.serving_antennas)
+            
+            if str(usr_region.index) in usr_region.serving_antennas:
+                #print("Users must be served by antenna in same sector")
+                ant_region = list(filter(lambda x: x.index == usr_region.index, antennas_regions_list))[0]
+                ant_region.num_users += usr_region.num_users
+                
+                if ant_region.num_users > ant_region.max_users:
+                    # NOTE: Mesmo que esteja sendo usada para avaliar as conexoes em slices futuros (ignore_unconnected),
+                    # se cair no caso de que o numero de  usuarios da regiao em que ha uma antena for maior que max_users
+                    # entao nao e uma solucao valida, pois fixar uma antena nesse local impossibilitaria de encontrar
+                    # alguma solucao valida por causa da restricao de que uma antena serve aos usuarios do proprio setor 
+                    #if ignore_unconnected : print("Limite de usuário excedido")
+                    return None
+
+                #print("Connectando with...")
+                #print(ant_region)
+                connect_dict[usr_region.index] = usr_region.index
+                users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                users_regions = users_regions[~np.isin(users_regions, usr_region.index)]
+
+                #print("Conexões_1: ", connect_dict)
+
+                if ant_region.num_users == ant_region.max_users:
+                    #print("Antena saturada")
+                    antennas_regions_list = [x for x in antennas_regions_list if x.index != ant_region.index]
+                    isSaturated = True
+                    break
+
+                continue
+            
+            if usr_region.num_serving_antennas == 1:                
+                ant_region = list(filter(lambda x: x.index == int(usr_region.serving_antennas[0]), antennas_regions_list))[0]
+                
+                if ant_region.num_users + usr_region.num_users > ant_region.max_users:
+                    if verbose: print(f"Limite de usuário excedido (*). Não foi possivel conectar o usuario em {usr_region.index}")
+                    if not ignore_unconnected:
+                        return None
+                    else:
+                        users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                        continue
+
+                else:
+                    #if ignore_unconnected:
+                    #    print("\nlista de antenas antes")
+                    #    for k in range(len(antennas_regions_list)):
+                    #        print("Ant: ", antennas_regions_list[k])
+                    ant_region.num_users += usr_region.num_users
+                    #if ignore_unconnected:
+                    #    print("\nlista de antenas depois")
+                    #    for k in range(len(antennas_regions_list)):
+                    #        print("Ant': ", antennas_regions_list[k])
+                    #    print('\n')
+                    connect_dict[usr_region.index] = ant_region.index
+                    users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                    users_regions = users_regions[~np.isin(users_regions, usr_region.index)]
+
+                    #print("Conexões_2: ", connect_dict)
+                    if ant_region.num_users == ant_region.max_users:
+                        #print("Antena saturada!!!")
+                        antennas_regions_list = [x for x in antennas_regions_list if x.index != ant_region.index]
+                        isSaturated = True
+                        break
+                
+            else:
+                tmp = [x for x in antennas_regions_list if str(x.index) in usr_region.serving_antennas]
+                tmp.sort(key=lambda x: x.num_users, reverse=True)
+                #if ignore_unconnected:
+                #    for k in range(len(tmp)):
+                #        print("Ant:", tmp[k])
+        
+                while len(tmp):                    
+                    if tmp[0].num_users + usr_region.num_users <= tmp[0].max_users:
+                        #if ignore_unconnected: print("Buscando conectar com uma antena que ja possui ", tmp[0].num_users, " usuarios.")
+                        tmp = [x for x in tmp if x.num_users == tmp[0].num_users]
+
+                        snr = -np.infty
+                        for k in tmp:
+                            if snr_map_mn[k.index][usr_region.index] > snr:
+                                ant_index = k.index
+                                snr = snr_map_mn[k.index][usr_region.index]
+                        #if ignore_unconnected: print("Conectando com ", k.index)
+                        for ant_region in antennas_regions_list:
+                            if ant_region.index == ant_index:#int(usr_region.serving_antennas[0]):
+                                break
+                        #if ignore_unconnected:
+                        #    print("\nlista de antenas antes")
+                        #    for k in range(len(antennas_regions_list)):
+                        #        print("Ant: ", antennas_regions_list[k])
+                        ant_region.num_users += usr_region.num_users
+                        #if ignore_unconnected:
+                        #    print("\nlista de antenas depois")
+                        #    for k in range(len(antennas_regions_list)):
+                        #        print("Ant': ", antennas_regions_list[k])
+                        #    print('\n')
+                        
+                        connect_dict[usr_region.index] = ant_region.index
+                        users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                        users_regions = users_regions[~np.isin(users_regions, usr_region.index)]
+
+                        #print("Conexões_3: ", connect_dict)
+                        if ant_region.num_users == ant_region.max_users:
+                            antennas_regions_list = [x for x in antennas_regions_list if x.index != ant_region.index]
+                            isSaturated = True
+                        break
+                    else:
+                        # Descarta a antena para tentar com a proxima possibilidade
+                        tmp.pop(0)
+                
+                if isSaturated:
+                    break
+
+                if len(tmp) == 0:
+                    if not ignore_unconnected:
+                        if verbose: print("Nao foi possivel conectar com nenhuma antena dentre as possiveis")
+                        return None      
+                    else:
+                        #print(f"Limite de usuário excedido. Não foi possivel conectar os {usr_region.num_users} usuarios em {usr_region.index}")
+                        #print("Lista de antenas.")
+                        for k in range(len(antennas_regions_list)):
+                            print(antennas_regions_list[k])
+                        users_regions_list = [x for x in users_regions_list if x.index != usr_region.index]
+                        continue         
+            
+    #print("Saindo do loop")
+    return connect_dict
+    
+        
+
+def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], metric_threshold: int = None, minimization: bool= False, threshold: bool = False, full: bool = False):
     """Get a map with the antennas that would serve each region.
 
     Args:
         antennas_regions: List with the antennas regions in the map
         metric_map_mn: Matrix m x n representing a list of the metric map for each antenna position. m must be equal to n.
+        metric_threshold: Indicates a threshold for analysing regions of a map based on a metric.
         minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
+        threshold: Indicates if map of service has only region with metric higher than a metric threshold. 
+                   Argument "minimization" must be False.
+        full: Indicates if map of service includes a list of antennas that can serve each region, not just the
+              antenna that offers the best or worst metric for each region.
+              
 
     Returns:
-        List with the antennas region that serves each index/region.
+        if old is True: List with the antennas regions that serves each index/region.
+        else: List with dicts with antennas region ("antenna") and the metric value ("metric") that serves each index/region.
     """
     metrics_of_service = {}
 
@@ -285,19 +445,39 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int
         metrics_of_service[str(m)][~comp_array] = np.inf if minimization else -np.inf #Inverts comp_array because we want the values of m that lost to n
         metrics_of_service[str(n)][comp_array] = np.inf if minimization else -np.inf #Changing the values of n that lose to those of m
     
-    map_of_service = [ -1 for _ in range(len(metric_map_mn[-1]))]
-
-    for key in metrics_of_service:
-        if minimization:
-            served_sectors = np.ravel(np.argwhere(metrics_of_service[key] < np.inf))
-        else:
-            served_sectors = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
-        for i in served_sectors:
+    if not full:
+        map_of_service = [ -1 for _ in range(len(metric_map_mn[-1]))]
+    
+        for key in metrics_of_service:
+            if minimization:
+                served_sectors = np.ravel(np.argwhere(metrics_of_service[key] < np.inf))
+            else:
+                served_sectors = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
+            for i in served_sectors:
                 map_of_service[i] = key
 
-    if -1 in map_of_service:
-        raise(ValueError('One region is not served in Map Of Service with value -1.'))
+        if -1 in map_of_service:
+            raise(ValueError('One region is not served in Map Of Service with value -1.'))
 
+    else:
+        map_of_service = [[] for _ in range(len(metric_map_mn[-1]))]
+
+        for key in metrics_of_service:
+            served_sectors = []
+            for region in range(len(metric_map_mn[int(key)])):
+                if metric_map_mn[int(key)][region] >= metric_threshold:
+                    served_sectors.append(region)
+        
+            for i in served_sectors:
+                map_of_service[i].append(key)
+
+    if threshold and not full:
+        for m in range(len(map_of_service)):
+            if not minimization:    # higher value is better
+                if metric_map_mn[int(map_of_service[m])][m] < metric_threshold:
+                    map_of_service[m] = None
+            #TODO: To implement if minimization is True
+    
     return map_of_service
 
 def gen_first_antenna_region(chosen_seed: int, n_sectors: int):

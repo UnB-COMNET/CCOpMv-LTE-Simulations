@@ -244,13 +244,15 @@ def writeSeeds(f, seed_set: ty.Union[str, int] = "${repetition}", num_rngs: int 
     for i in range(1, num_rngs):
       f.write("seed-{}-mt = {}\n".format(i, seeds[i-1]))
 
-def writeSchedulingOptions(f, sched: ty.List[str]):
+def writeSchedulingOptions(f, sched: ty.List[str], alpha: int = None):
   """Writes the network name in a .ini file."""
   f.write('**.schedulingDisciplineUl = ${sched=')
   temp = ''
   for s in sched:
     temp += ' "' + s + '",'
   f.write(temp[:-1] + '}\n**.schedulingDisciplineDl = ${sched}\n')
+  if alpha is not None:
+    f.write(f'**.pfAlpha = {alpha}\n')
 
 def writeNumApps(f, numUEs: int, directions: int, num_multi: int = 1, multi: bool = False):
   """Writes the number of apps that the UEs and the server must have in a .ini file."""
