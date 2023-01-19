@@ -1,3 +1,4 @@
 {
-    "python.defaultInterpreterPath": "C:\\Users\\Pichau\\AppData\\Local\\Programs\\Python\\Python38\\python.exe"
+    "python.defaultInterpreterPath": "C:\\Users\\Pichau\\AppData\\Local\\Programs\\Python\\Python38\\python.exe",
+    "python.pythonPath": "/usr/bin/python3.7"
 }
