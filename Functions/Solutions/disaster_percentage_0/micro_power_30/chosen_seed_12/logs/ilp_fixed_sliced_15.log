@@ -1,6 +1,6 @@
 -------------Calculating Solution (this may take a while)
 +++++++++++++++++++Min Sinr: 15 dB (fixed)
-+++++++++++++++++++With backhaul constraint. Start: 2023-01-07 11:44:27
++++++++++++++++++++With backhaul constraint. Start: 2023-01-19 18:44:50
 
 Parameters:
 - chosen seed 12
@@ -1207,4 +1207,4 @@ Distances:
 64 : 83 = 894.4271909999159
 64 : 88 = 1788.8543819998317
 83 : 88 = 2000.0
---- Done after 0.5523086545202467 hours. ---
+--- Done after 0.5455410503678851 hours. ---
