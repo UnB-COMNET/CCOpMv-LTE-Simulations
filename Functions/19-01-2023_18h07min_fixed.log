@@ -1059,3 +1059,34 @@ Exporting .CSV files (Mode: fixed, Seed: 10).
 
 Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_10/ilp_fixed_sliced_video.csv.
 Exported 112991 scalars, 19401 vectors, 13176 histograms
+Generating configuration files - Min Snr: 5 - Fixed (Seed: 6)
+Executing Simulations - Min Snr: 5 - Fixed (Seed: 6)
+runs  -r 0, ilp_fixed_sliced_5_video_slice0
+Processing time (ilp_fixed_sliced_5_video_slice0):  29.587194204330444
+runs  -r 0, ilp_fixed_sliced_5_video_slice1
+Processing time (ilp_fixed_sliced_5_video_slice1):  51.81975841522217
+runs  -r 0, ilp_fixed_sliced_5_video_slice2
+Processing time (ilp_fixed_sliced_5_video_slice2):  62.511106967926025
+runs  -r 0, ilp_fixed_sliced_5_video_slice3
+Processing time (ilp_fixed_sliced_5_video_slice3):  83.03714203834534
+runs  -r 0, ilp_fixed_sliced_5_video_slice4
+Processing time (ilp_fixed_sliced_5_video_slice4):  98.01388597488403
+runs  -r 0, ilp_fixed_sliced_5_video_slice5
+Processing time (ilp_fixed_sliced_5_video_slice5):  113.67048454284668
+runs  -r 0, ilp_fixed_sliced_5_video_slice6
+Processing time (ilp_fixed_sliced_5_video_slice6):  105.8693323135376
+runs  -r 0, ilp_fixed_sliced_5_video_slice7
+Processing time (ilp_fixed_sliced_5_video_slice7):  93.08389663696289
+runs  -r 0, ilp_fixed_sliced_5_video_slice8
+Processing time (ilp_fixed_sliced_5_video_slice8):  77.74090337753296
+runs  -r 0, ilp_fixed_sliced_5_video_slice9
+Processing time (ilp_fixed_sliced_5_video_slice9):  57.223166704177856
+runs  -r 0, ilp_fixed_sliced_5_video_slice10
+Processing time (ilp_fixed_sliced_5_video_slice10):  49.60593819618225
+runs  -r 0, ilp_fixed_sliced_5_video_slice11
+Processing time (ilp_fixed_sliced_5_video_slice11):  23.457459449768066
+
+Exporting .CSV files (Mode: fixed, Seed: 6).
+
+Making ../Network_CCOpMv/_5G/results/disaster_percentage_0/micro_power_30/chosen_seed_6/ilp_fixed_sliced_video.csv.
+Exported 115469 scalars, 19661 vectors, 13464 histograms
