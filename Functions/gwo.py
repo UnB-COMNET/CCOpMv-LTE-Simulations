@@ -164,13 +164,12 @@ def run(chosen_seeds: List[int], size_x: int, size_y: int, size_sector: int,n_ma
         max_users_antenna_m = [60 for i in range(scen.n_sectors)]
 
         first_antenna_region = genf.gen_first_antenna_region(chosen_seed=chosen_seed, n_sectors=scen.n_sectors)
-        
-        result = gwo_solver(num_regions=scen.n_sectors, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness_gwo,
+        result = pgwo_solver(num_regions=scen.n_sectors, users_t_m=users_t_m, distance_mn=distance_mn, snr_map_mn=snr_map_mn, fitness_func=fitness_gwo,
                            first_antenna_region=first_antenna_region, num_slices=num_slices, min_dis=min_dis, min_sinr_w= min_sinr_w, max_users_per_antenna_m=max_users_antenna_m,
                            result_dir= full_result_dir)
         results.append(result)
 
-def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]],
+def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]],
               antenasmap_m: List[int], first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int], result_dir: str):
     results = []
     for k in range(1):
@@ -194,15 +193,14 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
         _min_dis = min_dis
         _first_antenna_region = first_antenna_region        
         
-        # mapa de usuários totais: TODO transformar em função
-        _users_m = scenario.n_sectors*[0]
-        for m in range(scenario.n_sectors):
-            for t in range(scenario.num_slices):
-                _users_m[m] += users_t_m[t][m]
-            if _users_m[m] > 1:
-                _users_m[m] = 1
+        # mapa de usuários totais: TODO transformar em função get_regions_visited
+        _users_m = num_regions*[0]
+        for m in range(num_regions):
+            for t in range(num_slices):
+                if users_t_m[t][m] > 0:
+                    _users_m[m] = 1
         
-        fitness_func = fitness_gwo_cov
+        fitness_func = fitness_pgwo1
         #fitness_func = fitness_gwo
         antennas_map = [0 if m != first_antenna_region else 1 for m in range(num_regions)]
         max_dimension = 10
@@ -220,7 +218,7 @@ def gwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[in
             
             dimension = len(antennas_regions)
 
-            _wolf = wolf(fitness_gwo_cov, antennas_regions, users_regions, dimension, scenario, None, None) # The wolf represents the current scenario
+            _wolf = wolf(fitness_pgwo1, antennas_regions, users_regions, dimension, scenario, None, None) # The wolf represents the current scenario
             #population = [wolf(fitness_func, antennas_regions, users_regions, wolf_dimension, scenario, seed_base + i, i) for i in range(pack_size)]
             for dim in range(dimension):
                 coord = geo.region2Coord(antennas_regions[dim],scenario.size_sector, scenario.size_x, scenario.size_y)
@@ -460,7 +458,7 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
  
 #-------------------------
 
-def fitness_gwo_cov(position, antennas_regions, users_regions, scenario: geo.MapChess, verbose:bool = False):
+def fitness_pgwo1(position, antennas_regions, users_regions, scenario: geo.MapChess, verbose:bool = False):
     #print("Calculando fitness_3")
     #print("Calculando a fitness pelo método 2")
     installed_antennas = antennas_regions
