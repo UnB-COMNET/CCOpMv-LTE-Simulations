@@ -56,8 +56,10 @@ def verify_modes(modes: List[str]):
             verif_modes.append('single')
         elif mode.lower() == 'ga':
             verif_modes.append('ga')
-        elif mode.lower() == 'gwo':
-            verif_modes.append('gwo')
+        elif mode.lower() == 'pgwo':
+            verif_modes.append('pgwo')
+        elif mode.lower() == 'pgwo2':
+            verif_modes.append('pgwo2')
 
     return np.unique(verif_modes).tolist()
 
