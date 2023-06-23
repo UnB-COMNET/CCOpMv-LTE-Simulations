@@ -9,7 +9,7 @@ import numpy as np
 from errors import check_mode
 import general_functions as genf
 
-SCHED="PF"#MAXCI
+SCHED="MAXCI"
 
 def ilp_move_users(scen: geo.MapChess, filename: str, n_macros: int = 2, n_ues_macro: int = 60, ues_per_slice = list, config_name: str= 'ilp_move_users'):
   """This function generates a .ini file to watch users mobility behaviour.
