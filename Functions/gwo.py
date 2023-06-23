@@ -1,11 +1,8 @@
 from __future__ import nested_scopes
-from ctypes import Union
-from tabnanny import verbose
 import numpy as np
 from typing import Callable, List, Union, Optional
 import geometry as geo
 import coordinates as coord
-from helper_xml import get_map_ues_time
 import general_functions as genf
 from time import time
 import sinr_comput as sc
@@ -146,21 +143,6 @@ class Wolf:
 
         return result
 
-# Global variables
-_users_t_m = []
-_users_m = []
-_antennas_last_result = []
-_distance_mn = []
-_snr_map_mn = []
-_min_sinr_w = 0
-_min_dis = 0
-_first_antenna_region = 0
-_max_users_per_antenna_m = []
-_last_antennas_regions = []
-_map_of_service = []
-_antennasmap_m = []
-_connection_results = []
-
 def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[int]], distance_mn: List[List[float]], snr_map_mn: List[List[float]],
               antennasmap_m: List[int], first_antenna_region: int, num_slices: int, min_dis: int, min_sinr_w: float, max_users_per_antenna_m: List[int],
               result_dir: str, max_dimension: int = 10, pack_size: int = 300, max_iter: int = 200, version: str = STR_PGWO_2):
@@ -190,8 +172,6 @@ def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[i
         Returns:
             List[List[int]]: A list of lists representing the antennas selected for each time slice.
 
-        Raises:
-            TODO: Specify any exceptions raised by the function.
     """
     results = []
     
@@ -242,7 +222,6 @@ def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[i
         
         dimension = len(antennas_regions) #TODO Refactore dimension to 2*num_antennas, i.e., (x,y) pairs
 
-        #TODO Evitar calcular a fitness sem necessidade na hora de criar o lobo
         _wolf = Wolf(antennas_regions, users_regions, dimension, scenario, None, None, None) # The wolf represents the current scenario
         for dim in range(dimension):
             coord = geo.region2Coord(antennas_regions[dim],scenario.size_sector, scenario.size_x, scenario.size_y)
@@ -280,7 +259,7 @@ def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[i
     print("Results: ", results)
     
     # Writing the log and result files
-    with open(genf.gen_solver_result_filename(result_dir, 'pgwo', math.ceil(sc.linear_to_db(min_sinr_w))), 'w') as f:
+    with open(genf.gen_solver_result_filename(result_dir, version, math.ceil(sc.linear_to_db(min_sinr_w))), 'w') as f:
         num_vehicles = 0
         for i in range(num_slices):
             num_vehicles += len(results[i])
@@ -324,9 +303,24 @@ def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[i
 
     return results
  
-def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: List[int], pack_size: int, wolf_dimension: int, max_iter: int, fitness_func: Callable, seed_base: int):
+def run_gwo(scenario: geo.MapChess, antennas_regions, users_regions, pack_size: int, wolf_dimension: int,
+            max_iter: int, fitness_func: Callable, seed_base: int):
     """
+        Run the Grey Wolf Optimizer (GWO) algorithm for antenna deployment.
 
+        Args:
+            scenario (geo.MapChess): model that represents the scenario (size, number of sectors, users positions, etc.)
+            antennas_regions (numpy.ndarray): Array of int to identify the regions where there are already antennas. 
+            users_regions (numpy.ndarray): Array of int to identify the regions where there are users.            
+            pack_size (int): The size of the population pack (number of wolves).
+            wolf_dimension (int): The number of dimensions for each wolf (number of antennas to be deployed).
+            max_iter (int): The maximum number of iterations for the GWO algorithm.
+            fitness_func (Callable): A callable representing the fitness function to evaluate the wolf's solutions.
+            seed_base (int): The seed base for generating random seeds for each wolf. Must be multiple of the number of wolves.
+            Thus, each population will have a different set of seeds, avoiding repeated results.
+        
+        Returns:
+            Wolf: The best solution (alpha wolf).
     """
     print(f"\nRun GWO to deployment +{wolf_dimension} antenna on the map")
     print("\tPack size: ", pack_size)
@@ -459,23 +453,27 @@ def run_gwo(scenario: geo.MapChess, antennas_regions: List[int], users_regions: 
 
     return alpha_wolf
            
-def problem_constraint_check(wolf_position, antennas_regions, users_regions, scenario: geo.MapChess, verbose:bool = False):
+def check_constraints(wolf_position: List[geo.Coordinate], antennas_regions, users_regions, scenario: geo.MapChess):
     """
         Checks the constraints for a given wolf according to the constraint definitions for the problem.
 
         Args:
-            wolf_position (List[coord.Coordinate]): The position of the wolf.
-            antennas_regions (List[int]): List of regions with antennas initially already installed.
-            users_regions (List[int]): List of regions with users.
-            scenario (geo.MapChess): The map scenario.
+            wolf_position (List[geo.Coordinate]): Wolf position represented by a list of coordinates. Each coordinate indicates of an
+            antenna that the solution proposes to deply.
+            antennas_regions (numpy.ndarray): Array of int to identify the regions where there are already antennas. 
+            users_regions (numpy.ndarray): Array of int to identify the regions where there are users.
+            scenario (geo.MapChess): model that represents the scenario (size, number of sectors, users positions, etc.)
 
         Returns:
-            TODO: corrigir bool: True if the wolf position satisfies the constraints, False otherwise.
+            bool: If the wolf does not satisfy the constraints, returns False
+            tuple[dict, numpy.ndarray, List[List[str]]]: If the wolf satisfies the constraints, returns a dict of connections between users and antennas, 
+            the set of antennas given by the union of wolf_position and antennas_regions and the full coverage map.
+            The coverage map shows the uncovered regions and the regions covered by one or more antennas.
     """
-    global _map_of_service      # Por que tive que usar a palavra chave global aqui, mas não para o _antennasmap_m?
+    global _map_of_service          # NOTE: Por que usar a palavra chave global aqui, mas não para o _antennasmap_m?
     installed_antennas = antennas_regions
     wolf_antennas = [geo.coord2Region(wolf_position[i], scenario.size_sector, scenario.size_x, scenario.size_y) for i in range(len(wolf_position))]
-    
+    verbose = False
     if verbose: print("wolf_antennas", wolf_antennas, len(wolf_antennas))
     if verbose: print("installed_antennas", installed_antennas, len(installed_antennas))
     if verbose: print("antennas_regions: ", antennas_regions)
@@ -484,18 +482,18 @@ def problem_constraint_check(wolf_position, antennas_regions, users_regions, sce
     # There must not be more than one antenna in a sector
     # Checks if there is an item of installed_antennas already existing in wolf_antennas
     if any(elem in wolf_antennas for elem in installed_antennas):
-        if verbose: print("\tlobo no mesmo setor que antena ja instalada")
+        if verbose: print("\tThe wolf deploys an antenna where one already exists.")
         return False
     # Checks if there is duplicate item in wolf_antennas
     elif any(wolf_antennas.count(elem) > 1 for elem in wolf_antennas):
-        if verbose: print("\tLobo com regiões duplicadas. Possivelmente ocorreu ao gerar aleatoriamente")
+        if verbose: print("\tThe wolf deploys more than one antenna in the same region.")
         return False
 
     antennas_regions = np.concatenate((wolf_antennas,installed_antennas))
     # There is an antenna in a region forbidden
     for region in antennas_regions:
         if _antennasmap_m[region] == 0:
-            if verbose: print("Antenna in a region forbidden")
+            if verbose: print("The wolf deploys an antenna in a region forbidden")
             return False
     
     # Every antenna, except the first antenna, must be connected to a backhaul with at least one neighbor (distance < MIN_DIST)
@@ -509,25 +507,28 @@ def problem_constraint_check(wolf_position, antennas_regions, users_regions, sce
                         break
         
             if not has_antenna_nearby:
-                if verbose: print("Sem backhaul local")
+                if verbose: print("There is not a local backhaul")
                 return False
     
     if verbose: print("Antennas_regions: ", antennas_regions)
     
-    # An antenna must serve the sector where it is installed
+    # Connection constraints:
+    # The SNR requirement must be met
     # The antennas have a maximum number of users
-    # All sector must be served    
+    # A user can only connect to one antenna at a time
+    # An antenna must serve the sector where it is installed
+    # All sector where there are users must be served    
     connections, _map_of_service = genf.get_dict_of_connections(antennas_regions, users_regions,_users_t_m[0],_snr_map_mn, _min_sinr_w,
                                                                _max_users_per_antenna_m, return_map_of_service = True)
     
     if connections == None:
-        if verbose: print("Não foi possivel estabelecer conexao com todos os usuarios.")
+        if verbose: print("Unable to connect to all users")
         return False
-    if verbose: print("Todos usuários conectados: ", connections)
-    
+    if verbose: print("All connected users: ", connections)
+
     return connections, antennas_regions, _map_of_service
 
-def fitness_pgwo1(wolf_position: List[geo.Coordinate], antennas_regions, users_regions, scenario: geo.MapChess, verbose:bool = False) -> float:
+def fitness_pgwo1(wolf_position: List[geo.Coordinate], antennas_regions, users_regions, scenario: geo.MapChess) -> float:
     """
         PGWO Fitness Version 1
         This fitness prioritizes the solutions that increase the coverage area absolutely, however, it depends on future entries.
@@ -538,16 +539,17 @@ def fitness_pgwo1(wolf_position: List[geo.Coordinate], antennas_regions, users_r
         Fitness value is a number from 0 to 1, i.e., 0% and 100%
 
         Args:
-            wolf_position: 
-            antennas_regions: 
-            users_regions: 
-            scenario: 
+            wolf_position (List[geo.Coordinate]): Wolf position represented by a list of coordinates. Each coordinate indicates of an
+            antenna that the solution proposes to deply.
+            antennas_regions (numpy.ndarray): Array of int to identify the regions where there are already antennas. 
+            users_regions (numpy.ndarray): Array of int to identify the regions where there are users.
+            scenario (geo.MapChess): model that represents the scenario (size, number of sectors, users positions, etc.)
 
         Return:
             float: The value of the fitness function for the evaluated solution.
 
     """
-    if (problem_constraint_check(wolf_position, antennas_regions, users_regions, scenario, verbose)):
+    if (check_constraints(wolf_position, antennas_regions, users_regions, scenario)):
         # Coverage
         # Fitness definition: sum(region covered by the current solution) / sum(regions with users during some slice of time)
         # Fitness is a number from 0 and 1, i.e., 0% and 100%
@@ -562,7 +564,7 @@ def fitness_pgwo1(wolf_position: List[geo.Coordinate], antennas_regions, users_r
     
     return score
 
-def fitness_pgwo2(wolf_position: List[geo.Coordinate], antennas_regions, users_regions, scenario: geo.MapChess, verbose:bool = False) -> float:
+def fitness_pgwo2(wolf_position: List[geo.Coordinate], antennas_regions, users_regions, scenario: geo.MapChess) -> float:
     """
         PGWO Fitness Version 2
         This fitness  prioritizes the solutions that meet the constraints with the lowest Weighted Root Mean Square Error (WRMSE) values.
@@ -573,30 +575,21 @@ def fitness_pgwo2(wolf_position: List[geo.Coordinate], antennas_regions, users_r
         NOTE: 10000 is a scale factor to make reading the fitness value easier during debugging.
 
         Args:
-            wolf_position: 
-            antennas_regions: 
-            users_regions: 
-            scenario: 
+            wolf_position (List[geo.Coordinate]): Wolf position represented by a list of coordinates. Each coordinate indicates of an
+            antenna that the solution proposes to deply.
+            antennas_regions (numpy.ndarray): Array of int to identify the regions where there are already antennas. 
+            users_regions (numpy.ndarray): Array of int to identify the regions where there are users.
+            scenario (geo.MapChess): model that represents the scenario (size, number of sectors, users positions, etc.)
 
         Return:
             float: The value of the fitness function for the evaluated solution.
 
     """
-    print("\nCalculando fitness")
-    result = problem_constraint_check(wolf_position, antennas_regions, users_regions, scenario, verbose)
+    result = check_constraints(wolf_position, antennas_regions, users_regions, scenario)
     if(result):
-        # OK 1 - Calcular o erro médio quadrado ponderado considerando o SNR visto em cada região atendida com o limiar de SNR da mesma regiao
-        # OK 2 - Aplicar a raiz ao erro
-        # OK 3 - Aplicar o inverso: ^⁻1. Isso faz com que o menor erro encontrado resulte num maior valor de fitness
-        # OK 4 - Ponderar pela cobertura: calcular o somatório de regioes atendidas pelo lobo
-        # OK 5 - medir o tamanho do mapa: 100 setores
-        # OK 6 - multiplicar por 10000
-        verbose = True
         connections, antennas_regions, _map_of_service = result
         sum_eta_m = len([e for e in _map_of_service if e != []])       # Number of sectors served by the evaluated solution
         M = scenario.n_sectors                                         # Number of sectors on the map
-        
-        if verbose: print("Usuarios", users_regions)
               
         WMSE = 0                                                       # Weighted Mean Square Error (WMSE); it is not WRMSE
         sum_u_tm = 0                                                   # Sum of users
@@ -607,24 +600,8 @@ def fitness_pgwo2(wolf_position: List[geo.Coordinate], antennas_regions, users_r
             WMSE += u_tm*(snr_mn - min_snr)**2
             sum_u_tm += u_tm
 
-            if verbose: print("Quantidade de usuarios: ", u_tm)
-            if verbose: print(f"termo de WMSE: {u_tm}*({snr_mn}-{min_snr})² = {WMSE}")
-
         WMSE /= sum_u_tm
-        
-        if verbose: print("WMSE: ", WMSE)
-        if verbose: print("Quantidade de usuarios totais ", sum_u_tm)
-        if verbose: print("Conexoes: ", connections)
-        if verbose: genf.print_map_mn(scenario, "mapa de usuarios", _users_t_m[0])
-        if verbose: genf.print_map_mn(scenario, "mapa de cobertura", _map_of_service)
-        
         score = 10000*(1/(math.sqrt(WMSE)))*sum_eta_m/M
-        if verbose: print("sum_eta_m", sum_eta_m)
-        if verbose: print("M", M)
-        #print("Antennas", antennas_regions)        
-        #print(10000*(1/(math.sqrt(WMSE))), " * ", sum_eta_m/M)
     else:
-        #print("0")
         score = 0
-    #print("SCORE fitness ", score)
     return score
