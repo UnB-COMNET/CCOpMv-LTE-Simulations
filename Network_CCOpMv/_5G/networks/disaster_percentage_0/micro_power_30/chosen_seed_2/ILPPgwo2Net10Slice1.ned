@@ -76,9 +76,6 @@ network ILPPgwo2Net10Slice1
 		eNB5: eNodeB {
 			@display("is=l");
 		}
-		eNB6: eNodeB {
-			@display("is=l");
-		}
 		ue[numUe]: Ue {
 			@display("is=s");
 		}
@@ -96,7 +93,6 @@ network ILPPgwo2Net10Slice1
 		eNB3.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB4.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB5.ppp <--> Eth10G <--> pgw.pppg++;
-		eNB6.ppp <--> Eth10G <--> pgw.pppg++;
 
 		//############### X2 Connections ###############
 		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
@@ -104,20 +100,14 @@ network ILPPgwo2Net10Slice1
 		eNB0.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB5.x2++;
-		eNB0.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB2.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB5.x2++;
-		eNB1.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB5.x2++;
-		eNB2.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB5.x2++;
-		eNB3.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB5.x2++;
-		eNB4.x2++ <--> Eth10G <--> eNB6.x2++;
-		eNB5.x2++ <--> Eth10G <--> eNB6.x2++;
 }

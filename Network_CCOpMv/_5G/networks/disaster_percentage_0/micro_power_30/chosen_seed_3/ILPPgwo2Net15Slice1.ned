@@ -85,9 +85,6 @@ network ILPPgwo2Net15Slice1
 		eNB8: eNodeB {
 			@display("is=l");
 		}
-		eNB9: eNodeB {
-			@display("is=l");
-		}
 		ue[numUe]: Ue {
 			@display("is=s");
 		}
@@ -108,7 +105,6 @@ network ILPPgwo2Net15Slice1
 		eNB6.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB7.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB8.ppp <--> Eth10G <--> pgw.pppg++;
-		eNB9.ppp <--> Eth10G <--> pgw.pppg++;
 
 		//############### X2 Connections ###############
 		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
@@ -119,7 +115,6 @@ network ILPPgwo2Net15Slice1
 		eNB0.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB0.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB2.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB4.x2++;
@@ -127,33 +122,25 @@ network ILPPgwo2Net15Slice1
 		eNB1.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB1.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB2.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB3.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB4.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB5.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB6.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB7.x2++ <--> Eth10G <--> eNB8.x2++;
-		eNB7.x2++ <--> Eth10G <--> eNB9.x2++;
-		eNB8.x2++ <--> Eth10G <--> eNB9.x2++;
 }
