@@ -310,7 +310,7 @@ def processInitialData(initial_data):
   preData = preScalar.assign(qname = preScalar.module + '.' + preScalar.name)
   newData = preData.pivot(index='run', columns='qname', values='value')
 
-  extra_info = preItervar.assign(min_snr_used = newData.index.str.findall(r'\d+').str[0], repetition = preRunattr['repetition'], inifile = preRunattr['inifile'])
+  extra_info = preItervar.assign(min_snr_used = newData.index.str.split('_').str[3].str.findall(r'\d+').str[0], repetition = preRunattr['repetition'], inifile = preRunattr['inifile'])
 
   return preItervar, preRunattr, preVector, preScalar, extra_info, num_enbs
 
@@ -1582,7 +1582,7 @@ def hist_ues_slice():
 
 if __name__ == "__main__":
   chosen_seeds = [2,3,4,5,6,7,10,11,12,13]
-  modes = ['single', 'fixed']#['single', 'fixed', 'ga'] 
+  modes = ['pgwo2', 'fixed']#['single', 'fixed', 'ga'] 
   #num_ues= 60
   extra_dir = ['disaster_percentage','micro_power']
   disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
