@@ -22,12 +22,12 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [2]#[2,3,4,5,6,7,10,11,12,13] #range(20)
+    chosen_seeds = [2,3,4,5,6,7,10,11,12,13] #range(20)
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [15]#[5, 10, 15]
+    min_sinrs = [5,10,15]
     modes = ['pgwo2'] # fixed or single or ga or gwo
     micro_power = 30 #dBm
     result_dir = "Solutions"
@@ -63,7 +63,7 @@ def main():
 
     # For the user
     allrun_solver = False # Older version where runs all solvers first
-    only_solver = True # Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
+    only_solver = False # Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
 
     if only_solver == True and allrun_solver == True:
         print("The option only_solver connot be True if allrun_solver is also True.")
@@ -340,7 +340,6 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None,
                  only_solver: bool = False, interference: bool = False):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
-    
     if not allrun_solver:
         print(f'Started process process_func {current_process().name} {current_process().pid}. (Seed: {chosen_seed}, Mode: {mode}, Min_sinr: {min_sinr})')
         semaphore_cpucount.acquire()
