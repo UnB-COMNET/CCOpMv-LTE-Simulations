@@ -239,7 +239,6 @@ def get_ues_connections_per_slice(result, ues_coords, ues_list: List[int], anten
     return connections
 
 def plot_scenario(scen: geo.MapChess, title: str):
-
     antennas_coords = scen.getAntennasPositionList()
     ues_coords = scen.getUEsPositionList()
     plt.plot([c.x for c in antennas_coords], [c.y for c in antennas_coords], linestyle='', marker='*', color='red', markersize= 5, label= 'antenna')
@@ -260,6 +259,24 @@ def print_map_mn(scen: geo.MapChess, map_name: str, values: List[List[Union[int,
 
 def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn, min_sinr_w, max_users_per_antenna_m,
                             ignore_unconnected: bool = False, return_map_of_service: bool = False):
+    """
+        Retorna um dicionário de conexões entre regiões de antenas e regiões de usuários.
+
+        Args:
+            antennas_regions (list): Lista das regiões de antenas.
+            users_regions (list): Lista das regiões de usuários.
+            users_m (dict): Dicionário que mapeia as regiões de usuários para o número de usuários em cada região.
+            snr_map_mn (dict): Dicionário que mapeia as regiões de antenas para as regiões de usuários para valores de SNR.
+            min_sinr_w (float): Valor mínimo de SINR (Relação Sinal-Ruído) para uma conexão válida.
+            max_users_per_antenna_m (dict): Dicionário que mapeia as regiões de antenas para o número máximo de usuários que cada antena pode atender.
+            ignore_unconnected (bool, optional): Indica se as regiões de usuários não conectadas devem ser ignoradas. O padrão é False.
+            return_map_of_service (bool, optional): Indica se o mapa de serviço deve ser retornado juntamente com o dicionário de conexões. O padrão é False.
+
+        Returns:
+            dict: Dicionário de conexões entre regiões de antenas e regiões de usuários.
+            dict or None: Mapa de serviço que indica quais regiões de usuários são atendidas por quais regiões de antenas (retornado apenas se return_map_of_service for True).
+
+    """
     connect_dict = {}
     antennas_regions_list = [geo.Region(region,0,max_users_per_antenna_m[region],[]) for region in antennas_regions]
     users_regions_list = [None]
@@ -429,45 +446,55 @@ def get_dict_of_connections(antennas_regions, users_regions, users_m, snr_map_mn
         return connect_dict
     
         
-#TODO Refactor the input parameters
-def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int]], metric_threshold: int = None, minimization: bool= False, threshold: bool = False, full: bool = False, old: bool = True, verbose: bool = False):
+def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[float]], metric_threshold: float = None,
+                       minimization: bool= False, threshold: bool = False, full: bool = False, old: bool = True) -> Union[List[List[str]], List[dict]]:
     """Get a map with the antennas that would serve each region.
 
     Args:
         antennas_regions: List with the antennas regions in the map
-        metric_map_mn: Matrix m x n representing a list of the metric map for each antenna position. m must be equal to n.
-        metric_threshold: Indicates a threshold for analysing regions of a map based on a metric.
-        minimization: Indicates if a lower (minimization) or a higher (maximization) value is better.
-        threshold: Indicates if map of service has only region with metric higher than a metric threshold. 
-                   Argument "minimization" must be False.
-        full: Indicates if map of service includes a list of antennas that can serve each region, not just the
+        metric_map_mn: Square matrix m x n representing a list of the metric map for each antenna position.
+        metric_threshold (float): Indicates a threshold for analysing regions of a map based on a metric.
+        minimization (bool): Indicates if a lower (minimization) or a higher (maximization) value is better.
+        threshold (bool): Indicates if map of service has only region with metric higher than a metric threshold. The others are
+                          assigned with "None". Argument "minimization" must be False and "full" must be True.
+        full (bool): If True, indicates that map of service includes a list of all antennas that can serve each region, not just the
               antenna that offers the best or worst metric for each region.
-        old: Changes the output of the default
+        old (bool): The function works like the old way: 
               
 
     Returns:
-        if old is True: List with the antennas regions that serves each index/region.
-        else: List with dicts with antennas region ("antenna") and the metric value ("metric") that serves each index/region.
+        List[List[str]]: List with the antennas regions that serves each index/region. With full = True.
+        List[dict]: List with dicts with antennas region ("antenna") and the metric value ("metric") that best serves each index/region. With full = False.
     """
-    metrics_of_service = {}
-    #Every possible pair of antennas to compare
-    antennas_pairs = []
+    metrics_of_service = {}                                                 # A dict where the key is the antenna region and the value is your the metrics map (e.g. snr map)
+    # Example:
+    # metrics_of_service = {'key1': [...,...,...], 'key2': [...,...,...]}
+    
+    # Every possible pair of antennas to compare
+    #TODO: Implementar o caso em que antennas_regions tem apenas uma antena
+    antennas_pairs = []                                                     # List of tuples with all possible pairs of antennas
     for i in range(len(antennas_regions)):
         #Initializes metrics_of_service for each antenna
         metrics_of_service[str(antennas_regions[i])] = np.array(metric_map_mn[antennas_regions[i]])
         for j in range(i+1, len(antennas_regions)):
             antennas_pairs.append((antennas_regions[i], antennas_regions[j]))
-    
-    for m, n in antennas_pairs:
-        #Compare the metrics of service between the pair of antennas
-        comp_array = metrics_of_service[str(m)] > metrics_of_service[str(n)]
-        if minimization:
-            comp_array = ~comp_array #Inverts the comparison to obey that a big value is better
-        #New values of the metric of service to discard already rulled out regions
-        metrics_of_service[str(m)][~comp_array] = np.inf if minimization else -np.inf #Inverts comp_array because we want the values of m that lost to n
-        metrics_of_service[str(n)][comp_array] = np.inf if minimization else -np.inf #Changing the values of n that lose to those of m
+
     ##------------------------------- UNCHANGED ------------
     if not full:
+        # Compare the metrics of service between the pair of antennas
+        for m, n in antennas_pairs:    
+            comp_array = metrics_of_service[str(m)] > metrics_of_service[str(n)]    # List of bool that shows the index where metrics of service is higher in m than in n                                                                                
+            # Example:
+            # comp_array = [True, True, False, True, ...] 
+
+            if minimization:
+                comp_array = ~comp_array                                            # Inverts the comparison to obey that a big value is better
+            
+            # Setting to +/- inf where metrics_of_service in m does not better than in n and vice versa
+            # NOTE: It does not guarantee that the antenna that best serves the region does so with a metric above/below some defined threshold
+            metrics_of_service[str(m)][~comp_array] = np.inf if minimization else -np.inf 
+            metrics_of_service[str(n)][comp_array] = np.inf if minimization else -np.inf
+
         if old:
             # The map of service is initialized as a list of integers where each element
             # indicates the antenna that best serves the respective sector regardless of
@@ -493,12 +520,6 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int
                 raise(ValueError('One region is not served in Map Of Service with value -1.'))
         else:
             if {"antenna": -1, "metric": -1} in map_of_service:
-                print_map_mn(geo.MapChess(4000,4000,400,"URBAN_MACROCELL",25,1.5,20,20,False,0.7,6,363,-103,2,18,0,7,5,46,26,123,10,1000,1),
-                "Mapa de servico que deu erro", map_of_service)
-                print("antennas_regions: ", antennas_regions)
-                print("antennas_pairs", antennas_pairs)
-                print("metrics_of_service", metrics_of_service)
-                print("served_sectors", served_sectors)
                 raise(ValueError('One region is not served in Map Of Service with values -1.'))
         
         # Apply the threshold to map of service
@@ -507,111 +528,30 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[int
                 if not minimization:    # higher value is better
                     if map_of_service[m]["metric"] < metric_threshold:
                         map_of_service[m] = None
-                #TODO: To implement if minimization is True
+                else:
+                    pass
+                    #TODO: To implement if minimization is True
+        print("map_of_service", len(map_of_service), map_of_service)
 
     else:
         # The map of service is a list of list where each element indicates the antennas that serve the respective sector
         map_of_service = [[] for _ in range(len(metric_map_mn[-1]))]
-    
+        # Example:
+        # map_of_service = [[],[],['key1','key2'],['key1'],[],...]
+        
         for key in metrics_of_service:
-            served_sectors = []
+            served_sectors = []                                 # List of sectors served by antenna <key>
             for region in range(len(metric_map_mn[int(key)])):
                 if metric_map_mn[int(key)][region] >= metric_threshold:
                     served_sectors.append(region)
         
             for i in served_sectors:
                 map_of_service[i].append(key)
-    
-    if verbose: print_map_mn(geo.MapChess(4000,4000,400,"URBAN_MACROCELL",25,1.5,20,20,False,0.7,6,363,-103,2,18,0,7,5,46,26,123,10,1000,1),
-                 "Mapa de servico", map_of_service)
 
     return map_of_service
-    """
-    metrics_of_service = {}
-    #TODO REMOVE old=True and Full=False é o modo original
-    #Every possible pair of antennas to compare
-    antennas_pairs = []
-    for i in range(len(antennas_regions)):
-        #Initializes metrics_of_service for each antenna
-        metrics_of_service[str(antennas_regions[i])] = np.array(metric_map_mn[antennas_regions[i]])
-        for j in range(i+1, len(antennas_regions)):
-            antennas_pairs.append((antennas_regions[i], antennas_regions[j]))
-    if verbose: print("antennas_pairs", antennas_pairs)
-    for m, n in antennas_pairs:
-        #Compare the metrics of service between the pair of antennas
-        comp_array = metrics_of_service[str(m)] > metrics_of_service[str(n)]
-        if minimization:
-            comp_array = ~comp_array #Inverts the comparison to obey that a big value is better
-
-        #New values of the metric of service to discard already rulled out regions
-        metrics_of_service[str(m)][~comp_array] = np.inf if minimization else -np.inf #Inverts comp_array because we want the values of m that lost to n
-        metrics_of_service[str(n)][comp_array] = np.inf if minimization else -np.inf #Changing the values of n that lose to those of m
-    
-    if not full:
-        if verbose: print("Opção simples")
-        if old:
-            map_of_service = [ -1 for _ in range(len(metric_map_mn[-1]))]
-        else:# Minha parte
-            map_of_service = [{"antenna": -1, "metric": -1} for _ in range(len(metric_map_mn[-1]))]
-        if verbose: print_map_mn(geo.MapChess(4000,4000,400,"URBAN_MACROCELL",25,1.5,20,20,False,0.7,6,363,-103,2,18,0,7,5,46,26,123,10,1000,1),
-                 "Mapa de servico que deu erro", map_of_service)
-        for key in metrics_of_service:
-            if minimization:
-                served_sectors = np.ravel(np.argwhere(metrics_of_service[key] < np.inf))
-            else:
-                served_sectors = np.ravel(np.argwhere(metrics_of_service[key] > -np.inf))
-            for i in served_sectors:
-                if old:
-                    map_of_service[i] = key
-                else:
-                    map_of_service[i] = {"antenna": int(key), "metric": metric_map_mn[int(key)][i]}
-
-        if old:
-            if -1 in map_of_service:
-                raise(ValueError('One region is not served in Map Of Service with value -1.'))
-        else:# Minha parte
-            if {"antenna": -1, "metric": -1} in map_of_service:
-                print_map_mn(geo.MapChess(4000,4000,400,"URBAN_MACROCELL",25,1.5,20,20,False,0.7,6,363,-103,2,18,0,7,5,46,26,123,10,1000,1),
-                 "Mapa de servico que deu erro", map_of_service)
-                raise(ValueError('One region is not served in Map Of Service with values -1.'))
-
-    else:# Minha parte: obtem a lista de antenas que podem servir um setor
-        map_of_service = [[] for _ in range(len(metric_map_mn[-1]))]
-
-        for key in metrics_of_service:
-            served_sectors = []
-            for region in range(len(metric_map_mn[int(key)])):
-                if metric_map_mn[int(key)][region] >= metric_threshold:
-                    served_sectors.append(region)
-        
-            for i in served_sectors:
-                map_of_service[i].append(key)
-    
-    if verbose: print_map_mn(geo.MapChess(4000,4000,400,"URBAN_MACROCELL",25,1.5,20,20,False,0.7,6,363,-103,2,18,0,7,5,46,26,123,10,1000,1),
-                 "Mapa de servico", map_of_service)
-    if verbose: print("limiar: ", metric_threshold)
-    
-    if threshold and not full:
-        for m in range(len(map_of_service)):
-            if not minimization:    # higher value is better
-                #print(map_of_service[2]["metric"])
-                #print(map_of_service[2])
-                #print(metric_map_mn[map_of_service[2]][2])
-                if map_of_service[m]["metric"] < metric_threshold:
-                    map_of_service[m] = None
-                #if metric_map_mn[map_of_service[m]][m] < metric_threshold:
-            #TODO: To implement if minimization is True
-    if verbose: print_map_mn(geo.MapChess(4000,4000,400,"URBAN_MACROCELL",25,1.5,20,20,False,0.7,6,363,-103,2,18,0,7,5,46,26,123,10,1000,1),
-                 "Mapa de Servico", map_of_service)
-    return map_of_service
-    """
 
 def gen_first_antenna_region(chosen_seed: int, n_sectors: int):
     seed(chosen_seed)
-
-    """for _ in range(n_sectors):#TODO REMOVE?
-        random()"""
-
     first_antenna_region = randint(0, n_sectors - 1)
 
     return first_antenna_region
@@ -704,18 +644,4 @@ def gen_ue_per_slice(chosen_seed, user_t_m, num_slices):
             print("ERROR 2 in gen_ue_per_slice()")
             return None
 
-    # contagem de duração para cada UE
-    '''for i in range(max_user_t_m):
-        c = 0
-        first = None
-        last = None
-        for j in range(len(ue_slice)):
-            for k in ue_slice[j]:            
-                if k == i:
-                    c += 1
-                    if first == None:
-                        first = j
-        print("UE {} esta ativo por {} slices, entrou no slice {}".format(i, c, first))
-        if c == 0: break
-    '''
     return ue_slice
