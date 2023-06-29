@@ -104,7 +104,7 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
         
         # Setting GWO parameters
         max_dimension = 10
-        pack_size = 10
+        pack_size = 50
         max_iter = 100
 
         # Setting first antenna position
