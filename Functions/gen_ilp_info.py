@@ -229,6 +229,24 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
                             max_iter = max_iter,
                             version = gwo.STR_PGWO_2)
 
+        elif mode == "pgwo3":
+            gwo.pgwo_solver(scenario = scen, 
+                            num_regions = scen.n_sectors,
+                            num_slices = num_slices,
+                            users_t_m = users_t_m, 
+                            max_users_per_antenna_m = max_user_antenna_m,
+                            antennasmap_m = antennas_map_m, 
+                            snr_map_mn = sinr_map, 
+                            min_sinr_w = db_to_linear(min_sinr), #TODO: Use min_snr_m instead of a single min_sinr for all regions
+                            distance_mn = distance_mn, 
+                            min_dis = min_dis, 
+                            result_dir = result_dir,
+                            first_antenna_region = first_antenna_region,
+                            max_dimension = max_dimension,
+                            pack_size = pack_size,
+                            max_iter = max_iter,
+                            version = gwo.STR_PGWO_3)
+
 
     elif show_ues:
         # FIXME: 

@@ -12,6 +12,7 @@ import math
 
 STR_PGWO_1 = 'pgwo1'
 STR_PGWO_2 = 'pgwo2'
+STR_PGWO_3 = 'pgwo3'
 
 # Wolf class
 class Wolf:
@@ -207,6 +208,8 @@ def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[i
         fitness_func = fitness_pgwo1
     elif version == STR_PGWO_2:
         fitness_func = fitness_pgwo2
+    elif version == STR_PGWO_3:
+        fitness_func = fitness_pgwo3
     
     antennas_map = [0 if m != first_antenna_region else 1 for m in range(num_regions)]
     seed_base = 0
@@ -604,6 +607,50 @@ def fitness_pgwo2(wolf_position: List[geo.Coordinate], antennas_regions, users_r
 
         wmse /= sum_u_tm
         score = 10000*(1/(math.sqrt(wmse)))*sum_eta_m/M
+    else:
+        score = -np.infty
+    return score
+
+def fitness_pgwo3(wolf_position: List[geo.Coordinate], antennas_regions, users_regions, scenario: geo.MapChess) -> float:
+    """
+        PGWO Fitness Version 3
+        This fitness  prioritizes the solutions that meet the constraints with the lowest Weighted Root Mean Square Error (WRMSE) values.
+        This prevents antennas from being deployed over user concentration points. There is a weight equivalent to the coverage percentage
+        for favoring solution with similar WRMSE but offering higher coverage.
+
+        Fitness definition: 10000 * inverse of WRMSE of SNR values * coverage percentage
+        NOTE: 10000 is a scale factor to make reading the fitness value easier during debugging.
+
+        Args:
+            wolf_position (List[geo.Coordinate]): Wolf position represented by a list of coordinates. Each coordinate indicates of an
+            antenna that the solution proposes to deply.
+            antennas_regions (numpy.ndarray): Array of int to identify the regions where there are already antennas. 
+            users_regions (numpy.ndarray): Array of int to identify the regions where there are users.
+            scenario (geo.MapChess): model that represents the scenario (size, number of sectors, users positions, etc.)
+
+        Return:
+            float: The value of the fitness function for the evaluated solution.
+
+    """
+    result = check_constraints(wolf_position, antennas_regions, users_regions, scenario)
+    if(result):
+        connections, antennas_regions, _map_of_service = result
+        sum_eta_m = len([e for e in _map_of_service if e != []])       # Number of sectors served by the evaluated solution
+        M = scenario.n_sectors                                         # Number of sectors on the map
+              
+        wmse = 0                                                       # Weighted Mean Square Error (WMSE); it is not WRMSE
+        sum_u_tm = 0                                                   # Sum of users
+        for region in users_regions:
+            u_tm = _users_t_m[0][region]                               # Amount of user at region
+            snr_mn = _snr_map_mn[connections[region]][region]          # SNR due connection between user and his antenna
+            min_snr = _min_sinr_w                                      # Threshold of SNR at region
+            wmse += u_tm*(snr_mn - min_snr)**2
+            sum_u_tm += u_tm
+
+        wmse /= sum_u_tm
+        eccentricity = genf.get_coordinate_eccentricity(scenario, [geo.region2Coord(i, scenario.size_sector, scenario.size_x, scenario.size_y) 
+                            for i in antennas_regions.tolist()])
+        score = 10000*(1/(math.sqrt(wmse)))*eccentricity
     else:
         score = -np.infty
     return score

@@ -10,7 +10,7 @@ class SolutionNotFeasible(Exception):
 def check_mode(mode: str):
     '''Checks if the mode passed as argument is valid. Raises an InvalidMode exception if not valid.'''
     if mode != 'varying' and mode != 'fixed' and mode != 'single' and mode != 'tid' and \
-       mode != 'aid' and mode != 'ga' and mode != 'pgwo' and mode != 'pgwo2':
+       mode != 'aid' and mode != 'ga' and mode != 'pgwo' and mode != 'pgwo2' and mode != 'pgwo3':
         raise(InvalidMode('Mode is not varying, fixed, single, ga, pgwo or pgwo2.'))
 
 class ErrorPackage:

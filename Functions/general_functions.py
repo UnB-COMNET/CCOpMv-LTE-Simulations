@@ -1,11 +1,11 @@
 from pathlib import Path
+from statistics import mean
 from typing import List, Union
-from matplotlib import use
 import numpy as np
 import geometry as geo
 import matplotlib.pyplot as plt
 from scipy.stats import poisson
-from random import choice, randint, seed, random
+from random import choice, randint, seed
 
 MODES_NEW_NAMES = {
     'varying': 'VID',# Varying ILP Deployment
@@ -13,7 +13,8 @@ MODES_NEW_NAMES = {
     'fixed': 'AID',# Additive ILP Deployment
     'ga': 'PGD',# Predicative GA Deployment
     'pgwo1': 'PGWO-1', #Progressive GWO
-    'pgwo2': 'PGWO-2'
+    'pgwo2': 'PGWO-2', 
+    'pgwo3': 'PGWO-3'
 }
 
 # TODO: Use OmNET absolute path.
@@ -61,6 +62,8 @@ def verify_modes(modes: List[str]):
             verif_modes.append('pgwo1')
         elif mode.lower() == 'pgwo2':
             verif_modes.append('pgwo2')
+        elif mode.lower() == 'pgwo3':
+            verif_modes.append('pgwo3')
 
     return np.unique(verif_modes).tolist()
 
@@ -678,3 +681,59 @@ def gen_ue_per_slice(chosen_seed, user_t_m, num_slices):
             return None
 
     return ue_slice
+
+def get_coordinate_eccentricity(scen: geo.MapChess, coords: List[geo.Coordinate]):
+    centre = scen.centre_coord
+    
+    if len(coords) == 1:
+        #
+        dist_centre = geo.euclidianDistance(coords[0], centre)
+        if dist_centre == 0:
+            dist_centre = 1
+
+        dist_boundary = dist2NearestBoundary(scen, coords[0])
+        if dist_boundary == 0:
+            dist_boundary = 1
+        
+        eccentricity = 1/(1/dist_centre + 1/dist_boundary)
+        print(eccentricity)
+    else:
+        # 
+        mean_dist_by_coord = [None]*len(coords)
+        dist_centre_by_coord = [None]*len(coords)
+        dist_boundary_by_coord = [None]*len(coords)
+        for i in range(len(coords)):
+            dist = 0
+            for j in range(len(coords)):
+                if i != j:
+                    dist += geo.euclidianDistance(coords[i], coords[j])
+            
+            dist = dist/(len(coords)-1)
+            if dist == 0:
+                dist = 1
+            mean_dist_by_coord[i] = dist
+            
+            dist_centre = geo.euclidianDistance(coords[i], centre)
+            if dist_centre == 0:
+                dist_centre = 1
+            dist_centre_by_coord[i] = dist_centre
+            
+            dist_boundary = dist2NearestBoundary(scen, coords[i])
+            if dist_boundary == 0:
+                dist_boundary = 1
+            dist_boundary_by_coord[i] = dist_boundary
+            
+        eccentricity = mean([mean_dist_by_coord[i] + dist_centre_by_coord[i] + 10*dist_boundary_by_coord[i] for i in range(len(coords))])
+        
+    eccentricity = eccentricity/(12*scen.max_length)
+
+    return eccentricity
+
+
+def dist2NearestBoundary(scen: geo.MapChess, coord: geo.Coordinate):
+    upper_boundary_dist = scen.size_y - coord.y
+    bottom_boundary_dist = coord.y
+    left_boundary_dist = coord.x
+    right_boundary_dist = scen.size_x - coord.x
+
+    return min([upper_boundary_dist, bottom_boundary_dist, left_boundary_dist, right_boundary_dist])
