@@ -124,21 +124,6 @@ network ILPGaNet15Slice5
 		eNB21: eNodeB {
 			@display("is=l");
 		}
-		eNB22: eNodeB {
-			@display("is=l");
-		}
-		eNB23: eNodeB {
-			@display("is=l");
-		}
-		eNB24: eNodeB {
-			@display("is=l");
-		}
-		eNB25: eNodeB {
-			@display("is=l");
-		}
-		eNB26: eNodeB {
-			@display("is=l");
-		}
 		ue[numUe]: Ue {
 			@display("is=s");
 		}
@@ -172,11 +157,6 @@ network ILPGaNet15Slice5
 		eNB19.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB20.ppp <--> Eth10G <--> pgw.pppg++;
 		eNB21.ppp <--> Eth10G <--> pgw.pppg++;
-		eNB22.ppp <--> Eth10G <--> pgw.pppg++;
-		eNB23.ppp <--> Eth10G <--> pgw.pppg++;
-		eNB24.ppp <--> Eth10G <--> pgw.pppg++;
-		eNB25.ppp <--> Eth10G <--> pgw.pppg++;
-		eNB26.ppp <--> Eth10G <--> pgw.pppg++;
 
 		//############### X2 Connections ###############
 		eNB0.x2++ <--> Eth10G <--> eNB1.x2++;
@@ -200,11 +180,6 @@ network ILPGaNet15Slice5
 		eNB0.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB0.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB0.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB0.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB0.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB0.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB0.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB2.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB4.x2++;
@@ -225,11 +200,6 @@ network ILPGaNet15Slice5
 		eNB1.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB1.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB1.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB1.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB1.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB1.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB1.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB3.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB5.x2++;
@@ -249,11 +219,6 @@ network ILPGaNet15Slice5
 		eNB2.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB2.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB2.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB2.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB2.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB2.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB2.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB4.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB6.x2++;
@@ -272,11 +237,6 @@ network ILPGaNet15Slice5
 		eNB3.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB3.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB3.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB3.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB3.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB3.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB3.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB5.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB7.x2++;
@@ -294,11 +254,6 @@ network ILPGaNet15Slice5
 		eNB4.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB4.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB4.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB4.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB4.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB4.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB4.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB6.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB8.x2++;
@@ -315,11 +270,6 @@ network ILPGaNet15Slice5
 		eNB5.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB5.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB5.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB5.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB5.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB5.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB5.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB7.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB8.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB9.x2++;
@@ -335,11 +285,6 @@ network ILPGaNet15Slice5
 		eNB6.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB6.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB6.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB6.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB6.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB6.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB6.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB7.x2++ <--> Eth10G <--> eNB8.x2++;
 		eNB7.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB7.x2++ <--> Eth10G <--> eNB10.x2++;
@@ -354,11 +299,6 @@ network ILPGaNet15Slice5
 		eNB7.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB7.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB7.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB7.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB7.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB7.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB7.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB7.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB8.x2++ <--> Eth10G <--> eNB9.x2++;
 		eNB8.x2++ <--> Eth10G <--> eNB10.x2++;
 		eNB8.x2++ <--> Eth10G <--> eNB11.x2++;
@@ -372,11 +312,6 @@ network ILPGaNet15Slice5
 		eNB8.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB8.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB8.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB8.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB8.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB8.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB8.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB8.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB9.x2++ <--> Eth10G <--> eNB10.x2++;
 		eNB9.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB9.x2++ <--> Eth10G <--> eNB12.x2++;
@@ -389,11 +324,6 @@ network ILPGaNet15Slice5
 		eNB9.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB9.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB9.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB9.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB9.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB9.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB9.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB9.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB10.x2++ <--> Eth10G <--> eNB11.x2++;
 		eNB10.x2++ <--> Eth10G <--> eNB12.x2++;
 		eNB10.x2++ <--> Eth10G <--> eNB13.x2++;
@@ -405,11 +335,6 @@ network ILPGaNet15Slice5
 		eNB10.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB10.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB10.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB10.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB10.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB10.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB10.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB10.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB11.x2++ <--> Eth10G <--> eNB12.x2++;
 		eNB11.x2++ <--> Eth10G <--> eNB13.x2++;
 		eNB11.x2++ <--> Eth10G <--> eNB14.x2++;
@@ -420,11 +345,6 @@ network ILPGaNet15Slice5
 		eNB11.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB11.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB11.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB11.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB11.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB11.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB11.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB11.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB12.x2++ <--> Eth10G <--> eNB13.x2++;
 		eNB12.x2++ <--> Eth10G <--> eNB14.x2++;
 		eNB12.x2++ <--> Eth10G <--> eNB15.x2++;
@@ -434,11 +354,6 @@ network ILPGaNet15Slice5
 		eNB12.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB12.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB12.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB12.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB12.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB12.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB12.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB12.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB13.x2++ <--> Eth10G <--> eNB14.x2++;
 		eNB13.x2++ <--> Eth10G <--> eNB15.x2++;
 		eNB13.x2++ <--> Eth10G <--> eNB16.x2++;
@@ -447,11 +362,6 @@ network ILPGaNet15Slice5
 		eNB13.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB13.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB13.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB13.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB13.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB13.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB13.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB13.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB14.x2++ <--> Eth10G <--> eNB15.x2++;
 		eNB14.x2++ <--> Eth10G <--> eNB16.x2++;
 		eNB14.x2++ <--> Eth10G <--> eNB17.x2++;
@@ -459,75 +369,25 @@ network ILPGaNet15Slice5
 		eNB14.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB14.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB14.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB14.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB14.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB14.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB14.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB14.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB15.x2++ <--> Eth10G <--> eNB16.x2++;
 		eNB15.x2++ <--> Eth10G <--> eNB17.x2++;
 		eNB15.x2++ <--> Eth10G <--> eNB18.x2++;
 		eNB15.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB15.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB15.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB15.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB15.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB15.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB15.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB15.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB16.x2++ <--> Eth10G <--> eNB17.x2++;
 		eNB16.x2++ <--> Eth10G <--> eNB18.x2++;
 		eNB16.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB16.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB16.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB16.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB16.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB16.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB16.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB16.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB17.x2++ <--> Eth10G <--> eNB18.x2++;
 		eNB17.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB17.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB17.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB17.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB17.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB17.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB17.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB17.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB18.x2++ <--> Eth10G <--> eNB19.x2++;
 		eNB18.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB18.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB18.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB18.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB18.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB18.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB18.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB19.x2++ <--> Eth10G <--> eNB20.x2++;
 		eNB19.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB19.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB19.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB19.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB19.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB19.x2++ <--> Eth10G <--> eNB26.x2++;
 		eNB20.x2++ <--> Eth10G <--> eNB21.x2++;
-		eNB20.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB20.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB20.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB20.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB20.x2++ <--> Eth10G <--> eNB26.x2++;
-		eNB21.x2++ <--> Eth10G <--> eNB22.x2++;
-		eNB21.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB21.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB21.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB21.x2++ <--> Eth10G <--> eNB26.x2++;
-		eNB22.x2++ <--> Eth10G <--> eNB23.x2++;
-		eNB22.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB22.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB22.x2++ <--> Eth10G <--> eNB26.x2++;
-		eNB23.x2++ <--> Eth10G <--> eNB24.x2++;
-		eNB23.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB23.x2++ <--> Eth10G <--> eNB26.x2++;
-		eNB24.x2++ <--> Eth10G <--> eNB25.x2++;
-		eNB24.x2++ <--> Eth10G <--> eNB26.x2++;
-		eNB25.x2++ <--> Eth10G <--> eNB26.x2++;
 }

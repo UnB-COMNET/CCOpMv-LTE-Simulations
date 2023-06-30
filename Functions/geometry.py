@@ -344,6 +344,8 @@ class MapChess:
         self.size_sector = size_sector
         self.size_x = size_x
         self.size_y = size_y
+        self.max_length = sqrt(size_x**2 + size_y**2)
+        self.centre_coord = Coordinate(size_x/2,size_y/2)
         self.n_sectors_x = int(size_x/size_sector)
         self.n_sectors_y = int(size_y/size_sector)
         self.n_sectors = self.n_sectors_y*self.n_sectors_x

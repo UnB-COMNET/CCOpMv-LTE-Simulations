@@ -101,6 +101,11 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
         antennas_map_m = [(0 if random() < disaster_percentage/100 else 1) for i in range(scen.n_sectors)]
         min_snr_m = [db_to_linear(min_sinr) for _ in range(scen.n_sectors)]
         distance_mn = scen.getRegionsDistanceMatrix()
+        
+        # Setting GWO parameters
+        max_dimension = 10
+        pack_size = 50
+        max_iter = 100
 
         # Setting first antenna position
         done = False
@@ -141,26 +146,106 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
         print("- disaster percentage: ", disaster_percentage)
 
         if mode == "varying":
-            solver_varying(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
-                           snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, MIN_TIME= min_time, FIRST_ANTENNA= first_antenna_region)
+            solver_varying(Max_Space = scen.n_sectors,
+                           Max_Time = num_slices, 
+                           users_t_m = users_t_m, 
+                           MAX_USER_PER_ANTENNA_m = max_user_antenna_m, 
+                           antenasmap_m = antennas_map_m,
+                           snr_map_mn = sinr_map,
+                           MIN_SNR_m = min_snr_m,
+                           distance_mn = distance_mn,
+                           MIN_DIS = min_dis,
+                           result_dir = result_dir, 
+                           MIN_TIME = min_time, 
+                           FIRST_ANTENNA = first_antenna_region)
+
         elif mode == "fixed":
-            solver_fixed(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m,
-                         snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir = result_dir, FIRST_ANTENNA= first_antenna_region)
+            solver_fixed(Max_Space = scen.n_sectors,
+                         Max_Time = num_slices, 
+                         users_t_m = users_t_m, 
+                         MAX_USER_PER_ANTENNA_m = max_user_antenna_m, 
+                         antenasmap_m = antennas_map_m,
+                         snr_map_mn = sinr_map, 
+                         MIN_SNR_m = min_snr_m, 
+                         distance_mn = distance_mn, 
+                         MIN_DIS = min_dis, 
+                         result_dir = result_dir, 
+                         FIRST_ANTENNA= first_antenna_region)
+
         elif mode == "single":
             valid_time = 0
             print("- valid_time: ", valid_time)
-            solver_single(Max_Space= scen.n_sectors, Max_Time= num_slices, users_t_m= users_t_m, MAX_USER_PER_ANTENNA_m= max_user_antenna_m, antenasmap_m= antennas_map_m, valid_time= valid_time,
-                          snr_map_mn= sinr_map, MIN_SNR_m= min_snr_m, distance_mn= distance_mn, MIN_DIS= min_dis, result_dir= result_dir, FIRST_ANTENNA= first_antenna_region)
+            solver_single(Max_Space = scen.n_sectors,
+                          Max_Time = num_slices,
+                          users_t_m = users_t_m,
+                          MAX_USER_PER_ANTENNA_m = max_user_antenna_m,
+                          antenasmap_m = antennas_map_m,
+                          valid_time = valid_time,
+                          snr_map_mn = sinr_map,
+                          MIN_SNR_m = min_snr_m,
+                          distance_mn = distance_mn,
+                          MIN_DIS = min_dis, 
+                          result_dir = result_dir,
+                          FIRST_ANTENNA = first_antenna_region)
 
         elif mode == "ga":
             #TODO: Not working correctly with disaster > 0
             ga.ga_solver(num_regions=scen.n_sectors, num_slices=num_slices, users_t_m=users_t_m, max_users_per_antenna_m=max_user_antenna_m, snr_map_mn=sinr_map, min_sinr_w=db_to_linear(min_sinr),
                          distance_mn=distance_mn, min_dis=min_dis, result_dir=result_dir, first_antenna_region=first_antenna_region, fitness_func=ga.fitness_pygad)
 
-        elif mode == "gwo":
-            gwo.gwo_solver(scenario = scen, num_regions=scen.n_sectors, users_t_m=users_t_m, distance_mn=distance_mn, min_dis=min_dis, 
-                        antenasmap_m= antennas_map_m, snr_map_mn=sinr_map, min_sinr_w=db_to_linear(min_sinr), first_antenna_region=first_antenna_region,
-                        result_dir=result_dir, max_users_per_antenna_m=max_user_antenna_m, num_slices=num_slices)
+        elif mode == "pgwo1":
+            gwo.pgwo_solver(scenario = scen, 
+                            num_regions = scen.n_sectors,
+                            num_slices = num_slices,
+                            users_t_m = users_t_m, 
+                            max_users_per_antenna_m = max_user_antenna_m,
+                            antennasmap_m = antennas_map_m, 
+                            snr_map_mn = sinr_map, 
+                            min_sinr_w = db_to_linear(min_sinr), #TODO: Use min_snr_m instead of a single min_sinr for all regions
+                            distance_mn = distance_mn, 
+                            min_dis = min_dis, 
+                            result_dir = result_dir,
+                            first_antenna_region = first_antenna_region,
+                            max_dimension = max_dimension,
+                            pack_size = pack_size,
+                            max_iter = max_iter,
+                            version = gwo.STR_PGWO_1)
+
+        elif mode == "pgwo2":
+            gwo.pgwo_solver(scenario = scen, 
+                            num_regions = scen.n_sectors,
+                            num_slices = num_slices,
+                            users_t_m = users_t_m, 
+                            max_users_per_antenna_m = max_user_antenna_m,
+                            antennasmap_m = antennas_map_m, 
+                            snr_map_mn = sinr_map, 
+                            min_sinr_w = db_to_linear(min_sinr), #TODO: Use min_snr_m instead of a single min_sinr for all regions
+                            distance_mn = distance_mn, 
+                            min_dis = min_dis, 
+                            result_dir = result_dir,
+                            first_antenna_region = first_antenna_region,
+                            max_dimension = max_dimension,
+                            pack_size = pack_size,
+                            max_iter = max_iter,
+                            version = gwo.STR_PGWO_2)
+
+        elif mode == "pgwo3":
+            gwo.pgwo_solver(scenario = scen, 
+                            num_regions = scen.n_sectors,
+                            num_slices = num_slices,
+                            users_t_m = users_t_m, 
+                            max_users_per_antenna_m = max_user_antenna_m,
+                            antennasmap_m = antennas_map_m, 
+                            snr_map_mn = sinr_map, 
+                            min_sinr_w = db_to_linear(min_sinr), #TODO: Use min_snr_m instead of a single min_sinr for all regions
+                            distance_mn = distance_mn, 
+                            min_dis = min_dis, 
+                            result_dir = result_dir,
+                            first_antenna_region = first_antenna_region,
+                            max_dimension = max_dimension,
+                            pack_size = pack_size,
+                            max_iter = max_iter,
+                            version = gwo.STR_PGWO_3)
 
 
     elif show_ues:
