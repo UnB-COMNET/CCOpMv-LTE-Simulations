@@ -27,8 +27,8 @@ def main():
     size_y = 4000
     size_sector = 400
     n_macros = 1
-    min_sinrs = [5, 10, 15]
-    modes = ['fixed', 'single', 'ga', 'gwo'] # fixed or single or ga or gwo
+    min_sinrs = [5,10,15]
+    modes = ['pgwo2'] # fixed or single or ga or gwo
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
@@ -340,7 +340,6 @@ def process_func(chosen_seed: int, size_x: int, size_y: int, size_sector: int, n
                  disaster_percentage: int = 0, allrun_solver: bool = False, queue: Queue = None,
                  only_solver: bool = False, interference: bool = False):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
-    
     if not allrun_solver:
         print(f'Started process process_func {current_process().name} {current_process().pid}. (Seed: {chosen_seed}, Mode: {mode}, Min_sinr: {min_sinr})')
         semaphore_cpucount.acquire()

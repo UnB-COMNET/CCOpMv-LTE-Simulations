@@ -310,7 +310,7 @@ def processInitialData(initial_data):
   preData = preScalar.assign(qname = preScalar.module + '.' + preScalar.name)
   newData = preData.pivot(index='run', columns='qname', values='value')
 
-  extra_info = preItervar.assign(min_snr_used = newData.index.str.findall(r'\d+').str[0], repetition = preRunattr['repetition'], inifile = preRunattr['inifile'])
+  extra_info = preItervar.assign(min_snr_used = newData.index.str.split('_').str[3].str.findall(r'\d+').str[0], repetition = preRunattr['repetition'], inifile = preRunattr['inifile'])
 
   return preItervar, preRunattr, preVector, preScalar, extra_info, num_enbs
 
@@ -1196,14 +1196,17 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   facet = all_throughput.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Médio (Bps)", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "probability": "Probabilidade"}, markers= False, lines= True,
-                title= "UEs Throughput DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
-                range_x=(0,10**7))
+  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Médio (Bps)", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
+                #title= "CDF do throughput recebido por cada UE",
+                ecdfmode="reversed", hover_name = names, line_dash= lines, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
+                range_x=(0,9*10**6))
+
+  fig.update_layout(font=dict(size=11))
 
   fig.write_image(images_dir+"/"+"thr_ilptype.svg", height= height, width= width)
 
   if cov:
-    fig = px.ecdf(all_throughput, x='COV', color = colors, labels= {"COV": "Throughput:Médio COV", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "probability": "Probabilidade"}, markers= False, lines= True,
+    fig = px.ecdf(all_throughput, x='COV', color = colors, labels= {"COV": "Throughput:Médio COV", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
                   title= "UEs Throughput COV DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
 
     fig.write_image(images_dir+"/"+"thr_ilptype_cov.svg", height= height, width= width)
@@ -1219,7 +1222,10 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   facet = all_enb.index.get_level_values("Power").tolist()
 
   fig = px.bar(all_enb, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": "Média de eNodeBs", "facet_col": "Potência(dBm)", "color": "Otimizador"},
-              title= "Mean Num Enbs per Simulation", hover_name = names, error_y = "Std", barmode = 'group', facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order})
+              #title= "Média do número de eNodeBs em cada simulação",
+              hover_name = names, error_y = "Std", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order})
+
+  fig.update_layout(font=dict(size=11))
 
   fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height, width= width)
 
@@ -1235,7 +1241,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
     facet = tmp_enb_hist.index.get_level_values("Power").tolist()
 
     fig = px.histogram(tmp_enb_hist, x= 'NumEnbs', height= height, width= width, labels= {"x" : "Number eNBs" ,"pattern_shape" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "Solver Type"},
-                       title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
+                       title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
 
     fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
 
@@ -1251,9 +1257,12 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   facet = all_sinr.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "SNR:Médio (dB)", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "probability": "Probabilidade"}, markers= False, lines= True,
-                title= "UE Sinr DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
+  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "SNR:Médio (dB)", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
+                #title= "CDF do SNR médio recebido por cada UE",
+                ecdfmode="reversed", hover_name = names, line_dash= lines, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
                 range_x=(-10, 35))
+
+  fig.update_layout(font=dict(size=11))
 
   default_lines = ['solid', 'dot','dash', 'longdash', 'dashdot', 'longdashdot']
   for i in range(len(snr_order)):
@@ -1262,7 +1271,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   fig.write_image(images_dir+"/"+"sinr_ilptype.svg", height= height, width= width)
 
   if cov:
-    fig = px.ecdf(all_sinr, x='COV', color = colors, labels= {"COV": "SNR:Médio COV", "color": "Min SNR (dB)", "line_dash": "Otimizador", "facet_col": "Potência(dBm)", "probability": "Probabilidade"}, markers= False, lines= True,
+    fig = px.ecdf(all_sinr, x='COV', color = colors, labels= {"COV": "SNR:Médio COV", "color": "Min SNR (dB)", "line_dash": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
                   title= "UE Sinr DL COV - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
 
     fig.write_image(images_dir+"/"+"sinr_ilptype_cov.svg", height= height, width= width)
@@ -1582,7 +1591,7 @@ def hist_ues_slice():
 
 if __name__ == "__main__":
   chosen_seeds = [2,3,4,5,6,7,10,11,12,13]
-  modes = ['single', 'fixed']#['single', 'fixed', 'ga'] 
+  modes = ['pgwo2', 'fixed']#['single', 'fixed', 'ga'] 
   #num_ues= 60
   extra_dir = ['disaster_percentage','micro_power']
   disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
@@ -1592,8 +1601,8 @@ if __name__ == "__main__":
   csv_dir = '_5G/results'
   images_dir = "Images"
   extra_config_name= "video"
-  height= 500
-  width= 1200
+  height= 344#500
+  width= 800#1200
   cov = False #Cria as imagens do COV ou não
   interference = False
   num_slices = 12
