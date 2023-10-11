@@ -16,7 +16,9 @@ import general_functions as genf
 from errors import check_mode
 import sys
 import plotly.graph_objs as go
-
+import os
+from math import sqrt
+import scipy.stats as stats
 """## Sobre:
 
 4000 x 4000 - 60 UE - 100 setores
@@ -56,6 +58,11 @@ Data generated using the command:
 
     opp_scavetool x -o ilp_varying_sliced_video.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" ilp_varying_sliced_*_VIDEO/*-*.sca ilp_varying_sliced_*_VIDEO/*-*.vec
 """
+
+COLOR_AID = "firebrick"
+COLOR_TID = "springgreen"
+COLOR_PGWO = "dodgerblue"
+COLOR_PGD = "darkmagenta"
 
 def get_data_from_scalar (data_name: str, module: str, scalar_data) -> pd.DataFrame:
 
@@ -140,7 +147,7 @@ def gen_ues_data_single(data, num_ues: int, directions: int, multi: bool = False
 
   return new_data
 
-def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list, nonactive_ues: pd.DataFrame, ues_per_slice: dict, slice_op= 'mean'):
+def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_columns: list, nonactive_ues: pd.DataFrame, ues_per_slice: dict, slice_op= 'mean', count_enb = False, col_to_keep = "NumEnbs"):
 
   dropna = False
 
@@ -161,6 +168,7 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
   data = pd.concat([processed_data, extra_info[id_columns]], axis= 1).assign(seed=seeds, Slice=extra_info['Slice'].astype(int))
 
   new_data = data.copy()
+
   #tuples_to_na = []
 
   print('Identifying not active UEs.')
@@ -193,8 +201,89 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
                     new_data.loc[selected.index, column] = np.nan
                     pass
   
+  if count_enb:
+    new_data["NumSliceMaxEnbs"] = [0]*new_data.shape[0]
+    new_data["MeanNumSliceConstEnbs"] = [0]*new_data.shape[0]
+    new_data["MeanNumSliceConstEnbs++1"] = [0]*new_data.shape[0]
+    new_data["MaxAddEnbs"] = [0]*new_data.shape[0]
+    new_data["NumAddNumEnbs"] = [0]*new_data.shape[0]
+    new_data["MeanAddNumEnbs"] = [0]*new_data.shape[0]
+    new_data["NumAddNumEnbsw0"] = [0]*new_data.shape[0]
+    new_data["MeanAddNumEnbsw0"] = [0]*new_data.shape[0]
+
+    for min_snr in extra_info['min_snr_used'].unique():
+      #min_snr = '15' #TODO: REMOVE
+      
+      test_data = data.copy()
+      test_data = test_data[test_data['min_snr_used'] == min_snr]
+      pivot_df = test_data.pivot(index='Slice', columns='seed', values='NumEnbs')
+      pivot_df.columns = ['seed_' + str(col) for col in pivot_df.columns]
+      
+      for seed in np.unique(seeds):
+        enb_list = pivot_df['seed_'+str(seed)].to_list()
+
+        max_enb = max(enb_list) 
+        num_add_enb = len(set(enb_list))  # 5 NumAddNumEnbs
+        
+        derivative = []
+        derivative.append(enb_list[0])
+        for i in range(1, len(enb_list)):
+          diff = enb_list[i] - enb_list[i - 1]
+          derivative.append(diff)
+        
+        max_add_enb = max(derivative) # 4 MaxAddEnbs
+
+        derivative_diff_zero = [x for x in derivative if x != 0]
+        num_add_enb = len(derivative_diff_zero) 
+        mean_add_enb = sum(derivative_diff_zero)/num_add_enb # 6 MeanAddNumEnbs
+
+        num_slices_with_max_enb = 0 # 1: NumSliceMaxEnbs
+        num_slices_const_enb = []
+        count_change = 1
+        for i in range(len(enb_list)):
+          if enb_list[i] == max_enb:
+            num_slices_with_max_enb += 1
+            
+          if i > 0:
+            if enb_list[i] == enb_list[i-1]:
+              count_change += 1
+              if i == len(enb_list)-1:
+                num_slices_const_enb.append(count_change)  
+            else:
+              num_slices_const_enb.append(count_change)
+              count_change = 1
+        
+        mean_slices_const_enb = sum(num_slices_const_enb)/len(num_slices_const_enb) # 2 MeanNumSliceConstEnbs
+
+        num_slices_const_enb_diff_one = [x for x in num_slices_const_enb if x != 1]
+        
+        mean_slices_const_enb_diff_one = sum(num_slices_const_enb_diff_one)/len(num_slices_const_enb_diff_one) # 3 MeanNumSliceConstEnbs++1
+        # Statistics:
+        # 1 - NumSliceMaxEnbs: Avalia a quantidade de slices em que se manteve a máxima quantidade de eNB utilizadas no cenário considerando todos os slices.
+        # 2 - MeanNumSliceConstEnbs: Avalia a média da duração de intervalos (slices) em que a quantidade de eNB ficou constante. 
+        #                            Considera também duranções de 1 slice.
+        # 3 - MeanNumSliceConstEnbs++1: Avalia a média da duração de intervalos (slices) em que a quantidade de eNB ficou constante. 
+        #                               Considera apenas duranções maiores que 1 slice.
+        # 4 - MaxAddEnbs: Avalia a quantidade máxima de eNB que foram adicionas simultaneamente
+        # 5 - NumAddNumEnbs: Avalia a quantidade de adições de eNB que ocorreram no cenário.
+        # 6 - MeanAddNumEnbs: Avalia a quantidade média de eNB que foram adicionadas simultaneamente
+        # 7 - NumAddNumEnbsw0: Avalia a quantidade de adições de eNB que ocorreram no cenário considerando as não adições
+        # 8 - MeanAddNumEnbsw0: Avalia a quantidade média de eNB que foram adicionadas simultaneamente considerando as não adições
+
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"NumSliceMaxEnbs"] = num_slices_with_max_enb
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanNumSliceConstEnbs"] = mean_slices_const_enb
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanNumSliceConstEnbs++1"] = mean_slices_const_enb_diff_one
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MaxAddEnbs"] = max_add_enb
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"NumAddNumEnbs"] = num_add_enb
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanAddNumEnbs"] = mean_add_enb
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"NumAddNumEnbsw0"] = num_add_enb/12   # 7 NumAddNumEnbsw0
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanAddNumEnbsw0"] = mean_add_enb*num_add_enb/12   # 7 NumAddNumEnbsw0
+    #pivot_df.reset_index(inplace=True)
+
   if slice_op == 'mean':
     noslice_data = new_data.groupby(id_columns, dropna = dropna).mean()
+  elif slice_op == 'max':
+    noslice_data = new_data.groupby(id_columns, dropna = dropna).max()
   elif slice_op == 'sum':
     noslice_data = new_data.groupby(id_columns, dropna = dropna).sum()
   elif slice_op == 'std':
@@ -202,13 +291,21 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
   else:
     print('ERRORRRRR')
 
-  noslice_data = noslice_data.drop(columns=['Slice', 'seed'])
-
+  if count_enb:
+    col_names = noslice_data.columns.to_list()
+    for name in col_names:
+      if name == col_to_keep:
+        col_names.remove(name)
+  
+    noslice_data = noslice_data.drop(columns=col_names)#noslice_data.loc[:,col_to_keep]
+  else:
+    noslice_data = noslice_data.drop(columns=['Slice', 'seed'])
+  # TODO: ver como ele utiliza apenas os valores da coluna NumEnbs para ter certeza que não vai dar problema na construção do gráfico
   #print(f'Unite: {noslice_data[noslice_data.isna().any(axis=1)]}, {noslice_data.isna().sum().sum()}, {noslice_data.shape}')
 
   return noslice_data
 
-def compute_cov (data: pd.DataFrame, id_columns: List):
+def compute_cov (data: pd.DataFrame, id_columns: List, enb = False):
   dropna = False
 
   mean_data = data.groupby(id_columns, dropna= dropna).mean()
@@ -217,15 +314,26 @@ def compute_cov (data: pd.DataFrame, id_columns: List):
 
   cov_data = (std_data/mean_data)
 
+  if enb:
+    err_data = std_data#(2.228*std_data/len(std_data)*[len(data)/3])
+    err_data = err_data/sqrt(len(data)/3)*stats.t.ppf(0.975, len(data)/3 - 1)# 2.228
+
   mean_data.columns = pd.MultiIndex.from_product([['Mean'], mean_data.columns])
   #print('Mean Data: ',mean_data.sum().sum())
   std_data.columns = pd.MultiIndex.from_product([['Std'], std_data.columns])
 
   cov_data.columns = pd.MultiIndex.from_product([['COV'], cov_data.columns])
 
-  #print(f'Antes: {data[data==np.nan]}, {data.shape}')
+  if enb:
+    err_data.columns = pd.MultiIndex.from_product([['ERR'], err_data.columns])
 
-  new_data = pd.concat([mean_data, std_data, cov_data], axis= 1).stack()
+  #print(f'Antes: {data[data==np.nan]}, {data.shape}')
+  mean_data.to_csv("mean_data.csv")
+  if enb:
+    new_data = pd.concat([mean_data, std_data, cov_data, err_data], axis= 1).stack()  
+  else:
+    new_data = pd.concat([mean_data, std_data, cov_data], axis= 1).stack()
+  new_data.to_csv("new_data.csv")
 
   new_data.index.names = new_data.index.names[:-1] + ['n_obj']
 
@@ -242,7 +350,7 @@ def compute_cov (data: pd.DataFrame, id_columns: List):
   #return new_data.reset_index(new_data.index.nlevels-1)
 
 def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, ues_per_slice: dict, nonactive_ues: pd.DataFrame, id_columns: list = ['Inter', 'RBs', 'min_snr_used', 'repetition', 'inifile'],
-           unite: bool = True, slice_op: str= 'mean', count_enb: bool = False):
+           unite: bool = True, slice_op: str= 'mean', count_enb: bool = False, enb = False, col_to_keep = "NumEnbs"):
 
   #print(f'\nUes por slice: {ues_per_slice}\n')
   #print(f'\nData index: {data.index}\n\n')
@@ -252,7 +360,10 @@ def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, ues_per_slice: dict, no
   
   if unite:
     #print(f'\nAntes Unite: {data[data==np.nan]}, {data.shape}')
-    tmp = unite_slices(processed_data=data, id_columns=id_columns, extra_info=extra_info, slice_op=slice_op, nonactive_ues=nonactive_ues, ues_per_slice=ues_per_slice)
+    if count_enb:
+      tmp = unite_slices(processed_data=data, id_columns=id_columns, extra_info=extra_info, slice_op=slice_op, nonactive_ues=nonactive_ues, ues_per_slice=ues_per_slice, count_enb=True, col_to_keep=col_to_keep)
+    else:
+      tmp = unite_slices(processed_data=data, id_columns=id_columns, extra_info=extra_info, slice_op=slice_op, nonactive_ues=nonactive_ues, ues_per_slice=ues_per_slice)
     #print(f'\nDepois Unite: {tmp[tmp==np.nan]}, {tmp.shape}')
   else:
     tmp = pd.concat([data, extra_info[id_columns]], axis= 1)
@@ -266,7 +377,7 @@ def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, ues_per_slice: dict, no
       continue
     cov_columns.append(col)
 
-  new_data = compute_cov(tmp, id_columns=cov_columns)
+  new_data = compute_cov(tmp, id_columns=cov_columns, enb=count_enb)
 
   #print('Data: ', new_data.sum().sum())
   #print('Shape: ',new_data.shape)
@@ -352,7 +463,7 @@ def get_nonactiveapp_ues(data_packets_sent: pd.DataFrame, extra_info: pd.DataFra
 
   return result
 
-def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dict, extra: bool= False):
+def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dict, extra: bool= False, only_enb_data: bool = False, enb_data: str = "NumEnbs", slice_op: str = "mean"):
 
   results_throughput = []
   results_enb = []
@@ -367,7 +478,7 @@ def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dic
 
   count = 0
   for mode in csvs_info:
-
+    print("mode: ", mode)
     csv_df = pd.DataFrame()
     for csv in csvs_info[mode]:
       chosen_seed = csv['seed']
@@ -381,76 +492,105 @@ def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dic
 
     data_packets_sent = get_data_from_scalar("packetSent:count", "server", preScalar)
     nonactive_ues = get_nonactiveapp_ues(data_packets_sent, extra_info)
+    
+    if not only_enb_data:
+      print('Getting throughput.')
+      #print(f'\Vector: {preVector[preVector==np.nan]}, {preVector.shape}')
+      tmp_throughput = get_data_from_vector('throughput:vector', "ue", preVector)['vecvalue']
+      data_throughput = get_data_vector_mean(tmp_throughput)
+      throughput = getCOV(data=data_throughput.fillna(0), extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+      #pd.set_option('display.max_columns', None)  # or 1000
+      #pd.set_option('display.max_rows', None)  # or 1000
+      #pd.set_option('display.max_colwidth', None)  # or 199
+      #print('Zeroes: ', throughput[throughput['Mean'] == 0].index.to_series())
+      
+      print('Getting eNBs.') # Usando o maximo em vez da media: media de maximos
+      enbs = getCOV(data=num_enbs, extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, count_enb=True, ues_per_slice=ues_per_slice,slice_op="mean", col_to_keep="NumEnbs")
+      hist_enbs = unite_slices(processed_data=num_enbs, extra_info=extra_info, id_columns=id_columns, slice_op= 'mean', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+      #print(f'\nColumns: {enbs.columns}\nObj: {enbs.index.get_level_values("n_obj")}\nInifile: {enbs.index.get_level_values("inifile")}\n')
 
-    print('Getting throughput.')
-    #print(f'\Vector: {preVector[preVector==np.nan]}, {preVector.shape}')
-    tmp_throughput = get_data_from_vector('throughput:vector', "ue", preVector)['vecvalue']
-    data_throughput = get_data_vector_mean(tmp_throughput)
-    throughput = getCOV(data=data_throughput.fillna(0), extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
-    #pd.set_option('display.max_columns', None)  # or 1000
-    #pd.set_option('display.max_rows', None)  # or 1000
-    #pd.set_option('display.max_colwidth', None)  # or 199
-    #print('Zeroes: ', throughput[throughput['Mean'] == 0].index.to_series())
-
-    print('Getting eNBs.')
-    enbs = getCOV(data=num_enbs, extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, count_enb=True, ues_per_slice=ues_per_slice)
-    hist_enbs = unite_slices(processed_data=num_enbs, extra_info=extra_info, id_columns=id_columns, slice_op= 'mean', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
-    #print(f'\nColumns: {enbs.columns}\nObj: {enbs.index.get_level_values("n_obj")}\nInifile: {enbs.index.get_level_values("inifile")}\n')
-
-    print('Getting SINR.')
-    data_sinr = get_data_from_scalar("rcvdSinr:mean", "ue", preScalar)
-    sinr = getCOV(data=data_sinr.fillna(-10), extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+      print('Getting SINR.')
+      data_sinr = get_data_from_scalar("rcvdSinr:mean", "ue", preScalar)
+      sinr = getCOV(data=data_sinr.fillna(-10), extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
 
 
-    results_throughput.append(throughput)
-    results_enb.append(enbs)
-    results_enb_hist.append(hist_enbs)
-    results_sinr.append(sinr)
+      results_throughput.append(throughput)
+      results_enb.append(enbs)
+      results_enb_hist.append(hist_enbs)
+      results_sinr.append(sinr)
 
-    if extra:
-      tmp_enddelay = get_data_from_vector('endToEndDelay:vector', "ue", preVector)['vecvalue']
-      data_enddelay = get_data_vector_mean(tmp_enddelay)
-      enddelay = getCOV(data=data_enddelay, extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+      if extra:
+        tmp_enddelay = get_data_from_vector('endToEndDelay:vector', "ue", preVector)['vecvalue']
+        data_enddelay = get_data_vector_mean(tmp_enddelay)
+        enddelay = getCOV(data=data_enddelay, extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
 
-      results_enddelay.append(enddelay)
+        results_enddelay.append(enddelay)
 
-      data_rcvd_packets = get_data_from_scalar("packetReceived:count", "ue", preScalar)
-      rcvd_packets, _, _ = getCOV(data=data_rcvd_packets, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+        data_rcvd_packets = get_data_from_scalar("packetReceived:count", "ue", preScalar)
+        rcvd_packets, _, _ = getCOV(data=data_rcvd_packets, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
 
-      results_rcvd_packets.append(rcvd_packets)
+        results_rcvd_packets.append(rcvd_packets)
 
-      packets_sent, _, _ = getCOV(data=data_packets_sent, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+        packets_sent, _, _ = getCOV(data=data_packets_sent, extra_info=extra_info, id_columns=id_columns, unite= True, slice_op= 'sum', nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
 
-      results_packets_sent.append(packets_sent)
+        results_packets_sent.append(packets_sent)
 
-    tmp_tuple = ()
-    for name in dict_ids:
-      tmp_tuple += (dict_ids[name][count],)
+      tmp_tuple = ()
+      for name in dict_ids:
+        tmp_tuple += (dict_ids[name][count],)
 
-    value_keys.append(tmp_tuple)
+      value_keys.append(tmp_tuple)
 
-    count += 1
+      count += 1
+    
+    else:
+      print('Getting eNBs: ' + enb_data)  #sempre observando a media: media de medias
+      if enb_data == "NumEnbs":
+        slice_op = "max"
+
+      if mode == "ga":
+        k = 100
+      enbs = getCOV(data=num_enbs, extra_info=extra_info, id_columns=id_columns, unite= True, nonactive_ues= nonactive_ues, count_enb=True, ues_per_slice=ues_per_slice,slice_op=slice_op, col_to_keep=enb_data)
+      hist_enbs = unite_slices(processed_data=num_enbs, extra_info=extra_info, id_columns=id_columns, slice_op= slice_op, nonactive_ues= nonactive_ues, ues_per_slice=ues_per_slice)
+      results_enb.append(enbs)
+      results_enb_hist.append(hist_enbs)
+
+      tmp_tuple = ()
+      for name in dict_ids:
+        tmp_tuple += (dict_ids[name][count],)
+
+      value_keys.append(tmp_tuple)
+
+      count += 1
+      slice_op = "mean"
 
   names = dict_ids.keys()
 
-  all_throughput = pd.concat(results_throughput, keys= value_keys, names= names)
-  #print(f'Inside func: {(all_throughput["Mean"] == 0).sum()}/{len(all_throughput["Mean"])}')
-  #print((all_throughput["Mean"] == 0)[(all_throughput["Mean"] == 0) == True])
-  all_sinr = pd.concat(results_sinr, keys= value_keys, names= names)
-  all_enb = pd.concat(results_enb, keys= value_keys, names= names)
-  all_enb_hist = pd.concat(results_enb_hist, keys= value_keys, names= names)
-  #all_enb = pd.DataFrame({'Mean': all_enb_mean['Mean'], 'Std': all_enb_std['Mean']})
-  #all_enb = all_enb_mean
+  if not only_enb_data:
+    all_throughput = pd.concat(results_throughput, keys= value_keys, names= names)
+    #print(f'Inside func: {(all_throughput["Mean"] == 0).sum()}/{len(all_throughput["Mean"])}')
+    #print((all_throughput["Mean"] == 0)[(all_throughput["Mean"] == 0) == True])
+    all_sinr = pd.concat(results_sinr, keys= value_keys, names= names)
+    all_enb = pd.concat(results_enb, keys= value_keys, names= names)
+    all_enb_hist = pd.concat(results_enb_hist, keys= value_keys, names= names)
+    #all_enb = pd.DataFrame({'Mean': all_enb_mean['Mean'], 'Std': all_enb_std['Mean']})
+    #all_enb = all_enb_mean
 
-  #print(all_throughput.index)
+    #print(all_throughput.index)
 
-  if extra:
-    all_enddelay = pd.concat(results_enddelay, keys= value_keys, names= names)
-    all_rcvd_packets = pd.concat(results_rcvd_packets, keys= value_keys, names= names)
-    all_packets_sent = pd.concat(results_packets_sent, keys= value_keys, names= names)
-    return all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent
+    if extra:
+      all_enddelay = pd.concat(results_enddelay, keys= value_keys, names= names)
+      all_rcvd_packets = pd.concat(results_rcvd_packets, keys= value_keys, names= names)
+      all_packets_sent = pd.concat(results_packets_sent, keys= value_keys, names= names)
+      return all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent
+    else:
+      return all_throughput, all_sinr, all_enb, all_enb_hist
+  
   else:
-    return all_throughput, all_sinr, all_enb, all_enb_hist
+    all_enb = pd.concat(results_enb, keys= value_keys, names= names)
+    all_enb_hist = pd.concat(results_enb_hist, keys= value_keys, names= names)
+
+    return all_enb, all_enb_hist
 
 def propagate_std(data, id):
 
@@ -670,7 +810,16 @@ def process_csv(filename, app='video'):
 
     fig = px.ecdf(mean_sinr_dl, x="COV", color=colors, labels= {"Mean": "Sinr:Mean (dB)", "color" : "Min Snr Used (dB)", "line_dash": "RBs"}, markers= False, lines= True,
                   title= "SLICED: Downlink Sinr COV per UE - CDF", hover_data = ["Mean"], hover_name = names, line_dash= lines, category_orders={"color": ["5", "10", "15"]})
-
+    fig.update_layout(
+    legend=dict(
+        #orientation="h",  # Define a orientação horizontal da legenda
+        x=0.5,  # Define a posição horizontal da legenda (0-1)
+        y=-0.2,  # Define a posição vertical da legenda (<0 move a legenda para baixo)
+        #traceorder="normal",  # Define a ordem em que as legendas são exibidas
+        #font=dict(size=10),  # Define o tamanho da fonte da legenda
+        #bgcolor="rgba(0,0,0,0)",  # Define a cor de fundo da legenda (transparente)
+    )
+)
     fig.show()
 
     """Sinr: aumentou a largura de banda"""
@@ -1128,7 +1277,7 @@ def process_csv(filename, app='video'):
 
 def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_dir: str, sim_dir: str, csv_dir: str, images_dir: str= "Images", extra_config_name: str= '',
                             extra_dir: List[str] = [], height: int= 500, width: int= 700, cov: bool= True, interference: bool= False,
-                            lambda_poisson: int = 30, num_slices: int = 12, **kwargs):
+                            lambda_poisson: int = 30, num_slices: int = 12, only_enb_data: bool = False, enb_data: str = "NumEnbs", **kwargs):
   """## **Comparing**"""
 
   modes = genf.verify_modes(modes)
@@ -1175,7 +1324,10 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   all_rcvd_packets: pd.DataFrame
   all_packets_sent: pd.DataFrame
   
-  if extra:
+  if only_enb_data:
+    all_enb, all_enb_hist = compare_csvs_video(csvs_info=csvs_info, dict_ids={'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
+                                                                                                                            extra= extra, ues_per_slice= ues_per_slice, only_enb_data=only_enb_data, enb_data=enb_data)
+  elif extra:
     all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video(csvs_info=csvs_info, dict_ids={'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
                                                                                                                             extra= extra, ues_per_slice= ues_per_slice)
   else:
@@ -1185,6 +1337,117 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   #print(all_throughput['Mean'].index.get_level_values('n_obj'))
 
   snr_order = ['5', '10', '15']                                                                                                       
+
+  if only_enb_data:
+    if enb_data == "NumEnbs":
+      str_ytitle = "NumEnbs"#"Average Number of Vehicles"
+    elif enb_data == "NumSliceMaxEnbs":
+      str_ytitle = "NumSliceMaxEnbs"
+    elif enb_data == "MeanNumSliceConstEnbs":
+      str_ytitle = "MeanNumSliceConstEnbs"
+    elif enb_data == "MeanNumSliceConstEnbs++1":
+      str_ytitle = "MeanNumSliceConstEnbs++1"
+    elif enb_data == "MaxAddEnbs":
+      str_ytitle = "MaxAddEnbs"#"Maximum Added Vehicles to Cenario"    #TODO: melhorar o título
+    elif enb_data == "NumAddNumEnbs":
+      str_ytitle = "NumAddNumEnbs"
+    elif enb_data == "MeanAddNumEnbs":
+      str_ytitle = "MeanAddNumEnbs"
+    elif enb_data == "NumAddNumEnbsw0":
+      str_ytitle = "NumAddNumEnbsw0"
+    elif enb_data == "MeanAddNumEnbsw0":
+      str_ytitle = "MeanAddNumEnbsw0"
+    
+    print("Plotting eNB " + enb_data)
+    x = all_enb.index.get_level_values("min_snr_used").tolist()
+
+    names = all_enb.index.get_level_values('n_obj').tolist()
+
+    colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_enb.index.get_level_values("ILP").tolist()]
+
+    facet = all_enb.index.get_level_values("Power").tolist()
+    
+    fig = px.bar(all_enb, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": str_ytitle, "facet_col": "Potência (dBm)", "color": "Algorithm"},
+                #title= "Média do número de eNodeBs em cada simulação",
+                hover_name = names, error_y = "ERR", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order}, 
+                color_discrete_map={"AID": COLOR_AID,
+                                    "TID": COLOR_TID, #
+                                    "PGWO": COLOR_PGWO, #
+                                    "PGD": COLOR_PGD}) #
+
+    """
+    if enb_data == "NumEnbs":
+      x = all_enb_max.index.get_level_values("min_snr_used").tolist()
+      names = all_enb_max.index.get_level_values('n_obj').tolist()
+      colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_enb_max.index.get_level_values("ILP").tolist()]
+      facet = all_enb_max.index.get_level_values("Power").tolist()
+
+      fig2 = px.bar(all_enb_max, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": str_ytitle, "facet_col": "Potência (dBm)", "color": "Algorithm"},
+                #title= "Média do número de eNodeBs em cada simulação",
+                hover_name = names, error_y = "ERR", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order}, 
+                color_discrete_map={"AID":"grey",
+                                    "TID":"grey",
+                                    "PGWO":"grey",
+                                    "PGD":"grey"})
+
+      fig2.update_layout(font=dict(size=11))
+      fig2.update_yaxes(type="log")
+      fig2.update_yaxes(range=[0, np.log10(35)])
+      fig2.write_image(images_dir+"/"+"enb_ilptype_test"+enb_data+".svg", height= height, width= width)
+
+      fig.add_bar(all_enb_max, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": str_ytitle, "facet_col": "Potência (dBm)", "color": "Algorithm"},
+                #title= "Média do número de eNodeBs em cada simulação",
+                hover_name = names, error_y = "ERR", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order}, 
+                color_discrete_map={"AID":"grey",
+                                    "TID":"grey",
+                                    "PGWO":"grey",
+                                    "PGD":"grey"})
+    """
+    fig.update_layout(font=dict(size=13))
+    fig.show()
+    islog = False
+    if islog:
+      fig.update_yaxes(type="log")
+      if (enb_data == "NumSliceMaxEnbs" or enb_data == "MeanNumSliceConstEnbs++1" or enb_data == "MeanNumSliceConstEnbs"):
+        fig.update_yaxes(range=[0, np.log10(15)])
+      elif (enb_data == "MeanAddNumEnbs" or enb_data == "MeanAddNumEnbsw0" or enb_data == "NumAddNumEnbsw0"):
+        fig.update_yaxes(range=[0, np.log10(10)])
+      elif enb_data == "NumAddNumEnbs":
+        fig.update_yaxes(range=[0, np.log10(6)])
+      elif enb_data == "MaxAddEnbs":
+        fig.update_yaxes(range=[0, np.log10(25)])
+      elif enb_data == "NumEnbs":
+        fig.update_yaxes(range=[0, np.log10(35)])
+    else:
+      if (enb_data == "NumSliceMaxEnbs" or enb_data == "MeanNumSliceConstEnbs++1" or enb_data == "MeanNumSliceConstEnbs"):
+        fig.update_yaxes(range=[0, 15])
+      elif (enb_data == "MeanAddNumEnbs" or enb_data == "MeanAddNumEnbsw0" or enb_data == "NumAddNumEnbsw0"):
+        fig.update_yaxes(range=[0, 10])
+      elif enb_data == "NumAddNumEnbs":
+        fig.update_yaxes(range=[0, 6])
+      elif enb_data == "MaxAddEnbs":
+        fig.update_yaxes(range=[0, 25])
+      elif enb_data == "NumEnbs":
+        fig.update_yaxes(range=[0, 35])
+
+    fig.write_image(images_dir+"/"+"enb_ilptype_"+enb_data+".svg", height= height, width= width)
+
+    all_enb_hist.to_excel(images_dir+"/"+'enb_data.xlsx', sheet_name= 'ILPCompare')
+
+    tmp = np.unique(all_enb_hist.index.get_level_values("min_snr_used").tolist())
+
+    for n in tmp:
+      tmp_enb_hist = all_enb_hist.xs(n, level='min_snr_used')
+
+      shape = [genf.MODES_NEW_NAMES[m.lower()] for m in tmp_enb_hist.index.get_level_values("ILP").tolist()]
+
+      facet = tmp_enb_hist.index.get_level_values("Power").tolist()
+
+      fig = px.histogram(tmp_enb_hist, x= 'NumEnbs', height= height, width= width, labels= {"x" : "Number eNBs" ,"pattern_shape" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "Solver Type"},
+                        title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
+
+      fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
+    return
 
   print('Plotting throughput.')
 
@@ -1196,12 +1459,16 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   facet = all_throughput.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Throughput:Médio (Bps)", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
+  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Average Throughput - Downlink (bps)", "line_dash": "Min SNR (dB)", "color": "Algorithm", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
                 #title= "CDF do throughput recebido por cada UE",
                 ecdfmode="reversed", hover_name = names, line_dash= lines, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
-                range_x=(0,9*10**6))
-
+                range_x=(0,9*10**6), color_discrete_map={"AID": COLOR_AID,
+                                                          "TID": COLOR_TID, #
+                                                          "PGWO": COLOR_PGWO, #
+                                                          "PGD": COLOR_PGD})
+  fig.update_layout(dict1={})
   fig.update_layout(font=dict(size=11))
+  fig.update_layout(yaxis_title='Cumulative Probability')
 
   fig.write_image(images_dir+"/"+"thr_ilptype.svg", height= height, width= width)
 
@@ -1219,13 +1486,24 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_enb.index.get_level_values("ILP").tolist()]
 
+  shape = [genf.MODES_NEW_NAMES[m.lower()] for m in all_enb.index.get_level_values("ILP").tolist()]
+
   facet = all_enb.index.get_level_values("Power").tolist()
 
-  fig = px.bar(all_enb, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": "Média de eNodeBs", "facet_col": "Potência(dBm)", "color": "Otimizador"},
+  fig = px.bar(all_enb, x= x, y= "Mean", color= colors, labels= {"x" : "Minimum QoS - SNR (dB)" , "Mean": "Average Number of Vehicles", "facet_col": "Potência (dBm)", "color": "Algorithm", "pattern_shape": "Algorithm"},
               #title= "Média do número de eNodeBs em cada simulação",
-              hover_name = names, error_y = "Std", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order})
+              hover_name = names, error_y = "ERR", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order},
+              color_discrete_map={"AID": COLOR_AID,
+                                  "TID": COLOR_TID, #
+                                  "PGWO": COLOR_PGWO, #
+                                  "PGD": COLOR_PGD}, pattern_shape=shape)
 
-  fig.update_layout(font=dict(size=11))
+  # Atualize os rótulos da legenda para exibir apenas a categoria (AID, TID, PGWO, PGD)
+  fig.update_traces(showlegend=True)
+  fig.update_layout(legend_title_text='Algorithm')                                  
+
+  fig.update_layout(font=dict(size=13))
+  fig.update_yaxes(range=[0, 35])
 
   fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height, width= width)
 
@@ -1244,7 +1522,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
                        title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
 
     fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
-
+  return  #TODO: REMOVE
   sp = np.sqrt(((30-1)*0.9660918**2 + (30-1)*0.8164966**2)/(30+30-2))
   t = (3.4 - 3)/(sp * np.sqrt(2/30))
   #print(t)
@@ -1257,18 +1535,23 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   facet = all_sinr.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "SNR:Médio (dB)", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
+  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Average SNR - Downlink (dB)", "line_dash": "Min SNR (dB)", "color": "Algorithm", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
                 #title= "CDF do SNR médio recebido por cada UE",
-                ecdfmode="reversed", hover_name = names, line_dash= lines, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
-                range_x=(-10, 35))
+                ecdfmode="reversed", hover_name = names, line_dash= lines, 
+                category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
+                range_x=(-10, 35), color_discrete_map={"AID": COLOR_AID,
+                                                        "TID": COLOR_TID, #
+                                                        "PGWO": COLOR_PGWO, #
+                                                        "PGD": COLOR_PGD})
 
   fig.update_layout(font=dict(size=11))
+  fig.update_layout(yaxis_title='Cumulative Probability')
 
   default_lines = ['solid', 'dot','dash', 'longdash', 'dashdot', 'longdashdot']
   for i in range(len(snr_order)):
     fig.add_vline(x=int(snr_order[i]), line_width=1, line_dash=default_lines[i], line_color="gray", name=snr_order[i])
-
-  fig.write_image(images_dir+"/"+"sinr_ilptype.svg", height= height, width= width)
+  
+  fig.write_image(images_dir+"/"+"sinr_ilptype.svg", height= 500, width= width)
 
   if cov:
     fig = px.ecdf(all_sinr, x='COV', color = colors, labels= {"COV": "SNR:Médio COV", "color": "Min SNR (dB)", "line_dash": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
@@ -1590,8 +1873,10 @@ def hist_ues_slice():
 
 
 if __name__ == "__main__":
-  chosen_seeds = [2,3,4,5,6,7,10,11,12,13]
-  modes = ['pgwo2', 'fixed']#['single', 'fixed', 'ga'] 
+  os.chdir("/home/juliano/Documentos/LTE-Scenarios-Simulation/Functions")
+  chosen_seeds = [2,6]#[2,6,10,12,13,14,15,21,22,24,25]
+
+  modes = ['single','fixed','pgwo2','ga']#['ga', 'single', 'fixed', 'pgwo2', 'pgwo3']#['single', 'fixed', 'ga'] 
   #num_ues= 60
   extra_dir = ['disaster_percentage','micro_power']
   disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
@@ -1603,7 +1888,17 @@ if __name__ == "__main__":
   extra_config_name= "video"
   height= 344#500
   width= 800#1200
-  cov = False #Cria as imagens do COV ou não
+  only_enb_data = True
+  enb_data = ["NumAddNumEnbsw0"] # 0 NumEnbs,
+                                 # 1 MaxAddEnbs
+                                 # 2 MeanNumSliceConstEnbs
+                                 # 3 MeanNumSliceConstEnbs++1
+                                 # 4 NumAddNumEnbs
+                                 # 5 MeanAddNumEnbs
+                                 # 6 NumSliceMaxEnbs
+                                 # 7 NumAddNumEnbsw0
+                                 # 8 MeanAddNumEnbsw0
+  cov = True #Cria as imagens do COV ou não
   interference = False
   num_slices = 12
   lambda_poisson_gen_users_t_m = 30
@@ -1612,11 +1907,17 @@ if __name__ == "__main__":
 
   init = time.time()
 
-  comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
+  if not only_enb_data:
+    comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
                           extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, cov= cov, interference= interference,
-                          lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices,
+                          lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices, only_enb_data=only_enb_data, enb_data=enb_data,
                           **kwargs)#Disaster and micropower as **kwargs
-  
+  else:
+    for data in enb_data:
+      comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
+                          extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, cov= cov, interference= interference,
+                          lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices, only_enb_data=only_enb_data, enb_data=data,
+                          **kwargs)#Disaster and micropower as **kwargs
 
   print(f'Total time: {(time.time() - init)/(60*60)} hours.')
   #comparing_interference(chosen_seeds=chosen_seeds, mode='fixed', project_dir=project_dir, sim_dir=sim_dir, csv_dir=csv_dir, images_dir=images_dir,
