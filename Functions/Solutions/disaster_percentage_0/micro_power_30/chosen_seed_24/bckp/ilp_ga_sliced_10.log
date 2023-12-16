@@ -1,0 +1,196 @@
+-------------Calculating Solution (this may take a while)
++++++++++++++++++++Min Sinr: 10 dB (ga)
++++++++++++++++++++With backhaul constraint. Start: 2023-06-30 03:52:07
+
+Parameters:
+- chosen seed 24
+- Map with 100 sectors
+- Map 4000 x 4000 m
+- Sector has a side of 400 m
+- Max time:  12
+- users_t_m:  [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 12, 13, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 2, 0, 0, 1, 2, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 8, 10, 0, 0, 0, 0, 1, 0, 0, 3, 2, 0, 0, 0, 2, 1, 2, 0, 1, 0, 1, 0, 0, 0], [2, 0, 0, 0, 2, 0, 3, 2, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 1, 1, 0, 2, 1, 0, 0, 1, 2, 2, 0, 0, 0, 0, 2, 1, 2, 0, 1, 1, 0, 0, 0, 3, 14, 22, 0, 0, 0, 0, 0, 3, 0, 0, 5, 1, 0, 0, 2, 0, 1, 0, 1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 2, 3, 2, 2, 0, 0, 1, 1, 2, 1, 0, 3, 0, 1, 0, 0, 1, 1, 3, 0, 2, 2, 2, 0, 0, 2, 0, 0, 0, 1, 1, 0, 1, 0, 2, 1, 2, 0, 0, 1, 0, 0, 0, 2, 5, 0, 0, 3, 0, 0, 2, 2, 4, 0, 8, 21, 1, 2, 4, 1, 0, 0, 0, 1, 2, 1, 0, 0, 1, 1, 2, 2, 1, 2, 2, 2, 0, 2], [1, 1, 2, 2, 0, 1, 3, 0, 0, 2, 3, 3, 1, 0, 1, 2, 1, 2, 2, 2, 4, 0, 1, 1, 0, 0, 2, 1, 0, 1, 4, 1, 0, 2, 2, 1, 1, 2, 0, 1, 1, 3, 2, 1, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 0, 2, 0, 0, 1, 2, 2, 1, 2, 1, 1, 1, 4, 2, 3, 0, 2, 0, 4, 2, 0, 4, 14, 11, 0, 2, 1, 2, 2, 0, 1, 0, 2, 1, 0, 2, 2, 2, 1, 1, 0, 1, 3, 0, 2, 2], [1, 1, 0, 0, 4, 1, 1, 1, 4, 2, 3, 2, 0, 5, 1, 1, 1, 2, 1, 1, 1, 0, 2, 0, 2, 1, 1, 1, 0, 2, 5, 2, 1, 2, 3, 1, 0, 1, 0, 2, 2, 3, 1, 4, 5, 3, 2, 0, 1, 1, 0, 1, 2, 2, 4, 1, 2, 2, 0, 1, 3, 1, 2, 2, 1, 1, 0, 1, 7, 5, 0, 0, 2, 0, 1, 1, 8, 17, 2, 1, 2, 1, 3, 1, 0, 2, 2, 1, 2, 1, 0, 3, 5, 2, 3, 1, 0, 1, 1, 1], [3, 0, 0, 1, 0, 3, 1, 1, 3, 2, 1, 1, 0, 2, 2, 0, 0, 3, 1, 2, 2, 0, 1, 3, 2, 1, 3, 2, 0, 3, 1, 3, 2, 3, 3, 0, 1, 1, 3, 2, 5, 3, 2, 3, 1, 1, 2, 3, 1, 2, 1, 1, 1, 0, 0, 2, 0, 1, 1, 1, 1, 0, 1, 3, 1, 2, 2, 0, 2, 2, 1, 0, 1, 2, 3, 2, 2, 1, 0, 2, 2, 0, 0, 2, 0, 1, 1, 1, 0, 0, 0, 1, 3, 3, 1, 1, 1, 3, 2, 2], [1, 2, 2, 1, 0, 2, 2, 1, 1, 3, 2, 2, 2, 0, 0, 0, 2, 1, 1, 2, 0, 0, 0, 2, 1, 1, 2, 2, 0, 0, 1, 0, 0, 2, 0, 0, 0, 4, 1, 1, 3, 0, 2, 3, 2, 0, 0, 2, 1, 0, 0, 1, 3, 1, 0, 3, 1, 0, 1, 2, 1, 1, 4, 0, 0, 0, 3, 2, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 4, 1, 2, 3, 2, 3, 1, 0, 0, 1, 3, 0], [3, 1, 1, 1, 2, 3, 3, 0, 1, 0, 2, 2, 1, 1, 0, 0, 1, 3, 1, 1, 0, 1, 0, 1, 1, 0, 1, 2, 1, 1, 0, 0, 1, 1, 0, 2, 2, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 2, 1, 0, 0, 2, 0, 1, 1, 1, 0, 0, 2, 0, 1, 2, 0, 0, 1, 2, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 2, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 2, 0, 0, 0, 0, 2, 0, 0, 3], [2, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 2, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 0, 2, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 2, 1, 1, 0, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 2, 1, 2, 0, 0, 1, 3, 1, 0, 1, 1, 0], [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 2, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 2, 0, 0, 0, 0, 0, 0, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 2, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+MAX_USER_PER_ANTENNAS_m:  [40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40]
+antennas_map_m:  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+FIRST_ANTENNA:  91
+MIN_SNR_m:  [10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0, 10.0]
+-MIN_DIST:  2000
+- disaster percentage:  0
+44
+
+Starting GA of slice 0.
+
+Generation :  1
+Fitness of the best solution : 880953372.7953522
+Generation :  2
+Fitness of the best solution : 930963488.6036719
+Generation :  3
+Fitness of the best solution : 960823831.2907414
+Generation :  4
+Fitness of the best solution : 970753644.4065936
+Generation :  5
+Fitness of the best solution : 970753644.4065936
+Generation :  6
+Fitness of the best solution : 970753644.4065936
+Generation :  7
+Fitness of the best solution : 970753644.4065936
+Generation :  8
+Fitness of the best solution : 970753644.4065936
+Generation :  9
+Fitness of the best solution : 970753644.4065936
+Generation :  10
+Fitness of the best solution : 970753644.4065936
+Generation :  11
+Fitness of the best solution : 970753644.4065936
+Generation :  12
+Fitness of the best solution : 970753644.4065936
+Generation :  13
+Fitness of the best solution : 970753644.4065936
+Generation :  14
+Fitness of the best solution : 970753644.4065936
+Generation :  15
+Fitness of the best solution : 970753644.4065936
+Generation :  16
+Fitness of the best solution : 970753644.4065936
+Generation :  17
+Fitness of the best solution : 970753699.6350685
+Generation :  18
+Fitness of the best solution : 970753699.6350685
+Generation :  19
+Fitness of the best solution : 970753699.6350685
+Generation :  20
+Fitness of the best solution : 970753699.6350685
+Generation :  21
+Fitness of the best solution : 970753699.6350685
+Generation :  22
+Fitness of the best solution : 970753699.6350685
+Generation :  23
+Fitness of the best solution : 970753699.6350685
+Generation :  24
+Fitness of the best solution : 970753699.6350685
+Generation :  25
+Fitness of the best solution : 970753699.6350685
+Generation :  26
+Fitness of the best solution : 970753699.6350685
+Generation :  27
+Fitness of the best solution : 970753699.6350685
+Generation :  28
+Fitness of the best solution : 970753699.6350685
+Generation :  29
+Fitness of the best solution : 970753699.6350685
+Generation :  30
+Fitness of the best solution : 970753699.6350685
+Generation :  31
+Fitness of the best solution : 970753699.6350685
+Generation :  32
+Fitness of the best solution : 970753699.6350685
+Generation :  33
+Fitness of the best solution : 970753699.6350685
+Generation :  34
+Fitness of the best solution : 970753699.6350685
+Generation :  35
+Fitness of the best solution : 970753699.6350685
+Generation :  36
+Fitness of the best solution : 970753699.6350685
+Generation :  37
+Fitness of the best solution : 970753699.6350685
+Generation :  38
+Fitness of the best solution : 970753699.6350685
+Generation :  39
+Fitness of the best solution : 970753699.6350685
+Generation :  40
+Fitness of the best solution : 970753699.6350685
+Generation :  41
+Fitness of the best solution : 970753699.6350685
+Generation :  42
+Fitness of the best solution : 970753699.6350685
+Generation :  43
+Fitness of the best solution : 970753699.6350685
+Generation :  44
+Fitness of the best solution : 970753699.6350685
+Generation :  45
+Fitness of the best solution : 970753699.6350685
+Generation :  46
+Fitness of the best solution : 970753699.6350685
+Generation :  47
+Fitness of the best solution : 970753699.6350685
+Parameters of the best solution : [0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0
+ 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+ 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0]
+Number of antennas of the best solution = 3.0
+Number of covered regions of the best solution = 75.0
+Index of the best solution : 2
+Total generations: 47.
+Best fitness value reached after 17 generations.
+
+34 : 76 => 1788.8543819998317
+
+34 : 91 => 2683.281572999748
+
+76 : 91 => 2154.0659228538016
+
+Starting GA of slice 1.
+
+Generation :  1
+Fitness of the best solution : 831003757.9983402
+Generation :  2
+Fitness of the best solution : 890993306.7407532
+Generation :  3
+Fitness of the best solution : 911003277.8546243
+Generation :  4
+Fitness of the best solution : 920983578.8518313
+Generation :  5
+Fitness of the best solution : 920973553.1159
+Generation :  6
+Fitness of the best solution : 940953640.4315919
+Generation :  7
+Fitness of the best solution : 940983640.4315919
+Generation :  8
+Fitness of the best solution : 950953750.2841452
+Generation :  9
+Fitness of the best solution : 950953750.2841452
+Generation :  10
+Fitness of the best solution : 950953750.2841452
+Generation :  11
+Fitness of the best solution : 950953750.2841452
+Generation :  12
+Fitness of the best solution : 950953750.2841452
+Generation :  13
+Fitness of the best solution : 950953750.2841452
+Generation :  14
+Fitness of the best solution : 950953750.2841452
+Generation :  15
+Fitness of the best solution : 950953750.2841452
+Generation :  16
+Fitness of the best solution : 950953750.2841452
+Generation :  17
+Fitness of the best solution : 950953750.2841452
+Generation :  18
+Fitness of the best solution : 950953750.2841452
+Generation :  19
+Fitness of the best solution : 950953750.2841452
+Generation :  20
+Fitness of the best solution : 950953750.2841452
+Generation :  21
+Fitness of the best solution : 950953750.2841452
+Generation :  22
+Fitness of the best solution : 950953750.2841452
+Generation :  23
+Fitness of the best solution : 950953750.2841452
+Generation :  24
+Fitness of the best solution : 950953750.2841452
+Generation :  25
+Fitness of the best solution : 950953750.2841452
+Generation :  26
+Fitness of the best solution : 950973673.4179081
+Generation :  27
+Fitness of the best solution : 950973673.4179081
+Generation :  28
+Fitness of the best solution : 950973673.4179081
+Generation :  29
+Fitness of the best solution : 950973673.4179081
+Generation :  30
+Fitness of the best solution : 950973673.4179081
+Generation :  31
+Fitness of the best solution : 950973673.4179081
+Generation :  32
+Fitness of the best solution : 950973673.4179081
