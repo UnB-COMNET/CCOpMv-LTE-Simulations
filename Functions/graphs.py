@@ -59,10 +59,23 @@ Data generated using the command:
     opp_scavetool x -o ilp_varying_sliced_video.csv -f "module(**.cellularNic.channelModel[*]) OR module(**.app[*])" ilp_varying_sliced_*_VIDEO/*-*.sca ilp_varying_sliced_*_VIDEO/*-*.vec
 """
 
-COLOR_AID = "firebrick"
-COLOR_TID = "springgreen"
+COLOR_AID = "orangered"
+COLOR_TID = "limegreen"
 COLOR_PGWO = "dodgerblue"
 COLOR_PGD = "darkmagenta"
+
+LINE_AID = "solid"
+LINE_TID = "dashdot"#"10px,2px,2px,2px"
+LINE_PGWO = "dash"
+LINE_PGD = "dot"  #'longdash', 'dashdot', 'longdashdot'
+
+LINE_5 = "line"
+LINE_10 = "dot"
+LINE_15 = "dash"
+
+FILTER_SNR = False  
+MIN_SNR = 15 # 5 # 15
+LINE_STY = "dot" # "solid" # "dash"
 
 def get_data_from_scalar (data_name: str, module: str, scalar_data) -> pd.DataFrame:
 
@@ -212,7 +225,8 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
     new_data["MeanAddNumEnbsw0"] = [0]*new_data.shape[0]
 
     for min_snr in extra_info['min_snr_used'].unique():
-      #min_snr = '15' #TODO: REMOVE
+      if FILTER_SNR:
+        min_snr = str(MIN_SNR)
       
       test_data = data.copy()
       test_data = test_data[test_data['min_snr_used'] == min_snr]
@@ -258,7 +272,7 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
         num_slices_const_enb_diff_one = [x for x in num_slices_const_enb if x != 1]
         
         mean_slices_const_enb_diff_one = sum(num_slices_const_enb_diff_one)/len(num_slices_const_enb_diff_one) # 3 MeanNumSliceConstEnbs++1
-        # Statistics:
+        # Statistics Definitions:
         # 1 - NumSliceMaxEnbs: Avalia a quantidade de slices em que se manteve a máxima quantidade de eNB utilizadas no cenário considerando todos os slices.
         # 2 - MeanNumSliceConstEnbs: Avalia a média da duração de intervalos (slices) em que a quantidade de eNB ficou constante. 
         #                            Considera também duranções de 1 slice.
@@ -275,9 +289,9 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
         new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanNumSliceConstEnbs++1"] = mean_slices_const_enb_diff_one
         new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MaxAddEnbs"] = max_add_enb
         new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"NumAddNumEnbs"] = num_add_enb
-        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanAddNumEnbs"] = mean_add_enb
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanAddNumEnbs"] = mean_add_enb      # 6
         new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"NumAddNumEnbsw0"] = num_add_enb/12   # 7 NumAddNumEnbsw0
-        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanAddNumEnbsw0"] = mean_add_enb*num_add_enb/12   # 7 NumAddNumEnbsw0
+        new_data.loc[(new_data['min_snr_used'] == min_snr) & (new_data['seed'] == seed),"MeanAddNumEnbsw0"] = mean_add_enb*num_add_enb/12   # 8 MeanAddNumEnbsw0
     #pivot_df.reset_index(inplace=True)
 
   if slice_op == 'mean':
@@ -293,8 +307,9 @@ def unite_slices (processed_data: pd.DataFrame, extra_info: pd.DataFrame, id_col
 
   if count_enb:
     col_names = noslice_data.columns.to_list()
-    for name in col_names:
-      if name == col_to_keep:
+    tmp_col_names = col_names.copy()
+    for name in tmp_col_names:
+      if name in col_to_keep:   #name == col_to_keep
         col_names.remove(name)
   
     noslice_data = noslice_data.drop(columns=col_names)#noslice_data.loc[:,col_to_keep]
@@ -315,6 +330,8 @@ def compute_cov (data: pd.DataFrame, id_columns: List, enb = False):
   cov_data = (std_data/mean_data)
 
   if enb:
+    x = len(data/3)
+    b = stats.t.ppf(0.975, len(data)/3 - 1)
     err_data = std_data#(2.228*std_data/len(std_data)*[len(data)/3])
     err_data = err_data/sqrt(len(data)/3)*stats.t.ppf(0.975, len(data)/3 - 1)# 2.228
 
@@ -327,27 +344,14 @@ def compute_cov (data: pd.DataFrame, id_columns: List, enb = False):
   if enb:
     err_data.columns = pd.MultiIndex.from_product([['ERR'], err_data.columns])
 
-  #print(f'Antes: {data[data==np.nan]}, {data.shape}')
-  mean_data.to_csv("mean_data.csv")
   if enb:
     new_data = pd.concat([mean_data, std_data, cov_data, err_data], axis= 1).stack()  
   else:
     new_data = pd.concat([mean_data, std_data, cov_data], axis= 1).stack()
-  new_data.to_csv("new_data.csv")
 
   new_data.index.names = new_data.index.names[:-1] + ['n_obj']
 
-  #print(f'Mean cov: {new_data[new_data["Mean"].isna()]}, {new_data["Mean"].isna().sum()}, {new_data.shape}')
-  #print(f'Zero cov: {new_data[new_data["Mean"]==0]}, {(new_data["Mean"]==0).sum()}, {new_data.shape}')
-  #print(f'Sum cov: {(new_data["Mean"]==0).sum(level="min_snr_used")}')
-  #print(f'Inifile: {new_data[new_data["Mean"]==0].index.get_level_values("inifile")}')
-  #print(f'Inifile: {new_data[new_data["Mean"]==0].index.get_level_values(-1)}')
-
-  #print(f'Depois: {new_data[new_data.isna().any(axis=1)]}, {new_data.shape}')
-  #print(f'Depois: {new_data[new_data["Std"].isna()]}, {new_data.shape}')
-
   return new_data
-  #return new_data.reset_index(new_data.index.nlevels-1)
 
 def getCOV(data: pd.DataFrame, extra_info: pd.DataFrame, ues_per_slice: dict, nonactive_ues: pd.DataFrame, id_columns: list = ['Inter', 'RBs', 'min_snr_used', 'repetition', 'inifile'],
            unite: bool = True, slice_op: str= 'mean', count_enb: bool = False, enb = False, col_to_keep = "NumEnbs"):
@@ -463,7 +467,8 @@ def get_nonactiveapp_ues(data_packets_sent: pd.DataFrame, extra_info: pd.DataFra
 
   return result
 
-def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dict, extra: bool= False, only_enb_data: bool = False, enb_data: str = "NumEnbs", slice_op: str = "mean"):
+def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dict, extra: bool= False, only_enb_data: bool = False, 
+                        enb_data: str = "NumEnbs", slice_op: str = "mean"):
 
   results_throughput = []
   results_enb = []
@@ -487,6 +492,8 @@ def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dic
       new_data_frame['run'] = new_data_frame['run'].astype(str) + f'_seed_{chosen_seed}'
       csv_df = pd.concat([csv_df, new_data_frame])
 
+    if FILTER_SNR:
+      csv_df = csv_df[csv_df['run'].str.contains(f'sliced_{MIN_SNR}_')]     #NOTE: Comentar para nao filtrar por snr
     preItervar, preRunattr, preVector, preScalar, extra_info, num_enbs = processInitialData(csv_df)
 
 
@@ -544,7 +551,7 @@ def compare_csvs_video(csvs_info: List[list], dict_ids: dict, ues_per_slice: dic
       count += 1
     
     else:
-      print('Getting eNBs: ' + enb_data)  #sempre observando a media: media de medias
+      print('Getting eNBs: ', enb_data)  #sempre observando a media: media de medias
       if enb_data == "NumEnbs":
         slice_op = "max"
 
@@ -1326,7 +1333,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   
   if only_enb_data:
     all_enb, all_enb_hist = compare_csvs_video(csvs_info=csvs_info, dict_ids={'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
-                                                                                                                            extra= extra, ues_per_slice= ues_per_slice, only_enb_data=only_enb_data, enb_data=enb_data)
+                                                extra= extra, ues_per_slice= ues_per_slice, only_enb_data=only_enb_data, enb_data=enb_data)
   elif extra:
     all_throughput, all_sinr, all_enb, all_enb_hist, all_enddelay, all_rcvd_packets, all_packets_sent = compare_csvs_video(csvs_info=csvs_info, dict_ids={'ILP' : [mode.capitalize() for mode in modes], 'Power': [30 for _ in modes]},
                                                                                                                             extra= extra, ues_per_slice= ues_per_slice)
@@ -1339,6 +1346,35 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
   snr_order = ['5', '10', '15']                                                                                                       
 
   if only_enb_data:
+    multi_index = all_enb.index.names
+    alg = all_enb.index.get_level_values("ILP").tolist()
+    min_snr = all_enb.index.get_level_values("min_snr_used").tolist()
+    stats_name = all_enb.index.get_level_values('n_obj').tolist()
+    # Fixed, Ga, Pgwo2, Single
+
+    
+    arrays = [
+                  np.array(["5", "5", "5", "5", "10", "10", "10", "10", "15", "15", "15", "15"]),
+                  np.array(["Fixed", "Single", "Pgwo2", "Ga", "Fixed", "Single", "Pgwo2", "Ga", "Fixed", "Single", "Pgwo2", "Ga"]),
+              ]
+    df_mean = pd.DataFrame(index=arrays)
+    df_err = pd.DataFrame(index=arrays)
+    multi_index = df_mean.index.names
+    for _stats_name in stats_name:
+      data_mean = []
+      data_err = []
+      for _alg, _min_snr in zip(alg,min_snr):
+        value = all_enb.loc[(_alg, 30, 'false', '100', _min_snr, _stats_name)]['Mean']
+        value_err = all_enb.loc[(_alg, 30, 'false', '100', _min_snr, _stats_name)]['ERR']
+
+        df_mean.loc[(_min_snr, _alg),_stats_name] = value
+        df_err.loc[(_min_snr, _alg),_stats_name] = value_err  
+
+    df_mean.to_csv("tabela_media.csv")
+    df_err.to_csv("tabela_erro.csv")
+
+    return
+    """
     if enb_data == "NumEnbs":
       str_ytitle = "NumEnbs"#"Average Number of Vehicles"
     elif enb_data == "NumSliceMaxEnbs":
@@ -1375,7 +1411,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
                                     "PGWO": COLOR_PGWO, #
                                     "PGD": COLOR_PGD}) #
 
-    """
+    
     if enb_data == "NumEnbs":
       x = all_enb_max.index.get_level_values("min_snr_used").tolist()
       names = all_enb_max.index.get_level_values('n_obj').tolist()
@@ -1402,7 +1438,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
                                     "TID":"grey",
                                     "PGWO":"grey",
                                     "PGD":"grey"})
-    """
+    
     fig.update_layout(font=dict(size=13))
     fig.show()
     islog = False
@@ -1448,6 +1484,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
       fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
     return
+    """
 
   print('Plotting throughput.')
 
@@ -1459,19 +1496,74 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   facet = all_throughput.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Average Throughput - Downlink (bps)", "line_dash": "Min SNR (dB)", "color": "Algorithm", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
-                #title= "CDF do throughput recebido por cada UE",
-                ecdfmode="reversed", hover_name = names, line_dash= lines, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
+  fig = px.ecdf(all_throughput, x='Mean', color = colors, labels= {"Mean": "Average Throughput - Downlink (bps)", "color": "Algorithm", "line_dash": "Algorithm", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
+                #title= "CDF do throughput recebido por cada UE",                           "line_dash": "Min SNR (dB)"
+                ecdfmode="reversed", hover_name = names, line_dash = colors, category_orders={"color": genf.MODES_NEW_NAMES.values()},
+                                                                                                                              #, "line_dash": snr_order
                 range_x=(0,9*10**6), color_discrete_map={"AID": COLOR_AID,
                                                           "TID": COLOR_TID, #
                                                           "PGWO": COLOR_PGWO, #
-                                                          "PGD": COLOR_PGD})
-  fig.update_layout(dict1={})
-  fig.update_layout(font=dict(size=11))
-  fig.update_layout(yaxis_title='Cumulative Probability')
+                                                          "PGD": COLOR_PGD},
+                                  line_dash_map={"AID": LINE_AID,
+                                                        "TID": LINE_TID, #
+                                                        "PGWO": LINE_PGWO, #
+                                                        "PGD": LINE_PGD})
+  #fig.update_layout(dict1={})
 
-  fig.write_image(images_dir+"/"+"thr_ilptype.svg", height= height, width= width)
+  #fig.update_traces(patch={"line": {"dash": LINE_STY}})
+  fig.update_traces(showlegend=True)
+  fig.update_layout(legend_title_text='')
+  fig.update_layout(legend_title = dict(font = dict(size = 23, family='Times')),
+                    legend= dict(font = dict(size = 23, family='Times')))                               
+  fig.update_layout(legend = dict(orientation='h'))
+  fig.update_layout(legend = dict(yanchor='top', y=1.15, xanchor='left', x=0.01))
+  fig.update_xaxes(title_font=dict(size=23, family='Times'), linecolor='black', gridcolor='lightgrey')
+  fig.update_yaxes(title_font=dict(size=23, family='Times'), linecolor='black', gridcolor='lightgrey')
 
+  fig.update_layout(font=dict(size=20, family='Times'))
+  fig.update_layout(yaxis_title='Cumulative Probability', xaxis=dict(showgrid=False))
+  fig.update_layout(plot_bgcolor="rgb(255,255,255,255)")
+
+  fig.add_vline(x=128000, line_width=1.5, line_dash="solid", line_color="gray", name="Audio - VoLTE EVS codec 128 kbps")
+  fig.add_vline(x=2000000, line_width=1.5, line_dash="solid", line_color="gray", name="Video and Audio - 720p HD Generic")
+  fig.add_vline(x=3000000, line_width=1.5, line_dash="solid", line_color="gray", name="Video and Audio - 720p HD HEVC")
+
+  # add annotation
+  fig.add_annotation(dict(font=dict(color='black',size=15),
+                                          x=138000,
+                                          y=0.10,
+                                          showarrow=False,
+                                          text="Audio - VoLTE EVS codec 128 kbps",
+                                          textangle=270,
+                                          xanchor='left',
+                                          yanchor='bottom',
+                                          xref="x",
+                                          yref="paper"))
+
+  fig.add_annotation(dict(font=dict(color='black',size=15),
+                                          x=2010000,
+                                          y=0.10,
+                                          showarrow=False,
+                                          text="Video and Audio - 720p HD Generic",
+                                          textangle=270,
+                                          xanchor='left',
+                                          yanchor='bottom',
+                                          xref="x",
+                                          yref="paper"))
+
+  fig.add_annotation(dict(font=dict(color='black',size=15),
+                                          x=3010000,
+                                          y=0.10,
+                                          showarrow=False,
+                                          text="Video and Audio - 720p HD HEVC",
+                                          textangle=270,
+                                          xanchor='left',
+                                          yanchor='bottom',
+                                          xref="x",
+                                          yref="paper"))
+
+  fig.write_image(images_dir+"/"+f"thr_ilptype_{MIN_SNR}.svg", height= height, width= width)
+  fig.write_html(images_dir+"/"+f"thr_ilptype_{MIN_SNR}.html")
   if cov:
     fig = px.ecdf(all_throughput, x='COV', color = colors, labels= {"COV": "Throughput:Médio COV", "line_dash": "Min SNR (dB)", "color": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
                   title= "UEs Throughput COV DL - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
@@ -1500,12 +1592,20 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   # Atualize os rótulos da legenda para exibir apenas a categoria (AID, TID, PGWO, PGD)
   fig.update_traces(showlegend=True)
-  fig.update_layout(legend_title_text='Algorithm')                                  
+  fig.update_layout(legend_title_text='')
+  fig.update_layout(legend_title = dict(font = dict(size = 23, family='Times')),
+                    legend= dict(font = dict(size = 23, family='Times')))                               
+  fig.update_layout(legend = dict(orientation='h'))
+  fig.update_layout(legend = dict(yanchor='top', y=1.22, xanchor='left', x=0.01))
+  fig.update_xaxes(title_font=dict(size=23, family='Times'), linecolor='black', gridcolor='lightgrey')
+  fig.update_yaxes(title_font=dict(size=23, family='Times'), linecolor='black', gridcolor='lightgrey')
 
-  fig.update_layout(font=dict(size=13))
-  fig.update_yaxes(range=[0, 35])
+  fig.update_layout(font=dict(size=20, family='Times'), xaxis=dict(showgrid=False))
+  fig.update_layout(plot_bgcolor="rgb(255,255,255,255)")
+  fig.update_yaxes(range=[0, 31], dtick=5)
 
-  fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height, width= width)
+
+  fig.write_image(images_dir+"/"+"enb_ilptype.svg", height= height-100, width= width)
 
   all_enb_hist.to_excel(images_dir+"/"+'enb_data.xlsx', sheet_name= 'ILPCompare')
 
@@ -1522,7 +1622,7 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
                        title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
 
     fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
-  return  #TODO: REMOVE
+  
   sp = np.sqrt(((30-1)*0.9660918**2 + (30-1)*0.8164966**2)/(30+30-2))
   t = (3.4 - 3)/(sp * np.sqrt(2/30))
   #print(t)
@@ -1535,24 +1635,48 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
 
   facet = all_sinr.index.get_level_values("Power").tolist()
 
-  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Average SNR - Downlink (dB)", "line_dash": "Min SNR (dB)", "color": "Algorithm", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
+  fig = px.ecdf(all_sinr, x='Mean', color = colors, labels= {"Mean": "Average SNR - Downlink (dB)",
+                                                             "color": "Algorithm",
+                                                             "line_dash": "Algorithm",
+                                                             "facet_col": "Potência(dBm)",
+                                                             "y": "Probabilidade"},
+                markers= False, lines= True,
                 #title= "CDF do SNR médio recebido por cada UE",
-                ecdfmode="reversed", hover_name = names, line_dash= lines, 
-                category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order},
-                range_x=(-10, 35), color_discrete_map={"AID": COLOR_AID,
+                ecdfmode="reversed", hover_name = names, line_dash = colors,
+                category_orders={"color": genf.MODES_NEW_NAMES.values()},
+                range_x=(-3, 35), color_discrete_map={"AID": COLOR_AID,
                                                         "TID": COLOR_TID, #
                                                         "PGWO": COLOR_PGWO, #
-                                                        "PGD": COLOR_PGD})
+                                                        "PGD": COLOR_PGD},
+                                  line_dash_map={"AID": LINE_AID,
+                                                        "TID": LINE_TID, #
+                                                        "PGWO": LINE_PGWO, #
+                                                        "PGD": LINE_PGD})
 
-  fig.update_layout(font=dict(size=11))
+  #fig.update_layout(font=dict(size=11))  
+  #fig.update_traces(patch={"line": {"dash": LINE_STY}})
+  fig.update_traces(showlegend=True)
+  fig.update_layout(legend_title_text='')
   fig.update_layout(yaxis_title='Cumulative Probability')
+  #fig.update_layout(legend=dict(itemsizing='trace'))
+  fig.update_layout(legend_title = dict(font = dict(size = 23, family='Times')),
+                    legend= dict(font = dict(size = 23, family='Times')))                               
+  fig.update_layout(legend = dict(orientation='h'))
+  fig.update_layout(legend = dict(yanchor='top', y=1.15, xanchor='left', x=0.01))
+  fig.update_xaxes(title_font=dict(size=23, family='Times'), linecolor='black', gridcolor='lightgrey')
+  fig.update_yaxes(title_font=dict(size=23, family='Times'), linecolor='black', gridcolor='lightgrey')
+
+  fig.update_layout(font=dict(size=20, family='Times'), xaxis=dict(showgrid=False,zeroline=False))
+  fig.update_layout(plot_bgcolor="rgb(255,255,255,255)")
 
   default_lines = ['solid', 'dot','dash', 'longdash', 'dashdot', 'longdashdot']
-  for i in range(len(snr_order)):
-    fig.add_vline(x=int(snr_order[i]), line_width=1, line_dash=default_lines[i], line_color="gray", name=snr_order[i])
+  #for i in range(len(snr_order)):
+  #  fig.add_vline(x=int(snr_order[i]), line_width=3, line_dash=default_lines[i], line_color="gray", name=snr_order[i])
   
-  fig.write_image(images_dir+"/"+"sinr_ilptype.svg", height= 500, width= width)
+  fig.add_vline(x=MIN_SNR, line_width=3, line_dash="solid", line_color="gray", name=str(MIN_SNR))
 
+  fig.write_image(images_dir+"/"+f"sinr_ilptype_{MIN_SNR}.svg", height= height, width= width)
+  fig.write_html(images_dir+"/"+f"sinr_ilptype_{MIN_SNR}.html")
   if cov:
     fig = px.ecdf(all_sinr, x='COV', color = colors, labels= {"COV": "SNR:Médio COV", "color": "Min SNR (dB)", "line_dash": "Otimizador", "facet_col": "Potência(dBm)", "y": "Probabilidade"}, markers= False, lines= True,
                   title= "UE Sinr DL COV - CDF", ecdfmode="reversed", hover_name = names, line_dash= lines, facet_col= facet, category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
@@ -1874,7 +1998,7 @@ def hist_ues_slice():
 
 if __name__ == "__main__":
   os.chdir("/home/juliano/Documentos/LTE-Scenarios-Simulation/Functions")
-  chosen_seeds = [2,6]#[2,6,10,12,13,14,15,21,22,24,25]
+  chosen_seeds = [2,6,10,12,13,14,15,21,22,24,25]
 
   modes = ['single','fixed','pgwo2','ga']#['ga', 'single', 'fixed', 'pgwo2', 'pgwo3']#['single', 'fixed', 'ga'] 
   #num_ues= 60
@@ -1886,19 +2010,21 @@ if __name__ == "__main__":
   csv_dir = '_5G/results'
   images_dir = "Images"
   extra_config_name= "video"
-  height= 344#500
+  height= 444#500
   width= 800#1200
-  only_enb_data = True
-  enb_data = ["NumAddNumEnbsw0"] # 0 NumEnbs,
-                                 # 1 MaxAddEnbs
+  only_enb_data = False
+  enb_data = ["NumSliceMaxEnbs","MeanNumSliceConstEnbs++1","MaxAddEnbs","NumAddNumEnbsw0","MeanAddNumEnbsw0","NumAddNumEnbs","MeanAddNumEnbs"] 
+                                 # 0 NumEnbs,
+                                 # 1 NumSliceMaxEnbs  
                                  # 2 MeanNumSliceConstEnbs
-                                 # 3 MeanNumSliceConstEnbs++1
-                                 # 4 NumAddNumEnbs
-                                 # 5 MeanAddNumEnbs
-                                 # 6 NumSliceMaxEnbs
-                                 # 7 NumAddNumEnbsw0
-                                 # 8 MeanAddNumEnbsw0
-  cov = True #Cria as imagens do COV ou não
+                                 # 3 MeanNumSliceConstEnbs++1 
+                                 # 4 MaxAddEnbs 
+                                 # 5 NumAddNumEnbs    
+                                 # 6 MeanAddNumEnbs   
+                                 # 7 NumAddNumEnbsw0  
+                                 # 8 MeanAddNumEnbsw0 
+  
+  cov = True # True: to creat COV images
   interference = False
   num_slices = 12
   lambda_poisson_gen_users_t_m = 30
@@ -1910,14 +2036,13 @@ if __name__ == "__main__":
   if not only_enb_data:
     comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
                           extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, cov= cov, interference= interference,
-                          lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices, only_enb_data=only_enb_data, enb_data=enb_data,
+                          lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices, only_enb_data=only_enb_data, enb_data=None,
                           **kwargs)#Disaster and micropower as **kwargs
   else:
-    for data in enb_data:
-      comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
-                          extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, cov= cov, interference= interference,
-                          lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices, only_enb_data=only_enb_data, enb_data=data,
-                          **kwargs)#Disaster and micropower as **kwargs
+    comparing_video_ilptype(chosen_seeds= chosen_seeds, modes= modes, project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
+                        extra_dir= extra_dir, extra_config_name= extra_config_name, height= height, width= width, cov= cov, interference= interference,
+                        lambda_poisson=lambda_poisson_gen_users_t_m, num_slices=num_slices, only_enb_data=only_enb_data, enb_data=enb_data,
+                        **kwargs)#Disaster and micropower as **kwargs
 
   print(f'Total time: {(time.time() - init)/(60*60)} hours.')
   #comparing_interference(chosen_seeds=chosen_seeds, mode='fixed', project_dir=project_dir, sim_dir=sim_dir, csv_dir=csv_dir, images_dir=images_dir,

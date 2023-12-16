@@ -22,13 +22,14 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [2,3,4,5,6,7,10,11,12,13] #range(20)
+    chosen_seeds = [2,6,10,12,13,14,15,21,22,24,25]
+
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
     min_sinrs = [5,10,15]
-    modes = ['pgwo2'] # fixed or single or ga or gwo
+    modes = ['single','fixed','pgwo2','ga'] # Op: fixed, single, ga or pgwo2
     micro_power = 30 #dBm
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'

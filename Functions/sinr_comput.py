@@ -3,7 +3,6 @@ import numpy as np
 import random
 from coordinates import Coordinate
 
-#speed m/s
 def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
                  carrier_frequency: float, ue_coord: Coordinate, tx_coord: Coordinate,
                  cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
@@ -29,14 +28,13 @@ def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: f
 
 def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_frequency: float,
                   sim_time: float = 0.001):
-  #jakes_map = None
-
-  speed_of_light = 299792458.0
+  
+  speed_of_light = 299792458.0            # speed of light (m/s)
 
   #convert carrier frequency from GHz to Hz
-  f = carrier_frequency * 1000000000
+  f = carrier_frequency * 1000000000      # frequency (Hz)
 
-  t = sim_time - 0.001
+  t = sim_time - 0.001                    # time (s)
 
   angle_arrival = []
   delay_spread = []
