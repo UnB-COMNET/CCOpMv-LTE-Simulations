@@ -1,10 +1,7 @@
-from calendar import c
-from genericpath import exists
 from math import atan, sqrt, degrees
-from random import randrange
 from typing import List
 
-from geometry import Ue, Movement, coord2Region
+from geometry import Ue, Movement
 from coordinates import Coordinate
 from geometry import MapChess
 import xml.etree.ElementTree as ET

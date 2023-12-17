@@ -1374,117 +1374,6 @@ def comparing_video_ilptype(chosen_seeds: List[int], modes: List[str], project_d
     df_err.to_csv("tabela_erro.csv")
 
     return
-    """
-    if enb_data == "NumEnbs":
-      str_ytitle = "NumEnbs"#"Average Number of Vehicles"
-    elif enb_data == "NumSliceMaxEnbs":
-      str_ytitle = "NumSliceMaxEnbs"
-    elif enb_data == "MeanNumSliceConstEnbs":
-      str_ytitle = "MeanNumSliceConstEnbs"
-    elif enb_data == "MeanNumSliceConstEnbs++1":
-      str_ytitle = "MeanNumSliceConstEnbs++1"
-    elif enb_data == "MaxAddEnbs":
-      str_ytitle = "MaxAddEnbs"#"Maximum Added Vehicles to Cenario"    #TODO: melhorar o título
-    elif enb_data == "NumAddNumEnbs":
-      str_ytitle = "NumAddNumEnbs"
-    elif enb_data == "MeanAddNumEnbs":
-      str_ytitle = "MeanAddNumEnbs"
-    elif enb_data == "NumAddNumEnbsw0":
-      str_ytitle = "NumAddNumEnbsw0"
-    elif enb_data == "MeanAddNumEnbsw0":
-      str_ytitle = "MeanAddNumEnbsw0"
-    
-    print("Plotting eNB " + enb_data)
-    x = all_enb.index.get_level_values("min_snr_used").tolist()
-
-    names = all_enb.index.get_level_values('n_obj').tolist()
-
-    colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_enb.index.get_level_values("ILP").tolist()]
-
-    facet = all_enb.index.get_level_values("Power").tolist()
-    
-    fig = px.bar(all_enb, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": str_ytitle, "facet_col": "Potência (dBm)", "color": "Algorithm"},
-                #title= "Média do número de eNodeBs em cada simulação",
-                hover_name = names, error_y = "ERR", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order}, 
-                color_discrete_map={"AID": COLOR_AID,
-                                    "TID": COLOR_TID, #
-                                    "PGWO": COLOR_PGWO, #
-                                    "PGD": COLOR_PGD}) #
-
-    
-    if enb_data == "NumEnbs":
-      x = all_enb_max.index.get_level_values("min_snr_used").tolist()
-      names = all_enb_max.index.get_level_values('n_obj').tolist()
-      colors = [genf.MODES_NEW_NAMES[m.lower()] for m in all_enb_max.index.get_level_values("ILP").tolist()]
-      facet = all_enb_max.index.get_level_values("Power").tolist()
-
-      fig2 = px.bar(all_enb_max, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": str_ytitle, "facet_col": "Potência (dBm)", "color": "Algorithm"},
-                #title= "Média do número de eNodeBs em cada simulação",
-                hover_name = names, error_y = "ERR", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order}, 
-                color_discrete_map={"AID":"grey",
-                                    "TID":"grey",
-                                    "PGWO":"grey",
-                                    "PGD":"grey"})
-
-      fig2.update_layout(font=dict(size=11))
-      fig2.update_yaxes(type="log")
-      fig2.update_yaxes(range=[0, np.log10(35)])
-      fig2.write_image(images_dir+"/"+"enb_ilptype_test"+enb_data+".svg", height= height, width= width)
-
-      fig.add_bar(all_enb_max, x= x, y= "Mean", color= colors, labels= {"x" : "Min SNR (dB)" , "Mean": str_ytitle, "facet_col": "Potência (dBm)", "color": "Algorithm"},
-                #title= "Média do número de eNodeBs em cada simulação",
-                hover_name = names, error_y = "ERR", barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "x": snr_order}, 
-                color_discrete_map={"AID":"grey",
-                                    "TID":"grey",
-                                    "PGWO":"grey",
-                                    "PGD":"grey"})
-    
-    fig.update_layout(font=dict(size=13))
-    fig.show()
-    islog = False
-    if islog:
-      fig.update_yaxes(type="log")
-      if (enb_data == "NumSliceMaxEnbs" or enb_data == "MeanNumSliceConstEnbs++1" or enb_data == "MeanNumSliceConstEnbs"):
-        fig.update_yaxes(range=[0, np.log10(15)])
-      elif (enb_data == "MeanAddNumEnbs" or enb_data == "MeanAddNumEnbsw0" or enb_data == "NumAddNumEnbsw0"):
-        fig.update_yaxes(range=[0, np.log10(10)])
-      elif enb_data == "NumAddNumEnbs":
-        fig.update_yaxes(range=[0, np.log10(6)])
-      elif enb_data == "MaxAddEnbs":
-        fig.update_yaxes(range=[0, np.log10(25)])
-      elif enb_data == "NumEnbs":
-        fig.update_yaxes(range=[0, np.log10(35)])
-    else:
-      if (enb_data == "NumSliceMaxEnbs" or enb_data == "MeanNumSliceConstEnbs++1" or enb_data == "MeanNumSliceConstEnbs"):
-        fig.update_yaxes(range=[0, 15])
-      elif (enb_data == "MeanAddNumEnbs" or enb_data == "MeanAddNumEnbsw0" or enb_data == "NumAddNumEnbsw0"):
-        fig.update_yaxes(range=[0, 10])
-      elif enb_data == "NumAddNumEnbs":
-        fig.update_yaxes(range=[0, 6])
-      elif enb_data == "MaxAddEnbs":
-        fig.update_yaxes(range=[0, 25])
-      elif enb_data == "NumEnbs":
-        fig.update_yaxes(range=[0, 35])
-
-    fig.write_image(images_dir+"/"+"enb_ilptype_"+enb_data+".svg", height= height, width= width)
-
-    all_enb_hist.to_excel(images_dir+"/"+'enb_data.xlsx', sheet_name= 'ILPCompare')
-
-    tmp = np.unique(all_enb_hist.index.get_level_values("min_snr_used").tolist())
-
-    for n in tmp:
-      tmp_enb_hist = all_enb_hist.xs(n, level='min_snr_used')
-
-      shape = [genf.MODES_NEW_NAMES[m.lower()] for m in tmp_enb_hist.index.get_level_values("ILP").tolist()]
-
-      facet = tmp_enb_hist.index.get_level_values("Power").tolist()
-
-      fig = px.histogram(tmp_enb_hist, x= 'NumEnbs', height= height, width= width, labels= {"x" : "Number eNBs" ,"pattern_shape" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "color": "Solver Type"},
-                        title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', category_orders={"color": genf.MODES_NEW_NAMES.values(), "line_dash": snr_order})
-
-      fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
-    return
-    """
 
   print('Plotting throughput.')
 
@@ -1990,11 +1879,6 @@ def hist_ues_slice():
     users_t_m = genf.gen_users_t_m(chosen_seed, lambda_poisson = lambda_poisson_gen_users_t_m, num_slices=num_slices) 
     ues_per_slice = genf.gen_ue_per_slice(chosen_seed, users_t_m, num_slices=num_slices)
 
-  #fig = px.histogram(tmp_enb_hist, x= 'NumEnbs', height= height, width= width, labels= {"x" : "Number eNBs" ,"color" : "Min Snr Used (dB)", "Mean": "Mean of Used Enbs", "facet_col": "Power", "pattern_shape": "ILP Type"},
-  #                    title= f"NumEnbs in each Simulation - {n} Min SNR", pattern_shape= shape, barmode = 'group', facet_col= facet, category_orders={"color": ["5", "10", "15"]})
-
-  #fig.write_image(images_dir+"/"+f"enb_ilptype_{n}hist.svg", height= height, width= width)
-
 
 if __name__ == "__main__":
   os.chdir("/home/juliano/Documentos/LTE-Scenarios-Simulation/Functions")
@@ -2045,16 +1929,6 @@ if __name__ == "__main__":
                         **kwargs)#Disaster and micropower as **kwargs
 
   print(f'Total time: {(time.time() - init)/(60*60)} hours.')
-  #comparing_interference(chosen_seeds=chosen_seeds, mode='fixed', project_dir=project_dir, sim_dir=sim_dir, csv_dir=csv_dir, images_dir=images_dir,
-  #                       extra_config_name=extra_config_name, extra_dir=extra_dir, height=height, width=width, cov=cov,
-  #                       **kwargs)
-
-  #comparing_video_powers(chosen_seeds= chosen_seeds, modes= modes, micro_powers= [30], project_dir= project_dir, sim_dir = sim_dir, csv_dir= csv_dir, images_dir= images_dir,
-  #                      extra_config_name= extra_config_name, extra_dir = ['disaster_percentage'], height= height, width= width, cov= cov,
-  #                       **{'disaster_percentage': disaster_percentage})#Disaster as **kwarg
-
-  #users_t_m = genf.gen_users_t_m(chosen_seed, lambda_poisson = lambda_poisson_gen_users_t_m, num_slices=num_slices)     
-  #ues_per_slice = genf.gen_ue_per_slice(chosen_seed, users_t_m, num_slices=num_slices)
 
   print('Done.')
   

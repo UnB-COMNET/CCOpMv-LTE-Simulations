@@ -3,7 +3,6 @@ import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 import time
 from joblib import Parallel, delayed, parallel_backend
-from multiprocessing import Process, Semaphore
 import general_functions as genf
 
 def main():

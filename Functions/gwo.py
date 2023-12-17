@@ -1,5 +1,3 @@
-from statistics import mean, stdev
-from tabnanny import verbose
 import numpy as np
 from typing import Callable, List, Optional
 import geometry as geo
