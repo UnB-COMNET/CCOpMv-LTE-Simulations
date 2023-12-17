@@ -5,9 +5,6 @@ import os
 import plotly.graph_objects as go
 
 
-
-
-
 def comparing_performance(chosen_seeds, min_sinr, solutions_dir, modes, extra_dir, **kwargs):
     for param in extra_dir:
         solutions_dir += '/' + (f'{param}_{kwargs[param]}' if param in kwargs else '')
