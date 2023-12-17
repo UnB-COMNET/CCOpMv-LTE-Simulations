@@ -1,20 +1,3 @@
-"""import plotly.graph_objects as go
-import plotly.io as pio
-# Dados para o eixo x e y
-x = list(range(1, 13))
-y = [28, 56, 91, 122, 151, 184, 155, 126, 102, 73, 41, 12]
-
-# Criação do gráfico
-fig = go.Figure(data=[go.Bar(x=x, y=y)])
-
-
-# Configuração dos eixos e legendas
-fig.update_layout(xaxis=dict(title=dict(text='Fatia de tempo', font=dict(size=26))), yaxis_title=dict(text='Quantidade de usuários', font=dict(size=26)))
-
-#Exportando gráfico como svg
-pio.write_image(fig, 'graph.svg', format='svg')"""
-
-from cProfile import label
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
@@ -60,9 +43,6 @@ for i in range(matrix.shape[0]):
         x = xmin + (j / matrix.shape[1]) * (xmax - xmin)
         y = ymin + (i / matrix.shape[0]) * (ymax - ymin)
         print(i, j, x, y)
-        ax.text(x, y, str(matrix[i, j]), ha='center', va='center', color='w',bbox=dict(facecolor='gray', alpha=0.5))
-
-
 
 # Exibe a figura
 plt.show()
