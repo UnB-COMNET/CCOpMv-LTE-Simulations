@@ -1,16 +1,42 @@
-from math import log, log10
+from math import log10
 import numpy as np
 import random
 from coordinates import Coordinate
 
-#speed m/s
 def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
                  carrier_frequency: float, ue_coord: Coordinate, tx_coord: Coordinate,
                  cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
                  fading_paths: int = 6, delay_rms: float = 363*10**-9, los: bool = False,
                  scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
                  h_building: float = 20, w_street: float = 20):
+  """
+    Computes the Signal-to-Interference-plus-Noise Ratio (SINR) for a LTE communication link according to the model implementation in the Simu5G simulator (and 3GPP).
 
+    Args:
+        tx_power (float): Transmit power in dBm.
+        tx_gain (float): Transmit gain in dB.
+        rx_gain (float): Receive gain in dB.
+        noise_figure (float): Noise figure in dB.
+        speed (float): Speed of the mobile user in m/s.
+        carrier_frequency (float): Carrier frequency in GHz.
+        ue_coord (Coordinate): Coordinates of the user equipment.
+        tx_coord (Coordinate): Coordinates of the eNB.
+        cable_loss (float, optional): Cable loss in dB (default is 2).
+        thermal_noise (float, optional): Thermal noise level in dBm (default is -104.5).
+        fading_paths (int, optional): Number of fading paths for Jakes fading model (default is 6).
+        delay_rms (float, optional): Root mean square (RMS) delay spread in seconds (default is 363e-9).
+        los (bool, optional): Line-of-sight flag (default is False).
+        scenario (str, optional): Wireless scenario (default is "URBAN_MACROCELL").
+        h_enbs (float, optional): Height of eNodeBs in meters (default is 25).
+        h_ues (float, optional): Height of user equipment in meters (default is 1.5).
+        h_building (float, optional): Height of buildings in meters (default is 20).
+        w_street (float, optional): Width of streets in meters (default is 20).
+
+    Returns:
+        float: SINR in linear scale.
+    
+    Note: This version does not compute interference.
+  """
   fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency, sim_time= 0.001)
 
   attenuation = compute_attenuation(ue_coord, tx_coord, speed, los, scenario, h_enbs, h_ues,
@@ -29,14 +55,29 @@ def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: f
 
 def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_frequency: float,
                   sim_time: float = 0.001):
-  #jakes_map = None
+  """
+    Simulates Jakes fading (approximate) model for a wireless channel according to the model implementation in the Simu5G simulator.
 
-  speed_of_light = 299792458.0
+    Args:
+        fading_paths (int): Number of fading paths.
+        speed (float): Speed of the mobile user (m/s).
+        delay_rms (float): Root mean square (RMS) delay spread (s).
+        carrier_frequency (float): Carrier frequency in GHz.
+        sim_time (float, optional): Simulation time in seconds (default is 0.001).
+
+    Returns:
+        float: Resulting signal power level in dB.
+
+    Note:
+        The function simulates the Jakes fading model, a mathematical model
+        used to describe the effect of multipath propagation in wireless channels.
+  """
+  speed_of_light = 299792458.0            # speed of light (m/s)
 
   #convert carrier frequency from GHz to Hz
-  f = carrier_frequency * 1000000000
+  f = carrier_frequency * 1000000000      # frequency (Hz)
 
-  t = sim_time - 0.001
+  t = sim_time - 0.001                    # time (s)
 
   angle_arrival = []
   delay_spread = []
@@ -74,12 +115,29 @@ def jakes_fadding(fading_paths: int, speed: float, delay_rms: float, carrier_fre
   return result
 
 
-# PATHLOSS + SHADOWING
 def compute_attenuation(ue_coord: Coordinate, tx_coord: Coordinate, speed: int, los: bool,
                         scenario: str, h_enbs: float, h_ues: float, carrier_frequency: float,
                         h_building: float, w_street: float, tolerateMaxDistViolation: bool = False):
+  """
+    Computes the total attenuation for a 3GPP LTE communication link according to the implementation in the Simu5G simulator.
 
-  distance = np.sqrt((ue_coord.x - tx_coord.x)**2 + (ue_coord.y - tx_coord.y)**2 + (ue_coord.z - tx_coord.z)**2)
+    Args:
+        ue_coord (Coordinate): Coordinates of the user equipment.
+        tx_coord (Coordinate): Coordinates of the eNB.
+        speed (int): Speed of the mobile user in m/s.
+        los (bool): Line-of-sight flag.
+        scenario (str): Wireless scenario in 3GPP. This version supports URBAN MACROCELL or URBAN MICROCELL.
+        h_enbs (float): Height of eNBs in meters.
+        h_ues (float): Height of user equipment in meters.
+        carrier_frequency (float): Carrier frequency in GHz.
+        h_building (float): Height of buildings in meters.
+        w_street (float): Width of streets in meters.
+        tolerateMaxDistViolation (bool, optional): Flag to consider maximum distance for model validity (default is False).
+
+    Returns:
+        float: Total attenuation which is the contribution of shadowing and path loss.
+  """
+  distance = np.sqrt((ue_coord.x - tx_coord.x)**2 + (ue_coord.y - tx_coord.y)**2 + (ue_coord.z - tx_coord.z)**2)    # Euclidian distance
   
   attenuation = compute_path_loss(distance, los, scenario, h_enbs, h_ues, carrier_frequency, h_building, w_street,tolerateMaxDistViolation)
 
@@ -89,7 +147,23 @@ def compute_attenuation(ue_coord: Coordinate, tx_coord: Coordinate, speed: int, 
 
 def compute_path_loss(distance: float, los: bool, scenario: str, h_enbs: float, h_ues: float,
                       carrier_frequency: float, h_building: float, w_street: float, tolerateMaxDistViolation: bool = False):
-  
+  """
+    Computes the path loss for a LTE communication link based on the specified 3GPP scenario.
+
+    Args:
+        distance (float): Distance between transmitter and receiver in meters.
+        los (bool): Line-of-sight flag.
+        scenario (str): Wireless scenario in 3GPP. This version supports URBAN MACROCELL or URBAN MICROCELL.
+        h_enbs (float): Height of eNBs in meters.
+        h_ues (float): Height of user equipment in meters.
+        carrier_frequency (float): Carrier frequency in GHz.
+        h_building (float): Height of buildings in meters.
+        w_street (float): Width of streets in meters.
+        tolerateMaxDistViolation (bool, optional): Flag to consider maximum distance for model validity (default is False).
+
+    Returns:
+        float: Path loss in dB.
+  """
   if scenario == "URBAN_MACROCELL":
     path_loss = compute_urban_macro(distance, los, carrier_frequency, h_enbs, h_ues, h_building, w_street,tolerateMaxDistViolation)
   elif scenario == "URBAN_MICROCELL":
@@ -102,7 +176,22 @@ def compute_path_loss(distance: float, los: bool, scenario: str, h_enbs: float, 
 
 def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_enbs: float = 25,
                         h_ues: float = 1.5, h_building: float = 20, w_street: float = 20, tolerateMaxDistViolation: bool = False):
+  """
+    Computes the path loss for an urban macrocell scenario 3GPP.
 
+    Args:
+        distance (float): Distance between transmitter and receiver in meters.
+        los (bool): Line-of-sight flag.
+        carrier_frequency (float): Carrier frequency in GHz.
+        h_enbs (float, optional): Height of eNBs in meters (default is 25).
+        h_ues (float, optional): Height of user equipment in meters (default is 1.5).
+        h_building (float, optional): Height of buildings in meters (default is 20).
+        w_street (float, optional): Width of streets in meters (default is 20).
+        tolerateMaxDistViolation (bool, optional): Flag to consider maximum distance for model validity (default is False).
+
+    Returns:
+        float: Path loss in dB.
+  """
   speed_of_light = 299792458.0
 
   if distance < 10:
@@ -140,7 +229,20 @@ def compute_urban_macro(distance: float, los: bool, carrier_frequency: float, h_
 
 def compute_urban_micro(distance: float, los: bool, carrier_frequency: float, h_enbs: float = 25,
                         h_ues: float = 1.5, tolerateMaxDistViolation: bool = False):
-  
+  """
+    Computes the path loss for an urban microcell scenario 3GPP.
+
+    Args:
+        distance (float): Distance between transmitter and receiver in meters.
+        los (bool): Line-of-sight flag.
+        carrier_frequency (float): Carrier frequency in GHz.
+        h_enbs (float, optional): Height of eNBs in meters (default is 25).
+        h_ues (float, optional): Height of user equipment in meters (default is 1.5).
+        tolerateMaxDistViolation (bool, optional): Flag to consider maximum distance for model validity (default is False).
+
+    Returns:
+        float: Path loss in dB.
+  """
   speed_of_light = 299792458.0
 
   if distance < 10:
@@ -171,7 +273,18 @@ def compute_urban_micro(distance: float, los: bool, carrier_frequency: float, h_
     return att
 
 def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
+  """
+    Computes log-normal shadowing for a wireless communication link.
 
+    Args:
+        distance (float): Distance between transmitter and receiver in meters.
+        speed (float): Speed of the mobile station in m/s.
+        los (bool): Line-of-sight flag.
+        scenario (str): Wireless scenario ("URBAN_MACROCELL" or "URBAN_MICROCELL").
+
+    Returns:
+        float: Log-normal shadowing in dB.
+  """
   std_dev = 0
 
   if scenario == "URBAN_MACROCELL":
@@ -181,20 +294,58 @@ def compute_shadowing(distance: float, speed: float, los: bool, scenario: str):
     if los: std_dev = 3
     else: std_dev = 4
 
-  #Get the log normal shadowing with std deviation stdDev
+  #Get the log normal shadowing with std deviation
   att = random.normalvariate(0, std_dev)
 
-  #Not computing case considering ue moviment
   return att
 
-def linear_to_db(linear: float):
+def linear_to_db(linear: float) -> float:
+  """
+  Converts a linear value to decibels (dB).
+
+  Args:
+      linear (float): Linear value.
+
+  Returns:
+      float: Value in decibels (dB).
+  """
   return 10 * np.log10(linear)
 
-def linear_to_dbm(linear: float):
-  return 10 * log10(1000 * linear)
 
-def dbm_to_linear(db: float):
-  return pow(10, (db - 30) / 10)
+def linear_to_dbm(linear: float) -> float:
+    """
+    Converts a linear value to decibels-milliwatts (dBm).
 
-def db_to_linear(db: float):
-  return pow(10, db/10)
+    Args:
+        linear (float): Linear value.
+
+    Returns:
+        float: Value in decibels-milliwatts (dBm).
+    """
+    return 10 * log10(1000 * linear)
+
+
+def dbm_to_linear(db: float) -> float:
+    """
+    Converts a decibels-milliwatts (dBm) value to linear.
+
+    Args:
+        db (float): Value in decibels-milliwatts (dBm).
+
+    Returns:
+        float: Linear value.
+    """
+    return pow(10, (db - 30) / 10)
+
+
+def db_to_linear(db: float) -> float:
+    """
+    Converts a decibels (dB) value to linear.
+
+    Args:
+        db (float): Value in decibels (dB).
+
+    Returns:
+        float: Linear value.
+    """
+    return pow(10, db / 10)

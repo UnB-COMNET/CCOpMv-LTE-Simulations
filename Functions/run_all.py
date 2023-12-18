@@ -1,4 +1,4 @@
-# Version 19/01/2023
+# Version 16/12/2023
 
 from math import ceil
 from typing import List
@@ -22,14 +22,15 @@ semaphore_cpucount = Manager().Semaphore(cpu_count())
 
 def main():
     #General configs
-    chosen_seeds = [2,3,4,5,6,7,10,11,12,13] #range(20)
+    chosen_seeds = [2,6,10,12,13,14,15,21,22,24,25]
+
     size_x = 4000
     size_y = 4000
     size_sector = 400
     n_macros = 1
     min_sinrs = [5,10,15]
-    modes = ['pgwo2'] # fixed or single or ga or gwo
-    micro_power = 30 #dBm
+    modes = ['single','fixed','pgwo2','ga']  # Op: fixed, single, ga or pgwo2
+    micro_power = 30                         # Transmission power (dBm)
     result_dir = "Solutions"
     project_dir = '../Network_CCOpMv'
     sim_dir = '_5G/simulations'
@@ -42,28 +43,28 @@ def main():
     
     #Solver configs
     move_config_name = 'ilp_move_users'
-    min_dis = 2000 #Enlace de radio na pratica (m)
-    first_antenna_region = None #Pega uma posição possível aleatória
-    min_time = 2 #Tempo minimo que um antena deve existir ate ser movida
-    disaster_percentage = 0 #Porcentagem do alastramento do desastre (%)
+    min_dis = 2000                      # maximum distance assumed for fixed or radio link (m)
+    first_antenna_region = None         # Index of region of the first network node (i.e.,first vehicle)
+    min_time = 2                        # minimum waiting time to move a vehicle (measured in timeslots)
+    disaster_percentage = 0             # disaster spread percentage (0% to 100%)
 
     #Simulation configs
     net_dir = '_5G/networks'
-    num_bands = [100]
-    repetitions = 1
-    slice_time = 1 #s
+    num_bands = [100]                   # number of bands or resource blocks in LTE networks
+    repetitions = 1                     # number of repetitions
+    slice_time = 1                      # timeslot duration in simulation time (s)
     #multi_carriers = False #Keep False
     #is_micro = True #Keep True
-    p_size = 1428 #bytes (for voip = 40)
-    app = "video" #video or voip
+    p_size = 1428                       # packet size (bytes)
+    app = "video"                       # application type: video or voip
     extra_config_name= "video"
-    target_f = 10 #Mbps
-    cmdenv_config = True #Redirects cmdenv outputs to a file
-    interference = False #Enables or disables multicell-interference
+    target_f = 10                       # Target throughput, used by the Video Streaming application (Mbps)
+    cmdenv_config = True                # Redirects cmdenv outputs to a file
+    interference = False                # Enables or disables multicell-interference
 
     # For the user
-    allrun_solver = False # Older version where runs all solvers first
-    only_solver = False # Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
+    allrun_solver = False               # Older version where runs all solvers first
+    only_solver = False                 # Option to run only the solver and never the simulator. Cannot be True if allrun_solver is True.
 
     if only_solver == True and allrun_solver == True:
         print("The option only_solver connot be True if allrun_solver is also True.")

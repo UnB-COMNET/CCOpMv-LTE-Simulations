@@ -11,8 +11,16 @@ from sinr_comput import compute_sinr
 from coordinates import Coordinate, PolarCoordinate
 
 class Region:
-    """"""
     def __init__(self,index, num_users, max_users, serving_antennas):
+        """
+        Initialize a Region instance.
+
+        Args:
+            index (int): Region index.
+            num_users (int): Number of users in the region.
+            max_users (int): Maximum number of users served by antenna of the respective region.
+            serving_antennas (List[int]): List of serving antennas region ID in the region.
+        """
         self.index = index
         self.num_users = num_users
         self.max_users = max_users
@@ -20,10 +28,26 @@ class Region:
         self.num_serving_antennas = len(serving_antennas)
 
     def setServingAntennas(self, serving_antennas):
+        """
+        Set the serving antennas for the region.
+
+        Args:
+            serving_antennas (List[int]): List of serving antenna region ID in the region.
+        """
         self.serving_antennas = serving_antennas
         self.num_serving_antennas = len(serving_antennas)
 
     def __str__(self) -> str:
+        """
+        Return a string representation of the Region instance.
+        The format is:
+            Region {index}
+            Num users: {number of users}
+            Serving antennas: {serving antenna region ID}
+
+        Returns:
+            str: String representation of the Region instance.
+        """
         return f"Region {self.index}\n\tNum users: {self.num_users}\n\tServing antennas: {self.serving_antennas}"
 
 
@@ -415,7 +439,6 @@ class MapChess:
         self.map_ues[coord2Region(coord,self.size_sector,self.size_x,self.size_y)].append(Ue(coord,index,speed,dir))
 
     def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60, ues_per_slice: list = []):
-        # TODO: completar a documentacao
         """Places UEs across the map based on the informed type"""
         #Full = 4320 UEs
         startTimeArray = n_ues_macro*[-1]
@@ -684,7 +707,7 @@ class MapChess:
             enb_coord = self.region2Coord(enb_region)
             for ue_coord in regions_centers:
 
-                #Considerando DL
+                # Considering Downlink
                 tx_gain = self.gain_enb
                 rx_gain = self.gain_ue
 
@@ -708,6 +731,17 @@ class Centroid:
         self.ues = []
 
     def placeUEs(self,numUE, radius, radius_ues):
+        """
+        Place UEs around the centroid (circular region).
+
+        Args:
+            numUE (int): Number of UEs to place.
+            radius (float): Radius for Macrocell placement.
+            radius_ues (float): Radius for UEs placement around macrocell.
+
+        Returns:
+            None
+        """
         for n in range(numUE):
             macrocell = Macrocell(self.center)
             coord_macrocell = placeObject(macrocell,radius,0)
@@ -718,7 +752,12 @@ class Centroid:
             self.ues.append(ue)
     
     def getUEsPositionList(self) -> List[Coordinate]:
-        '''Documentation'''
+        """
+        Get the positions of UEs in the centroid (circular region).
+
+        Returns:
+            List[Coordinate]: List of UE positions.
+        """
         if not self.ues:
             print("There are no UEs in the smallcell")
             return []
@@ -729,10 +768,20 @@ class Centroid:
 
         return list_coordinate
 
-def exportMap():
-    None
-
 def region2Coord( region_id: int, size_sector: float, size_x: float, size_y: float, z: float = 0) -> Coordinate:
+    """
+    Convert a region ID to coordinates (x,y,z) corresponding.
+
+    Args:
+        region_id (int): Region ID.
+        size_sector (float): Side size of the square sector in meters.
+        size_x (float): x dimension size of the considered map in meters.
+        size_y (float): y dimension size of the considered map in meters.
+        z (float, optional): z dimension coordinate (default is 0).
+
+    Returns:
+        Coordinate: Corresponding coordinates (x,y,z).
+    """
     n_sectors_x = int(size_x/size_sector)
     n_sectors_y = int(size_y/size_sector)
     coord = Coordinate(
@@ -742,6 +791,18 @@ def region2Coord( region_id: int, size_sector: float, size_x: float, size_y: flo
     return coord
 
 def coord2Region( coord: Coordinate, size_sector: float, size_x: float, size_y: float,) -> int:
+    """
+    Convert coordinates (x,y,z) to the corresponding region ID.
+
+    Args:
+        coord (Coordinate): Coordinates.
+        size_sector (float): Side size of the square sector in meters.
+        size_x (float): x dimension size of the considered map in meters.
+        size_y (float): y dimension size of the considered map in meters.
+
+    Returns:
+        int: Corresponding region ID.
+    """
     n_sectors_x = int(size_x/size_sector)
     n_sectors_y = int(size_y/size_sector)
     line = int(coord.y/size_sector)

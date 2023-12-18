@@ -1,4 +1,5 @@
 class Coordinate:
+    """ Define a structure for coordinates (x,y,z)"""
     def __init__(self, x, y, z = 0):
         self.x = x
         self.y = y
@@ -35,6 +36,9 @@ class Coordinate:
         return Coordinate(abs(self.x), abs(self.y), abs(self.z))
 
 class PolarCoordinate:
+    """
+    Define a structure for polar coordinates (r, phi).
+    """
     def __init__(self, r, phi):
         self.r = r
         self.phi = phi

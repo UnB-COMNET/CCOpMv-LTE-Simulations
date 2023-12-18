@@ -3,7 +3,6 @@ import _5G_Scenarios.ILP_configs as ilpc
 import subprocess
 import time
 from joblib import Parallel, delayed, parallel_backend
-from multiprocessing import Process, Semaphore
 import general_functions as genf
 
 def main():
@@ -45,7 +44,18 @@ def main():
       run_simulation_all_slices(ini_path= ini_path_sliced, config_name= config_name_sliced)
 
 def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: List[str], cpu_num: int = 1, run_numbers: List[int] = []):
-  '''Execute all necessary runs of the Omnet++ configuration of each slice.'''
+  '''Execute all necessary runs of the Omnet++ configuration of each slice.
+  
+    Args:
+        ini_path (str): Path to the INI files.
+        repetitions (int): Number of repetitions.
+        config_name_list (List[str]): List of configuration names.
+        cpu_num (int, optional): Number of CPUs to use (default is 1).
+        run_numbers (List[int], optional): List of run numbers (default is []).
+
+    Returns:
+        None
+  '''
   processes = []
   runs = ['' for i in range(len(config_name_list))]
 
@@ -59,7 +69,17 @@ def run_simulation_per_slice(ini_path: str, repetitions: int, config_name_list: 
   
 
 def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1, run_numbers: List[int] = []):
-  '''Execute all necessary runs of one Omnet++ configuration.'''
+  '''Execute all necessary runs of one Omnet++ configuration.
+  
+    Args:
+        ini_path (str): Path to the INI files.
+        config_name (str): Configuration name.
+        cpu_num (int, optional): Number of CPUs to use (default is 1).
+        run_numbers (List[int], optional): List of run numbers (default is []).
+
+    Returns:
+        None
+  '''
   runs = ''
 
   if len(run_numbers) > 0:
@@ -77,6 +97,18 @@ def run_simulation_all_slices(ini_path: str, config_name: str, cpu_num: int = 1,
   code.check_returncode()
 
 def execute(cpu_num, ini_path,config_name, runs):
+  """
+    Execute a simulation run using Omnet++.
+
+    Args:
+        cpu_num (int): Number of CPUs to use.
+        ini_path (str): Path to the Omnet++ INI file.
+        config_name (str): Name of the Omnet++ configuration.
+        runs (str): Run numbers.
+
+    Returns:
+        None
+  """
   frame_path = genf.get_frameworks_path()
   if runs != '':
     print('runs', runs, config_name)
@@ -90,6 +122,16 @@ def execute(cpu_num, ini_path,config_name, runs):
     print("Processing time ({}): ".format(config_name), end - ini)            
     
 def run_subprocess_multiprocessing(command: str, shell: bool = True):
+  """
+    Run a subprocess command using the multiprocessing module.
+
+    Args:
+        command (str): Command to be executed.
+        shell (bool, optional): Use shell to execute the command (default is True).
+
+    Returns:
+        None
+  """
   code = subprocess.run(command, shell= shell)
   print("-----------------------------------------------------")
   
@@ -97,6 +139,12 @@ def run_subprocess_multiprocessing(command: str, shell: bool = True):
   print("_____________________________________________________")
 
 def run_make():
+  """
+    Run the make command to build the Omnet++ simulation.
+
+    Returns:
+        None
+  """
   frame_path = genf.get_frameworks_path()
   code = subprocess.run(('cd ../Network_CCOpMv\n'
                           rf'opp_makemake -f --deep -O out -KINET4_PROJ={frame_path}/inet4 -KSIMU5G_1_1_0_PROJ={frame_path}/Simu5G-1.1.0 -DINET_IMPORT -I. -I$\(INET4_PROJ\)/src -I$\(SIMU5G_1_1_0_PROJ\)/src -L$\(INET4_PROJ\)/src -L$\(SIMU5G_1_1_0_PROJ\)/src -lINET$\(D\) -lsimu5g$\(D\)'

@@ -11,10 +11,10 @@ MODES_NEW_NAMES = {
     'varying': 'VID',# Varying ILP Deployment
     'single': 'TID',# Traditional ILP Deployment
     'fixed': 'AID',# Additive ILP Deployment
-    'ga': 'PGD',# Predicative GA Deployment
     'pgwo1': 'PGWO-1', #Progressive GWO
-    'pgwo2': 'PGWO-2', 
-    'pgwo3': 'PGWO-3'
+    'pgwo2': 'PGWO', 
+    'pgwo3': 'PGWO-3',
+    'ga': 'PGD'# Predicative GA Deployment
 }
 
 # TODO: Use OmNET absolute path.
@@ -567,7 +567,6 @@ def get_map_of_service(antennas_regions: List[int], metric_map_mn: List[List[flo
                 else:
                     pass
                     #TODO: To implement if minimization is True
-        print("map_of_service", len(map_of_service), map_of_service)
 
     else:
         # The map of service is a list of list where each element indicates the antennas that serve the respective sector

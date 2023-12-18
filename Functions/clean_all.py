@@ -20,6 +20,21 @@ def main():
 
 def clean_all(chosen_seeds: List[int], result_dir: str, project_dir: str, sim_dir: str,
               move_config_name: str, extra_dir: List[str], **kwargs):
+    """
+    Clean a set of simulation files and directories for specified parameters.
+
+    Args:
+        chosen_seeds (List[int]): List of chosen seeds.
+        result_dir (str): Directory for simulation results.
+        project_dir (str): Project directory.
+        sim_dir (str): Directory for simulation files.
+        move_config_name (str): Movement configuration name.
+        extra_dir (List[str]): List of extra directory parameters.
+        **kwargs: Keyword arguments for extra directory parameters.
+
+    Returns:
+        None
+    """
 
     for chosen_seed in chosen_seeds:
         new_result_dir= result_dir
