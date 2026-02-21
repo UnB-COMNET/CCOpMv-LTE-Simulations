@@ -1,3 +1,7 @@
+from app.core.sinr_comput import MapScenarioConfig
+from app.core.geometry import MapSizeConfig
+from app.core.geometry import MapSimulationConfig
+from dataclasses import field
 from typing import List
 import app.core.geometry as geo
 from app.core.sinr_comput import db_to_linear
@@ -21,44 +25,56 @@ import numpy as np
 import app.helpers.general_functions as genf
 from app.solvers import ga
 from app.solvers import gwo
+from dataclasses import dataclass
 
+
+@dataclass
+class MovementUEsConfig:
+    n_macros: int
+    ues_per_slice: list
+    n_ues: int
+
+@dataclass
+class MovementRunConfig:
+    chosen_seed: int
+    ini_path: str
+    config_name: str
+    cpu_num: int = field(default=1)
 
 class MovementSimulationRunner:
     """Runs the movement/mobility simulation: generates .ini, runs OMNeT++, produces .sna snapshot."""
 
-    def __init__(self, ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int,
-                 ues_per_slice: list, n_ues: int, config_name: str = 'ilp_move_users', num_slices: int = 10,
-                 simtime_move: int = 1000, slice_time: int = 1, cpu_num: int = 1):
-        self.ini_path = ini_path
-        self.chosen_seed = chosen_seed
-        self.size_x = size_x
-        self.size_y = size_y
-        self.size_sector = size_sector
-        self.n_macros = n_macros
-        self.ues_per_slice = ues_per_slice
-        self.n_ues = n_ues
-        self.config_name = config_name
-        self.num_slices = num_slices
-        self.simtime_move = simtime_move
-        self.slice_time = slice_time
-        self.cpu_num = cpu_num
+    def __init__(
+        self,
+        run_config: MovementRunConfig,
+        simulation_config: MapSimulationConfig,
+        size_config: MapSizeConfig,
+        scenario_config: MapScenarioConfig,
+        ues_config: MovementUEsConfig,
+        ):
+        self.run_config = run_config
+        self.ues_config = ues_config
+        self.simulation_config = simulation_config
+        self.size_config = size_config
+        self.scenario_config = scenario_config
 
     def run(self) -> None:
         scen = geo.MapChess(
-            size_x=self.size_x, size_y=self.size_y, size_sector=self.size_sector, carrier_frequency=0.7,
-            chosen_seed=self.chosen_seed, num_slices=self.num_slices, simtime_move=self.simtime_move,
-            slice_time=self.slice_time
+            chosen_seed=self.run_config.chosen_seed,
+            size_config=self.size_config,
+            simulation_config=self.simulation_config,
+            scenario_config=self.scenario_config
         )
         ilpc.ilp_move_users(
-            scen, self.ini_path, n_macros=self.n_macros, n_ues_macro=self.n_ues,
-            ues_per_slice=self.ues_per_slice, config_name=self.config_name
+            scen, self.run_config.ini_path, n_macros=self.ues_config.n_macros, n_ues_macro=self.ues_config.n_ues,
+            ues_per_slice=self.ues_config.ues_per_slice, config_name=self.run_config.config_name
         )
-        snapshot_filename = genf.gen_movement_filename(config_name=self.config_name, seed_val=self.chosen_seed, snapshot=True)
+        snapshot_filename = genf.gen_movement_filename(config_name=self.run_config.config_name, seed_val=self.run_config.chosen_seed, snapshot=True)
         open(snapshot_filename, 'w').close()
         frame_path = genf.get_frameworks_path()
         arg = (
             'cd ../Network_CCOpMv\n'
-            f'opp_runall -j{self.cpu_num} ./Network_CCOpMv -f ' + self.ini_path + r' -u Cmdenv -c ' + self.config_name
+            f'opp_runall -j{self.run_config.cpu_num} ./Network_CCOpMv -f ' + self.run_config.ini_path + r' -u Cmdenv -c ' + self.run_config.config_name
             + rf' -n .:{frame_path}/inet4/src:{frame_path}/inet4/examples:{frame_path}/inet4/tutorials:{frame_path}/inet4/showcases:{frame_path}/Simu5G-1.1.0/simulations:{frame_path}/Simu5G-1.1.0/src'
         )
         subprocess.check_output(arg, shell=True)
@@ -274,13 +290,20 @@ def gen_ilp_info(scen: geo.MapChess, ues_per_slice: list, xml_filename: str,
     ).run()
 
 
-def run_movement_simulation(ini_path: str, chosen_seed: int, size_x: int, size_y: int, size_sector: int, n_macros: int,
-                            ues_per_slice: list, n_ues: int, config_name: str = 'ilp_move_users',
-                            num_slices: int = 10, simtime_move: int = 1000, slice_time: int = 1, cpu_num: int = 1) -> None:
+def run_movement_simulation(
+    run_config: MovementRunConfig,
+    simulation_config: MapSimulationConfig,
+    size_config: MapSizeConfig,
+    scenario_config: MapScenarioConfig,
+    ues_config: MovementUEsConfig,
+) -> None:
     """Run movement/mobility simulation: generate .ini, run OMNeT++, produce .sna. Delegates to MovementSimulationRunner."""
     MovementSimulationRunner(
-        ini_path, chosen_seed, size_x, size_y, size_sector, n_macros, ues_per_slice, n_ues,
-        config_name, num_slices, simtime_move, slice_time, cpu_num
+        run_config=run_config,
+        simulation_config=simulation_config,
+        size_config=size_config,
+        scenario_config=scenario_config,
+        ues_config=ues_config,
     ).run()
 
 

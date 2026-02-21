@@ -6,6 +6,7 @@ import app.core.geometry as geo
 import matplotlib.pyplot as plt
 from scipy.stats import poisson
 from random import choice, randint, seed
+from app.run_all import SolutionType
 
 MODES_NEW_NAMES = {
     'varying': 'VID',# Varying ILP Deployment
@@ -59,24 +60,8 @@ class SimulationPaths:
 class UserTrafficGenerator:
     """Generates user counts and UE-per-slice assignments for traffic/mobility."""
 
-    def verify_modes(self, modes: List[str]) -> List[str]:
-        verif_modes = []
-        for mode in modes:
-            if mode.lower() == 'varying':
-                verif_modes.append('varying')
-            elif mode.lower() == 'fixed' or mode.lower() == 'aid':
-                verif_modes.append('fixed')
-            elif mode.lower() == 'single' or mode.lower() == 'tid':
-                verif_modes.append('single')
-            elif mode.lower() == 'ga':
-                verif_modes.append('ga')
-            elif mode.lower() == 'pgwo1':
-                verif_modes.append('pgwo1')
-            elif mode.lower() == 'pgwo2':
-                verif_modes.append('pgwo2')
-            elif mode.lower() == 'pgwo3':
-                verif_modes.append('pgwo3')
-        return np.unique(verif_modes).tolist()
+    def dedup_modes(self, modes: List[SolutionType]) -> List[SolutionType]:
+        return list(set(modes))
 
     def gen_users_t_m(self, seed_val: int, lambda_poisson: int, num_slices: int) -> List[int]:
         lambda_ = lambda_poisson
@@ -166,8 +151,8 @@ def gen_solver_result_filename(result_dir: str, mode: str, min_sinr: int):
 def gen_movement_filename(config_name: str, seed_val: int, snapshot: bool = True):
     return _paths.gen_movement_filename(config_name, seed_val, snapshot)
 
-def verify_modes(modes: List[str]):
-    return _user_traffic.verify_modes(modes)
+def verify_modes(modes: List[SolutionType]):
+    return _user_traffic.dedup_modes(modes)
 
 def gen_csv_path(mode: str, sim_path: str, results_path: str, extra_config_name: str = '', interference: bool = False):
     return _paths.gen_csv_path(mode, sim_path, results_path, extra_config_name, interference)

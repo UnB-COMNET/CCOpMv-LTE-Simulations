@@ -1,53 +1,61 @@
+from dataclasses import field
+from dataclasses import dataclass
 from math import log10
 import numpy as np
 import random
 from app.core.coordinates import Coordinate
 
-def compute_sinr(tx_power:float, tx_gain: float, rx_gain: float, noise_figure: float, speed: float,
-                 carrier_frequency: float, ue_coord: Coordinate, tx_coord: Coordinate,
-                 cable_loss: float = 2, thermal_noise: float = -104.5, #n_bands: int = 6,
-                 fading_paths: int = 6, delay_rms: float = 363*10**-9, los: bool = False,
-                 scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
-                 h_building: float = 20, w_street: float = 20):
+    
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MapScenarioConfig:
+    scenario: str = field(default="URBAN_MACROCELL")
+    h_enbs: float = field(default=25)
+    h_ues: float = field(default=1.5)
+    h_building: float = field(default=20)
+    w_street: float = field(default=20)
+    los: bool = field(default=False)
+    carrier_frequency: float = field(default=0.7)
+    fading_paths: int = field(default=6)
+    delay_rms: float = field(default=363 * 10**-9)
+    thermal_noise: float = field(default=-104.5)
+    cable_loss: float = field(default=2)
+    gain_enb: float = field(default=18)
+    gain_ue: float = field(default=0)
+    ue_noise_figure: float = field(default=7)
+    enb_noise_figure: float = field(default=5)
+    enb_tx_power: float = field(default=46)
+    ue_tx_power: float = field(default=26)
+
+def compute_sinr(speed: float, ue_coord: Coordinate, tx_coord: Coordinate, scenario_config: MapScenarioConfig):
   """
     Computes the Signal-to-Interference-plus-Noise Ratio (SINR) for a LTE communication link according to the model implementation in the Simu5G simulator (and 3GPP).
-
-    Args:
-        tx_power (float): Transmit power in dBm.
-        tx_gain (float): Transmit gain in dB.
-        rx_gain (float): Receive gain in dB.
-        noise_figure (float): Noise figure in dB.
-        speed (float): Speed of the mobile user in m/s.
-        carrier_frequency (float): Carrier frequency in GHz.
-        ue_coord (Coordinate): Coordinates of the user equipment.
-        tx_coord (Coordinate): Coordinates of the eNB.
-        cable_loss (float, optional): Cable loss in dB (default is 2).
-        thermal_noise (float, optional): Thermal noise level in dBm (default is -104.5).
-        fading_paths (int, optional): Number of fading paths for Jakes fading model (default is 6).
-        delay_rms (float, optional): Root mean square (RMS) delay spread in seconds (default is 363e-9).
-        los (bool, optional): Line-of-sight flag (default is False).
-        scenario (str, optional): Wireless scenario (default is "URBAN_MACROCELL").
-        h_enbs (float, optional): Height of eNodeBs in meters (default is 25).
-        h_ues (float, optional): Height of user equipment in meters (default is 1.5).
-        h_building (float, optional): Height of buildings in meters (default is 20).
-        w_street (float, optional): Width of streets in meters (default is 20).
-
-    Returns:
-        float: SINR in linear scale.
     
     Note: This version does not compute interference.
   """
-  fading = jakes_fadding(fading_paths, speed, delay_rms, carrier_frequency, sim_time= 0.001)
+  fading = jakes_fadding(
+    fading_paths=scenario_config.fading_paths, speed=speed, delay_rms=scenario_config.delay_rms, carrier_frequency=scenario_config.carrier_frequency, sim_time= 0.001
+  )
 
-  attenuation = compute_attenuation(ue_coord, tx_coord, speed, los, scenario, h_enbs, h_ues,
-                                    carrier_frequency, h_building, w_street,True)
+  attenuation = compute_attenuation(
+    ue_coord=ue_coord,
+    tx_coord=tx_coord,
+    speed=speed,
+    los=scenario_config.los,
+    scenario=scenario_config.scenario,
+    h_enbs=scenario_config.h_enbs,
+    h_ues=scenario_config.h_enbs,
+    carrier_frequency=scenario_config.carrier_frequency,
+    h_building=scenario_config.h_building,
+    w_street=scenario_config.w_street,
+    tolerateMaxDistViolation=True,
+  )
 
-  recv_power = tx_power
-  recv_power += tx_gain + rx_gain - cable_loss - attenuation
+  recv_power = scenario_config.enb_tx_power
+  recv_power += scenario_config.gain_enb + scenario_config.gain_ue - scenario_config.cable_loss - attenuation
 
   final_recv_power = recv_power + fading
 
-  den = dbm_to_linear(thermal_noise + noise_figure)
+  den = dbm_to_linear(scenario_config.thermal_noise + scenario_config.ue_noise_figure)
 
   snr = final_recv_power - linear_to_dbm(den)
 

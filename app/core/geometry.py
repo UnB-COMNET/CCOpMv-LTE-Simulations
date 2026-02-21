@@ -1,17 +1,31 @@
+from app.core.sinr_comput import MapScenarioConfig
+from dataclasses import dataclass
 from math import cos, pi, sqrt, sin
-from operator import truediv
-import re
 from typing import List, Union, Tuple
 from random import random, seed, normalvariate
-from xmlrpc.client import Boolean
 import matplotlib.pyplot as plt
 import numpy as np
-from numpy import arctan, matrix
+from numpy import arctan
 from app.core.sinr_comput import compute_sinr
 from app.core.coordinates import Coordinate, PolarCoordinate
 
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MapSimulationConfig:
+    num_slices: int
+    simtime_move: int
+    slice_time: int
+
+@dataclass(frozen=True, slots=True, kw_only=True)
+class MapSizeConfig:
+    size_x: int
+    size_y: int
+    size_sector: int
+
+
+
 class Region:
-    def __init__(self,index, num_users, max_users, serving_antennas):
+    def __init__(self, index, num_users, max_users, serving_antennas):
         """
         Initialize a Region instance.
 
@@ -355,65 +369,44 @@ def plotMap(map: MapHexagonal, plotUEs: bool, n_macrocells: int) :
 
 class MapChess:
     """Represents a scenario that divides the map into multiple square shaped regions (sectors)"""
-    def __init__(self, size_x: int = 1000, size_y: int = 1000, size_sector: int = 100,
-                 scenario: str = "URBAN_MACROCELL", h_enbs: float = 25, h_ues: float = 1.5,
-                 h_building: float = 20, w_street: float = 20, los: bool = False,
-                 carrier_frequency: float = 0.7, fading_paths: int = 6, delay_rms: float = 363*10**-9,
-                 thermal_noise: float = -104.5, cable_loss: float = 2, gain_enb: float = 18,
-                 gain_ue: float = 0, ue_noise_figure: float = 7, enb_noise_figure: float = 5,
-                 enb_tx_power: float = 46, ue_tx_power: float = 26, chosen_seed: int = 123,
-                 num_slices: int = 10, simtime_move: int = 1000, slice_time: int = 1) :
+    def __init__(
+        self,
+        chosen_seed: int,
+        simulation_config: MapSimulationConfig, 
+        size_config: MapSizeConfig, 
+        scenario_config: MapScenarioConfig
+        ) :
         """Initializes the scenario based on multiple parameters"""
 
-        self.size_sector = size_sector
-        self.size_x = size_x
-        self.size_y = size_y
-        self.max_length = sqrt(size_x**2 + size_y**2)
-        self.centre_coord = Coordinate(size_x/2,size_y/2)
-        self.n_sectors_x = int(size_x/size_sector)
-        self.n_sectors_y = int(size_y/size_sector)
+        self.size_config = size_config
+        self.max_length = sqrt(size_config.size_x**2 + size_config.size_y**2)
+        self.centre_coord = Coordinate(size_config.size_x/2, size_config.size_y/2)
+        self.n_sectors_x = int(size_config.size_x/size_config.size_sector)
+        self.n_sectors_y = int(size_config.size_y/size_config.size_sector)
         self.n_sectors = self.n_sectors_y*self.n_sectors_x
+        self.chosen_seed = chosen_seed
         
         self.map_antennas = []
-        self.map_ues = [Ue]
+        self.map_ues: list[Ue] = []
 
-        self.scenario = scenario
-        self.h_enbs = h_enbs
-        self.h_ues = h_ues
-        self.h_building = h_building
-        self.w_street = w_street
-        self.los = los
-        self.carrier_frequency = carrier_frequency
-        self.fading_paths = fading_paths
-        self.delay_rms = delay_rms
-        self.thermal_noise = thermal_noise
-        self.cable_loss = cable_loss
-        self.gain_enb = gain_enb
-        self.gain_ue = gain_ue
-        self.ue_noise_figure = ue_noise_figure
-        self.enb_noise_figure = enb_noise_figure
-        self.enb_tx_power = enb_tx_power
-        self.ue_tx_power = ue_tx_power
+        self.scenario_config = scenario_config
 
-        self.chosen_seed = chosen_seed
-        self.num_slices = num_slices
-        self.simtime_move = simtime_move      
-        self.slice_time = slice_time  
+        self.simulation_config=simulation_config 
 
 
     def region2Coord(self, region_id: int, z: float = 0) -> Coordinate:
         """Returns the central coordinate of a region (sector)"""
         coord = Coordinate(
-            self.size_sector*(region_id%self.n_sectors_x)+self.size_sector/2,
-            self.size_sector*int(region_id/self.n_sectors_y)+self.size_sector/2,
+            self.size_config.size_sector*(region_id%self.n_sectors_x)+self.size_config.size_sector/2,
+            self.size_config.size_sector*int(region_id/self.n_sectors_y)+self.size_config.size_sector/2,
             z)
         return coord
 
     def coord2Region(self, coord: Coordinate) -> int:
         """Returns the number of the region (sector) that contains the informed coordinate"""
-        line = int(coord.y/self.size_sector)
+        line = int(coord.y/self.size_config.size_sector)
         line = line if line < self.n_sectors_x else self.n_sectors_x-1
-        column = int(coord.x/self.size_sector)
+        column = int(coord.x/self.size_config.size_sector)
         column = column if column < self.n_sectors_y else self.n_sectors_y-1
 
         region_id = line*self.n_sectors_x + column
@@ -436,19 +429,20 @@ class MapChess:
             for r in range(self.n_sectors):
                 self.map_ues.append([])
         
-        self.map_ues[coord2Region(coord,self.size_sector,self.size_x,self.size_y)].append(Ue(coord,index,speed,dir))
+        self.map_ues[coord2Region(coord, self.size_config.size_sector, self.size_config.size_x, self.size_config.size_y)].append(Ue(coord,index,speed,dir))
 
-    def placeUEs(self, type:str = "Full", small_per_macro:int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60, ues_per_slice: list = []):
+    def placeUEs(self, type: str = "Full", small_per_macro: int = 1, fixed: bool = False, n_macros = 5, n_ues_macro = 60, ues_per_slice: list = []):
         """Places UEs across the map based on the informed type"""
         #Full = 4320 UEs
+        slice_time_move = int(self.simulation_config.simtime_move/self.simulation_config.num_slices)
+
         startTimeArray = n_ues_macro*[-1]
         for slice in range(len(ues_per_slice)):
             for ue in ues_per_slice[slice]:
                 if startTimeArray[ue] == -1:
-                    startTimeArray[ue] = slice*(self.simtime_move/self.num_slices)
+                    startTimeArray[ue] = slice*(slice_time_move)
          
         count = 0
-        slice_time_move = int(self.simtime_move/self.num_slices)
         mean_speed = int(3000/slice_time_move)                  # base velocity: 3000 mps
         var_speed = int(1000/slice_time_move)            
         self.map_ues = []
@@ -458,9 +452,9 @@ class MapChess:
             self.map_ues.append([])
 
         if type == "Full":
-            ues = self.uesFullMapHexa_(small_per_macro= small_per_macro, n_ues_macro= n_ues_macro)
+            ues = self.uesFullMapHexa_(small_per_macro=small_per_macro, n_ues_macro=n_ues_macro)
         elif type == "Random":
-            ues = self.uesRandomMapHexa_(small_per_macro= small_per_macro, n_macros = n_macros, n_ues_macro = n_ues_macro)
+            ues = self.uesRandomMapHexa_(small_per_macro=small_per_macro, n_macros=n_macros, n_ues_macro=n_ues_macro)
         else: 
             ues = []
 
@@ -513,7 +507,7 @@ class MapChess:
         tmp_mcs: List[Macrocell] = []
 
         for i in range(n_macros):
-            tmp_mcs.append(Macrocell(Coordinate(random()*(self.size_x - 2*margin)+margin, random()*(self.size_y - 2*margin)+margin)))
+            tmp_mcs.append(Macrocell(Coordinate(random()*(self.size_config.size_x - 2*margin)+margin, random()*(self.size_config.size_y - 2*margin)+margin)))
             for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
                     tmp_smc.append(Smallcell(pos_small))
@@ -543,10 +537,10 @@ class MapChess:
         d_x = d_macromacro*cos(1*pi/6)
         d_y = d_macromacro*sin(1*pi/6)
         
-        coord_x = self.size_sector/2
-        while(coord_x < self.size_x):
-            coord_y = self.size_sector/2
-            while(coord_y < self.size_y):
+        coord_x = self.size_config.size_sector/2
+        while(coord_x < self.size_config.size_x):
+            coord_y = self.size_config.size_sector/2
+            while(coord_y < self.size_config.size_y):
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
                 for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
@@ -555,10 +549,10 @@ class MapChess:
                 coord_y += d_macromacro
             coord_x += 2*d_x
 
-        coord_x = self.size_sector/2+d_x
-        while(coord_x < self.size_x):
-            coord_y = self.size_sector/2+d_y
-            while(coord_y < self.size_y):
+        coord_x = self.size_config.size_sector/2+d_x
+        while(coord_x < self.size_config.size_x):
+            coord_y = self.size_config.size_sector/2+d_y
+            while(coord_y < self.size_config.size_y):
                 tmp_mcs.append(Macrocell(Coordinate(coord_x, coord_y)))
                 for i in range (small_per_macro):
                     pos_small = placeObject(tmp_mcs[-1],d_macromacro*0.425,d_macrocluster)
@@ -608,12 +602,12 @@ class MapChess:
         """Verifies if the coordinate is within the delimited map"""
         if (coord.x < 0):
             coord.x = 0
-        if (coord.x > self.size_x):
-            coord.x = self.size_x
+        if (coord.x > self.size_config.size_x):
+            coord.x = self.size_config.size_x
         if (coord.y < 0):
             coord.y = 0
-        if (coord.y > self.size_y):
-            coord.y = self.size_y
+        if (coord.y > self.size_config.size_y):
+            coord.y = self.size_config.size_y
         return coord
 
     def plotUes(self, external: bool = False, ues_positions: List[Coordinate] = None):
@@ -708,18 +702,16 @@ class MapChess:
             for ue_coord in regions_centers:
 
                 # Considering Downlink
-                tx_gain = self.gain_enb
-                rx_gain = self.gain_ue
+                tx_gain = self.scenario_config.gain_enb
+                rx_gain = self.scenario_config.gain_ue
 
-                noise_figure = self.ue_noise_figure
+                noise_figure = self.scenario_config.ue_noise_figure
 
                 sinr = compute_sinr(
-                    tx_power = self.enb_tx_power, tx_gain= tx_gain, rx_gain= rx_gain, noise_figure= noise_figure, speed= 0,
-                    carrier_frequency= self.carrier_frequency, ue_coord= ue_coord,
-                    tx_coord= enb_coord, cable_loss= self.cable_loss, thermal_noise= self.thermal_noise,
-                    fading_paths= self.fading_paths, delay_rms= self.delay_rms, los= self.los,
-                    scenario= self.scenario, h_enbs= self.h_enbs, h_ues= self.h_ues,
-                    h_building= self.h_building, w_street= self.w_street
+                    speed= 0,
+                    ue_coord= ue_coord,
+                    tx_coord= enb_coord,
+                    scenario_config=self.scenario_config
                 )
                 sinr_map[enb_region].append(sinr)
 
@@ -790,7 +782,7 @@ def region2Coord( region_id: int, size_sector: float, size_x: float, size_y: flo
         z)
     return coord
 
-def coord2Region( coord: Coordinate, size_sector: float, size_x: float, size_y: float,) -> int:
+def coord2Region( coord: Coordinate, size_sector: float, size_x: float, size_y: float) -> int:
     """
     Convert coordinates (x,y,z) to the corresponding region ID.
 

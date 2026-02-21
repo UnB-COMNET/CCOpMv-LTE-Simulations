@@ -14,6 +14,7 @@ dependencies = [
     "pygad>=3.0",
     "ortools>=9.8",
     "scikit-learn>=1.3",
+    "opp-env"
 ]
 
 [project.optional-dependencies]
