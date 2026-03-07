@@ -14,7 +14,8 @@ MODES_NEW_NAMES = {
     'pgwo1': 'PGWO-1', #Progressive GWO
     'pgwo2': 'PGWO', 
     'pgwo3': 'PGWO-3',
-    'ga': 'PGD'# Predicative GA Deployment
+    'ga': 'PGD',# Predicative GA Deployment,
+    'unif': 'UNIF'
 }
 
 # TODO: Use OmNET absolute path.
@@ -64,6 +65,8 @@ def verify_modes(modes: List[str]):
             verif_modes.append('pgwo2')
         elif mode.lower() == 'pgwo3':
             verif_modes.append('pgwo3')
+        elif mode.lower() == 'unif':
+            verif_modes.append('unif')
 
     return np.unique(verif_modes).tolist()
 
@@ -620,6 +623,21 @@ def gen_users_t_m(seed, lambda_poisson, num_slices):
     return user_t_m
 
 def gen_ue_per_slice(chosen_seed, user_t_m, num_slices):
+    """ Generates the set of existing UEs in each timeslot, identifying them by a unique number.
+
+        The amount of UE increases over time until it reaches a maximun and then it decreases.
+        Eache UE is uniquely identified by an itenger in a sequence from 0 to the maximum number of UEs.
+
+        Example: There are 5 timeslots, with the following EU quantities, respectively: 3, 5, 7, 4, 2.
+        In general, there are 7 UEs becasue that is the maximum in the scenario.
+        Timeslot 0: 4, 5, 6                         (3 UEs)
+        Timeslot 1: 4, 5, 6, 0, 2                   (5 UEs)
+        Timeslot 2: 4, 5, 6, 0, 2, 1, 3             (7 UEs)
+        Timeslot 3: 4, 5, 6, 3                      (4 UEs)
+        Timeslot 4: 6, 3                            (2 UEs)
+        I.e., UE 4 is active from 0 to timeslot 3. Otherwise, UE 2 is active from 1 to timeslot 2.
+    
+    """
     max_user_t_m = max(user_t_m)
     ue_list = max_user_t_m*[0]
     
