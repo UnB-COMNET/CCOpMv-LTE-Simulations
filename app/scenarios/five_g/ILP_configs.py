@@ -29,10 +29,9 @@ def ilp_move_users(scen: geo.MapChess, filename: str, n_macros: int = 2, n_ues_m
 
   #Dict with the parameters used (must be the first operation in the function)
   dict_args = locals()
-
   scen.placeUEs(type= "Random", n_macros= n_macros, n_ues_macro = n_ues_macro, ues_per_slice = ues_per_slice)
-  size_x = scen.size_x
-  size_y = scen.size_y
+  size_x = scen.size_config.size_x
+  size_y = scen.size_config.size_y
   seed = scen.chosen_seed
 
   ues_coords = scen.getUEsPositionList()
@@ -44,17 +43,17 @@ def ilp_move_users(scen: geo.MapChess, filename: str, n_macros: int = 2, n_ues_m
   
   num_ues = len(ues_coords)
 
-  simtime_slice = int(scen.simtime_move/scen.num_slices)
+  simtime_slice = int(scen.simulation_config.simtime_move/scen.simulation_config.num_slices)
   speed_mean = int(3000/simtime_slice)
   speed_std_dev = int(1000/simtime_slice)
-  
+
   with open(filename, 'wt') as f:
     hp.writeCommentConfigILP(f, "ilp_move_users", dict_args, extra = 'Using {} macros with {} ues each.'.format(n_macros, num_ues))
     hp.defaultGeneral(f, is5g= True)
     hp.makeNewConfig(f, name= config_name)
     #hp.writeCmdevExpressMode(f, expressMode = True)
     hp.writeNetwork(f, network= '_5G.networks.SimpleNet')
-    hp.writeTime(f, time = scen.simtime_move, repeat= 1)
+    hp.writeTime(f, time = scen.simulation_config.simtime_move, repeat= 1)
     hp.writeSeeds(f, num_rngs= 2, seeds= [seed])
     hp.nl(f)
     hp.writeOutput(f, "${resultdir}/${configname}/${repetition}")
@@ -63,7 +62,7 @@ def ilp_move_users(scen: geo.MapChess, filename: str, n_macros: int = 2, n_ues_m
     hp.writeSeparation(f, "Transmission Power")
     hp.writeTransmissionPower(f, is5G= True)
     hp.writeSeparation(f, "Channel Control")
-    hp.writeCarrierAggregation5G(f,carriers_frequencies = [scen.carrier_frequency])
+    hp.writeCarrierAggregation5G(f,carriers_frequencies = [scen.scenario_config.carrier_frequency])
     hp.writeSeparation(f, "Channel Model")
     hp.writeChannelModel5G(f, tolerateMaxDistViolation= True, extCell_interference= False)
     hp.writeSeparation(f, "Resource Blocks")
@@ -982,7 +981,7 @@ def ilp_sliced_ini_per_slice(scen: geo.MapChess, filename: str, n_macros: int = 
   return config_name_list, num_enbs_time
 
 
-def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2, net_dir: str= '_5G/networks', project_dir: str= '../Network_CCOpMv'):
+def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, image:str =None, n_enbs: int = 2, net_dir: str= '_5G/networks'):
   """This function generates a .ned file to create a network with multiple UEs and eNBs.
   
   The network created include the default and necessary submodules to ensure a correct Simu5G simulation.
@@ -995,10 +994,9 @@ def ilp_ned(network:str = "ILPFixedNet", size_y:int =8000, size_x:int =8000, ima
     image: string representing the image path to be used as a background
     n_enbs: the number of eNBs composing the network
     net_dir: directory containing the network
-    project_dir: directory of the omnet++ project
   """
 
-  filename = f"{project_dir}/{net_dir}/{network}.ned"
+  filename = f"{net_dir}/{network}.ned"
 
   with open(filename, 'wt') as f:
     hned.writeBaseImports(f, is5g= True, snapshot= True, net_dir= net_dir)

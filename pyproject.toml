@@ -3,7 +3,7 @@ name = "lte-scenarios-simulation"
 version = "0.1.0"
 description = "LTE/5G scenarios simulation and ILP solvers"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.13"
 dependencies = [
     "numpy>=1.24",
     "matplotlib>=3.7",

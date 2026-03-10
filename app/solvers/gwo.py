@@ -227,7 +227,7 @@ def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[i
 
         _wolf = Wolf(antennas_regions, users_regions, dimension, scenario, None, None, None) # The wolf represents the current scenario
         for dim in range(dimension):
-            coord = geo.region2Coord(antennas_regions[dim],scenario.size_sector, scenario.size_x, scenario.size_y)
+            coord = geo.region2Coord(antennas_regions[dim],scenario.size_config.size_sector, scenario.size_config.size_x, scenario.size_config.size_y)
             _wolf.setPosition(dim, coord.x, coord.y)
         _wolf.setFitnessFunction(fitness_func)
         _wolf.updateFitness(np.array([],dtype='int64'), users_regions)           # update fitness nao teve ter antenas já instaladas, pois _wolf já as implementa
@@ -241,7 +241,7 @@ def pgwo_solver(scenario: geo.MapChess, num_regions: int, users_t_m: List[List[i
                 if solution.fitness != -np.infty:
                     print("Best solution: ", solution)                    
                     for n in range(len(solution.position)):
-                        antennas_map[geo.coord2Region(solution.position[n], scenario.size_sector, scenario.size_x, scenario.size_y)] = 1
+                        antennas_map[geo.coord2Region(solution.position[n], scenario.size_config.size_sector, scenario.size_config.size_x, scenario.size_config.size_y)] = 1
                     print(f"Antennas in slice {i}: ", np.ravel(np.argwhere(np.array(antennas_map) > 0)))
                     results.append(np.ravel(np.argwhere(np.array(antennas_map) > 0)))
                     print("Results: ", results)
@@ -418,17 +418,17 @@ def run_gwo(scenario: geo.MapChess, antennas_regions, users_regions, pack_size: 
                 if verbose == True and population[n].id in wolf_list: print("Xnew", Xnew.position[j])
                 
                 # Mirroring
-                while Xnew.position[j].x < 0 or Xnew.position[j].x > scenario.size_x:
+                while Xnew.position[j].x < 0 or Xnew.position[j].x > scenario.size_config.size_x:
                     if Xnew.position[j].x < 0:
                         Xnew.position[j].x = -Xnew.position[j].x
                     else:
-                        Xnew.position[j].x = 2*scenario.size_x - Xnew.position[j].x
+                        Xnew.position[j].x = 2*scenario.size_config.size_x - Xnew.position[j].x
 
-                while Xnew.position[j].y < 0 or Xnew.position[j].y > scenario.size_y:
+                while Xnew.position[j].y < 0 or Xnew.position[j].y > scenario.size_config.size_y:
                     if Xnew.position[j].y < 0:
                         Xnew.position[j].y = -Xnew.position[j].y
                     else:
-                        Xnew.position[j].y = 2*scenario.size_y - Xnew.position[j].y
+                        Xnew.position[j].y = 2*scenario.size_config.size_y - Xnew.position[j].y
 
                 if verbose == True and population[n].id in wolf_list: print("\n")
             
@@ -478,7 +478,7 @@ def check_constraints(wolf_position: List[geo.Coordinate], antennas_regions, use
     """
     global _map_of_service          # NOTE: Por que usar a palavra chave global aqui, mas não para o _antennasmap_m?
     installed_antennas = antennas_regions
-    wolf_antennas = [geo.coord2Region(wolf_position[i], scenario.size_sector, scenario.size_x, scenario.size_y) for i in range(len(wolf_position))]
+    wolf_antennas = [geo.coord2Region(wolf_position[i], scenario.size_config.size_sector, scenario.size_config.size_x, scenario.size_config.size_y) for i in range(len(wolf_position))]
     """if (np.array_equal(antennas_regions, np.array([7,21,54,59,70,76]))) and wolf_antennas == [85]:
         print(antennas_regions, wolf_antennas, "verbose is True")
         verbose = True
@@ -650,7 +650,7 @@ def fitness_pgwo3(wolf_position: List[geo.Coordinate], antennas_regions, users_r
             sum_u_tm += u_tm
 
         wmse /= sum_u_tm
-        eccentricity = genf.get_coordinate_eccentricity(scenario, [geo.region2Coord(i, scenario.size_sector, scenario.size_x, scenario.size_y) 
+        eccentricity = genf.get_coordinate_eccentricity(scenario, [geo.region2Coord(i, scenario.size_config.size_sector, scenario.size_config.size_x, scenario.size_config.size_y) 
                             for i in antennas_regions.tolist()])
         score = 10000*(1/(math.sqrt(wmse)))*eccentricity
     else:

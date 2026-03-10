@@ -1,3 +1,4 @@
+from app.constants import SolutionType
 class InvalidMode(Exception):
     pass
 
@@ -7,10 +8,19 @@ class InvalidResult(Exception):
 class SolutionNotFeasible(Exception):
     pass
 
-def check_mode(mode: str):
+VALID_MODES = {
+    SolutionType.PGWO,
+    SolutionType.PGWO2,
+    SolutionType.PGWO3,
+    SolutionType.GA,
+    SolutionType.ILP_FIXED,
+    SolutionType.ILP_SINGLE,
+    SolutionType.ILP_VARYING
+}
+
+def check_mode(mode: SolutionType):
     '''Checks if the mode passed as argument is valid. Raises an InvalidMode exception if not valid.'''
-    if mode != 'varying' and mode != 'fixed' and mode != 'single' and mode != 'tid' and \
-       mode != 'aid' and mode != 'ga' and mode != 'pgwo' and mode != 'pgwo2' and mode != 'pgwo3':
+    if mode not in VALID_MODES:
         raise(InvalidMode('Mode is not varying, fixed, single, ga, pgwo or pgwo2.'))
 
 class ErrorPackage:

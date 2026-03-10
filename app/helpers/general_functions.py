@@ -6,7 +6,7 @@ import app.core.geometry as geo
 import matplotlib.pyplot as plt
 from scipy.stats import poisson
 from random import choice, randint, seed
-from app.run_all import SolutionType
+from app.constants import SolutionType
 
 MODES_NEW_NAMES = {
     'varying': 'VID',# Varying ILP Deployment
@@ -21,13 +21,6 @@ MODES_NEW_NAMES = {
 
 class SimulationPaths:
     """Groups path and filename generation for simulations, results, and configs."""
-
-    # TODO: Use OmNET absolute path.
-    def get_frameworks_path(self) -> str:
-        user = 'juliano'
-        if user == 'juliano':
-            return r'../../../OmNET2'
-        return r'../..'
 
     def gen_file_name(self, mode: str, min_sinr: int) -> str:
         return f'ilp_{mode}_sliced_{min_sinr}'
@@ -131,10 +124,6 @@ class UserTrafficGenerator:
 
 _paths = SimulationPaths()
 _user_traffic = UserTrafficGenerator()
-
-
-def get_frameworks_path():
-    return _paths.get_frameworks_path()
 
 def gen_file_name(mode: str, min_sinr: int):
     return _paths.gen_file_name(mode, min_sinr)
@@ -722,9 +711,9 @@ def get_coordinate_eccentricity(scen: geo.MapChess, coords: List[geo.Coordinate]
 
 
 def dist2NearestBoundary(scen: geo.MapChess, coord: geo.Coordinate):
-    upper_boundary_dist = scen.size_y - coord.y
+    upper_boundary_dist = scen.size_config.size_y - coord.y
     bottom_boundary_dist = coord.y
     left_boundary_dist = coord.x
-    right_boundary_dist = scen.size_x - coord.x
+    right_boundary_dist = scen.size_config.size_x - coord.x
 
     return min([upper_boundary_dist, bottom_boundary_dist, left_boundary_dist, right_boundary_dist])

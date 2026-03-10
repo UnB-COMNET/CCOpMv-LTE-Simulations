@@ -1,5 +1,6 @@
 # Version 16/12/2023
 
+from app.constants import SolutionType
 from app.gen_ilp_info import MovementUEsConfig
 from app.core.sinr_comput import MapScenarioConfig
 from app.core.geometry import MapSizeConfig
@@ -7,7 +8,7 @@ from app.core.geometry import MapSimulationConfig
 from app.gen_ilp_info import MovementRunConfig
 from math import ceil
 from typing import List, Tuple
-from app.gen_ilp_info import run_movement_simulation, gen_ilp_info
+from app.gen_ilp_info import run_movement_simulation, gen_solution
 from multiprocessing import cpu_count, Process, current_process, Manager, Queue
 from app.scenarios.five_g.ILP_configs import (
     ilp_sliced_ini,
@@ -32,14 +33,7 @@ from enum import StrEnum
 
 SUCCESS = "SUCCESS"
 
-semaphore_cpucount = Manager().Semaphore(cpu_count())
-
-
-class SolutionType(StrEnum):
-    GA = "ga"
-    PGWO2 = "pgwo2"
-    ILP_FIXED = "fixed"
-    ILP_SINGLE = "single"
+semaphore_cpucount = Manager().Semaphore(int(cpu_count() * 2 / 3))
 
 
 @dataclass
@@ -48,9 +42,9 @@ class ScenarioConfig:
     size_y: int = field(default=4000)
     size_sector: int = field(default=400)
     n_macros: int = field(default=1)
-    min_sinrs: List[int] = field(default=[5, 10, 15])
+    min_sinrs: List[int] = field(default_factory=lambda: [5, 10, 15])
     modes: List[SolutionType] = field(
-        default=[
+        default_factory=lambda: [
             SolutionType.ILP_SINGLE,
             SolutionType.ILP_FIXED,
             SolutionType.PGWO2,
@@ -67,7 +61,7 @@ class ScenarioConfig:
     first_antenna_region: int = field(default=None)
     min_time: int = field(default=2)
     disaster_percentage: int = field(default=0)
-    num_bands: List[int] = field(default=[100])
+    num_bands: List[int] = field(default_factory=lambda: [100])
     repetitions: int = field(default=1)
     slice_time: int = field(default=1)
     p_size: int = field(default=1428)
@@ -82,7 +76,6 @@ class ScenarioConfig:
 
 @dataclass
 class RunConfig:
-    allrun_solver: bool = field(default=False)
     only_solver: bool = field(default=False)
 
 
@@ -94,7 +87,7 @@ class DirectoryConfig:
     net_dir: str = field(default="_5G/networks")
     result_dir: str = field(default="Solutions")
     extra_dir: List[str] = field(
-        default=["disaster_percentage", "micro_power", "chosen_seed"]
+        default_factory=lambda: ["disaster_percentage", "micro_power", "chosen_seed"]
     )
 
 
@@ -123,11 +116,6 @@ class SimulationPipeline:
 
     def run(self):
         """Run the full pipeline for all configured seeds and modes."""
-        if self.only_solver and self.allrun_solver:
-            print(
-                "The option only_solver cannot be True if allrun_solver is also True."
-            )
-            return
         result = run_multiple_seeds(
             chosen_seeds=self.chosen_seeds,
             scenario_config=self.scenario_config,
@@ -159,19 +147,9 @@ def run_multiple_seeds(
 ):
     """This function is used to run multiple 'run_all' functions in diferent processes, one for each value in chosen_seeds."""
 
-    # Generating makefile and compiling OMNeT++ and its frameworks
-    if not run_config.only_solver:
-        print("\nRunning makefile.")
-        run_make()
-    else:
-        print("Solver only option selected.")
-        if run_config.allrun_solver:
-            # BUG: The option in this case is not correctly implemented, so better not allow using it.
-            # It is necessary to deal with simultaneous large memory and CPU usage.
-            print(
-                "Error: Not possible to run with both allrun_solve and only_solver set to True."
-            )
-            return
+    print("\nRunning makefile.")
+    run_make()
+
 
     # Evaluating maximum runs
     num_seeds = len(chosen_seeds)
@@ -188,69 +166,37 @@ def run_multiple_seeds(
         )
     )
 
-    # TODO: REMOVE. Changing the results directory hierarchy
-    # TODO: REMOVE. extra_dir = extra_dir + ['chosen_seed']
-    """
-    if allrun_solver is True:
-        # Checking for the existence of optimizer solution files and running solver for non-existent ones using parallel computing
-        missing_snapshots = get_missing_snapshots(chosen_seeds, move_config_name)
-        run_missing_snapshots(missing_snapshots, size_x, size_y, size_sector, n_macros, project_dir,sim_dir, move_config_name, num_slices)
-    
-        missing_solutions = get_missing_solutions(chosen_seeds, min_sinrs, modes, extra_dir, micro_power, disaster_percentage)
-        print("There are {} missing solutions.".format(len(missing_solutions)))
-        for i in range(len(missing_solutions)):
-            print(missing_solutions[i])
-        if len(missing_solutions) > num_cases_simultaneously:
-            kwargs_tmp = {'result_dir': result_dir, 'sim_dir': sim_dir, 'chosen_seed': chosen_seeds, 'micro_power': micro_power, 'disaster_percentage': disaster_percentage}
-            run_missing_solutions(missing_solutions, size_x, size_y, size_sector, n_macros, result_dir, move_config_name, min_dis, first_antenna_region, min_time, micro_power, num_slices, extra_dir, kwargs_tmp)        
-    """
     print("Running {} cases simultaneously.".format(num_cases_simultaneously))
 
-    if run_config.allrun_solver:
-        print("\nRunnning cases by seeds one by one.")
-        for i in range(len(chosen_seeds)):
-            print("CHOSEN SEED: {}".format(chosen_seeds[i]))
-            result = run_all(
-                chosen_seed=chosen_seeds[i],
-                scenario_config=scenario_config,
-                run_config=run_config,
-                directory_config=directory_config,
+    processes = []
+    queue = Queue()
+    for chosen_seed in chosen_seeds:
+        processes.append(
+            Process(
+                target=run_all,
+                kwargs={
+                    "chosen_seed": chosen_seed,
+                    "scenario_config": scenario_config,
+                    "run_config": run_config,
+                    "directory_config": directory_config,
+                    "queue": queue,
+                },
             )
-            if result == SUCCESS:
-                chosen_seeds.remove(chosen_seeds[i])
-            else:
-                print("Error in cases with seed {}.".format(chosen_seeds[i]))
+        )
+        processes[-1].start()
 
+    for p in processes:
+        p.join()
+
+    errors = []
+    while not queue.empty():
+        errors.append(queue.get())
+
+    if errors == []:
+        chosen_seeds = []
     else:
-        processes = []
-        queue = Queue()
-        for chosen_seed in chosen_seeds:
-            processes.append(
-                Process(
-                    target=run_all,
-                    kwargs={
-                        "chosen_seed": chosen_seed,
-                        "scenario_config": scenario_config,
-                        "run_config": run_config,
-                        "directory_config": directory_config,
-                        "queue": queue,
-                    },
-                )
-            )
-            processes[-1].start()
-
-        for p in processes:
-            p.join()
-
-        errors = []
-        while not queue.empty():
-            errors.append(queue.get())
-
-        if errors == []:
-            chosen_seeds = []
-        else:
-            for error in errors:
-                print(error)
+        for error in errors:
+            print(error)
 
     if chosen_seeds == []:
         return SUCCESS
@@ -268,10 +214,9 @@ def run_all(
     """This function is used to run all steps of a scenario study, using one process for each case diferent scenario,
     determined by the mode and min_sinrs."""
 
-    if not run_config.allrun_solver:
-        print(
-            f"Started process run_all {current_process().name} {current_process().pid}. (Seed: {chosen_seed})"
-        )
+    print(
+        f"Started process run_all {current_process().name} {current_process().pid}. (Seed: {chosen_seed})"
+    )
 
     verif_modes = genf.verify_modes(scenario_config.modes)
 
@@ -311,17 +256,17 @@ def run_all(
         scenario_config.move_config_name, chosen_seed, snapshot=True
     )
 
-    simulation_config=MapSimulationConfig(
+    simulation_config = MapSimulationConfig(
         num_slices=scenario_config.num_slices,
         simtime_move=scenario_config.simtime_move,
         slice_time=scenario_config.slice_time,
     )
-    size_config=MapSizeConfig(
+    size_config = MapSizeConfig(
         size_x=scenario_config.size_x,
         size_y=scenario_config.size_y,
         size_sector=scenario_config.size_sector,
     )
-    ues_config=MovementUEsConfig(
+    ues_config = MovementUEsConfig(
         n_macros=scenario_config.n_macros,
         ues_per_slice=ues_per_slice,
         n_ues=max_ues,
@@ -336,31 +281,21 @@ def run_all(
                 print(f"Movement profile already simulated. Results in {xml_filename}.")
             # If not done, do it
             else:
-                if run_config.only_solver:
-                    print(
-                        f"Error: Moviment profile missing (Seed: {chosen_seed}) with only_solver True. Returning."
-                    )
-                    return
-                else:
-                    move_ini_path = (
-                        directory_config.project_dir
-                        + "/"
-                        + directory_config.sim_dir
-                        + "/"
-                        + move_filename
-                    )
-                    run_movement_simulation(
-                        run_config=MovementRunConfig(
-                            chosen_seed=chosen_seed,
-                            ini_path=move_ini_path,
-                            config_name=scenario_config.move_config_name,
-                            cpu_num=1,
-                        ),
-                        simulation_config=simulation_config,
-                        size_config=size_config,
-                        scenario_config=MapScenarioConfig(),
-                        ues_config=ues_config,
-                    )
+                print("Running moviment simulations.")
+                move_ini_path = directory_config.sim_dir + "/" + move_filename
+                Path(directory_config.sim_dir).mkdir(parents=True, exist_ok=True)
+                run_movement_simulation(
+                    run_config=MovementRunConfig(
+                        chosen_seed=chosen_seed,
+                        ini_path=move_ini_path,
+                        config_name=scenario_config.move_config_name,
+                        cpu_num=1,
+                    ),
+                    simulation_config=simulation_config,
+                    size_config=size_config,
+                    scenario_config=MapScenarioConfig(),
+                    ues_config=ues_config,
+                )
 
         except Exception:
             if queue is not None:
@@ -385,7 +320,7 @@ def run_all(
         "mode": None,
         "xml_filename": xml_filename,
         "result_dir": directory_config.result_dir,
-        "min_dis":  scenario_config.min_dis,
+        "min_dis": scenario_config.min_dis,
         "first_antenna_region": scenario_config.first_antenna_region,
         "sim_dir": directory_config.sim_dir,
         "num_bands": scenario_config.num_bands,
@@ -403,8 +338,8 @@ def run_all(
         "project_dir": directory_config.project_dir,
         "per_slice": scenario_config.per_slice,
         "disaster_percentage": scenario_config.disaster_percentage,
-        "allrun_solver": run_config.allrun_solver,
         "interference": scenario_config.interference,
+        "only_solver": run_config.only_solver
     }
 
     for param in directory_config.extra_dir:
@@ -414,37 +349,16 @@ def run_all(
         directory_config.csv_dir += "/" + param + f"_{kwargs[param]}"
 
     Path(kwargs["result_dir"]).mkdir(parents=True, exist_ok=True)
-    Path(directory_config.project_dir + "/" + kwargs["sim_dir"]).mkdir(parents=True, exist_ok=True)
-    Path(directory_config.project_dir + "/" + kwargs["net_dir"]).mkdir(parents=True, exist_ok=True)
-    Path(directory_config.project_dir + "/" + directory_config.csv_dir).mkdir(parents=True, exist_ok=True)
+    Path(kwargs["project_dir"]).mkdir(parents=True, exist_ok=True)
+    Path(kwargs["sim_dir"]).mkdir(parents=True, exist_ok=True)
+    Path(kwargs["net_dir"]).mkdir(parents=True, exist_ok=True)
+    Path(directory_config.csv_dir).mkdir(parents=True, exist_ok=True)
 
     print(f"Starting computations on {cpu_count()} cores.")
 
     failed_modes = []
     processes = []
     mode_queues = {}
-    """
-    if allrun_solver:
-        # BUG: The option in this case is not correctly implemented, so better not allow using it.
-        # It is necessary to deal with simultaneous large memory and CPU usage.   
-        # TODO: REMOVE this block.
-        with parallel_backend('loky', n_jobs= num_cases_simultaneously):
-            result = Parallel()(delayed(process_func)(chosen_seed, size_x, size_y, size_sector, n_macros, n_ues, ues_per_slice, min_sinr, mode, xml_filename, min_dis,
-                                                      first_antenna_region, project_dir, sim_dir, net_dir, num_bands, repetitions, p_size, app,
-                                                      target_f, result_dir, slice_time, multi_carriers, is_micro,extra_config_name, cmdenv_config,
-                                                      min_time, micro_power, num_slices, per_slice, disaster_percentage, allrun_solver)
-                                                      for mode, min_sinr in cases)
-                                                                                            
-        for i in range(len(result)):
-            if result[i] != SUCCESS:
-                mode, min_sinr = cases[i]
-                print('Error in case: mode {} and min SINR {}.'.format(mode, min_sinr))
-                if mode not in failed_modes: failed_modes.append(mode)
-    """
-
-    kwargs["only_solver"] = run_config.only_solver
-    kwargs["ues_per_slice"] = ues_per_slice
-    kwargs["max_ues"] = max_ues
     for mode in verif_modes:
         mode_queues[mode] = Queue()
 
@@ -478,8 +392,8 @@ def run_all(
                     )
                     get_csv(
                         mode=mode,
-                        sim_path=directory_config.project_dir + "/" + kwargs["sim_dir"],
-                        results_path=directory_config.project_dir + "/" + directory_config.csv_dir,
+                        sim_path=kwargs["sim_dir"],
+                        results_path=directory_config.csv_dir,
                         extra_config_name=scenario_config.extra_config_name,
                         interference=scenario_config.interference,
                     )
@@ -499,7 +413,7 @@ def process_func(
     simulation_config: MapSimulationConfig,
     ues_config: MovementUEsConfig,
     min_sinr: int,
-    mode: str,
+    mode: SolutionType,
     xml_filename: str,
     min_dis: int,
     first_antenna_region: int,
@@ -520,17 +434,15 @@ def process_func(
     micro_power: int = 30,
     per_slice: bool = True,
     disaster_percentage: int = 0,
-    allrun_solver: bool = False,
     queue: Queue = None,
     only_solver: bool = False,
     interference: bool = False,
 ):
     """This function defines the behaviour of each process, running both the solver and the simulation of a single scenario."""
-    if not allrun_solver:
-        print(
-            f"Started process process_func {current_process().name} {current_process().pid}. (Seed: {chosen_seed}, Mode: {mode}, Min_sinr: {min_sinr})"
-        )
-        semaphore_cpucount.acquire()
+    print(
+        f"Started process process_func {current_process().name} {current_process().pid}. (Seed: {chosen_seed}, Mode: {mode}, Min_sinr: {min_sinr})"
+    )
+    semaphore_cpucount.acquire()
 
     try:
         print(
@@ -540,7 +452,7 @@ def process_func(
         check_mode(mode=mode)
 
         file_name = genf.gen_file_name(mode=mode, min_sinr=min_sinr)
-        sim_path = project_dir + "/" + sim_dir
+        sim_path = sim_dir
 
         # Verifying if solver is already done
         done = compare_last_line(
@@ -568,7 +480,7 @@ def process_func(
 
         else:
             # Running solver
-            gen_ilp_info(
+            gen_solution(
                 scen=scen,
                 ues_per_slice=ues_config.ues_per_slice,
                 xml_filename=xml_filename,
@@ -639,7 +551,6 @@ def process_func(
                         size_x=size_config.size_x,
                         size_y=size_config.size_y,
                         net_dir=net_dir,
-                        project_dir=project_dir,
                     )
 
             else:
@@ -673,7 +584,6 @@ def process_func(
                     size_x=size_config.size_x,
                     size_y=size_config.size_y,
                     net_dir=net_dir,
-                    project_dir=project_dir,
                 )
 
             if interference:
@@ -709,14 +619,14 @@ def process_func(
                         ini_path=ini_path_sliced,
                         repetitions=repetitions,
                         config_name_list=config_name_sliced_list,
-                        cpu_num=cpu_count() if allrun_solver else 1,
+                        cpu_num=int(cpu_count() * 2 / 3),
                         run_numbers=run_numbers,
                     )
                 else:
                     run_simulation_all_slices(
                         ini_path=ini_path_sliced,
                         config_name=config_name_sliced,
-                        cpu_num=cpu_count() if allrun_solver else 1,
+                        cpu_num=int(cpu_count() * 2 / 3),
                         run_numbers=run_numbers,
                     )
 
@@ -733,8 +643,7 @@ def process_func(
         return
 
     finally:
-        if not allrun_solver:
-            semaphore_cpucount.release()
+        semaphore_cpucount.release()
 
     return SUCCESS
 

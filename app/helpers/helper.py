@@ -419,7 +419,7 @@ def writeTransmissionPower(f, ue_power: int = 24, enb_power: int = 46, micro_pow
 
   1. *is5G*: if true uses Simu5G else SimuLTE (default False)
   """
-  f.write("**.ueTxPower = {}\n**.eNodeBTxPower = {}\n**.microTxPower = {}\n".format(ue_power, enb_power, micro_power))
+  f.write("**.ueTxPower = {} dBm\n**.eNodeBTxPower = {} dBm\n**.microTxPower = {} dBm\n".format(ue_power, enb_power, micro_power))
   if is5G:
     f.write("**.cellularNic.phy.txDirection = {}\n".format(txDirection))
   else:
@@ -452,15 +452,16 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
   uplink_interference = '${Inter}'
 
   f.write(('**.cellularNic.LteChannelModelType = "{}"\n'
+           '**.cellularNic.mac.d2dCapable = "true"\n'
            '**.cellularNic.channelModel[*].building_height = {}\n'
            '**.cellularNic.channelModel[*].nodeb_height = {}\n'
            '**.cellularNic.channelModel[*].ue_height = {}\n'
            '**.cellularNic.channelModel[*].street_wide = {}\n'
            '**.cellularNic.channelModel[*].fading_type = {}\n'
            '**.cellularNic.channelModel[*].extCell_interference = {}\n'
-           '**.cellularNic.channelModel[*].antennGainEnB = {}\n'
-           '**.cellularNic.channelModel[*].antennGainMicro = {}\n'
-           '**.cellularNic.channelModel[*].antennaGainUe = {}\n'
+           '**.cellularNic.channelModel[*].antennGainEnB = {} dBi\n'
+           '**.cellularNic.channelModel[*].antennGainMicro = {} dBi\n'
+           '**.cellularNic.channelModel[*].antennaGainUe = {} dBi\n'
            '**.cellularNic.channelModel[*].bs_noise_figure = {}\n'
            '**.cellularNic.channelModel[*].cable_loss = {}\n'
            '**.cellularNic.channelModel[*].componentCarrierIndex = {}\n'
@@ -482,7 +483,7 @@ def writeChannelModel5G(f, model_name: str = "LteRealisticChannelModel",  buildi
            '**.cellularNic.channelModel[*].rsrqShift = {}\n'
            '**.cellularNic.channelModel[*].shadowing = {}\n'
            '**.cellularNic.channelModel[*].targetBler = {}\n'
-           '**.cellularNic.channelModel[*].thermalNoise = {}\n'
+           '**.cellularNic.channelModel[*].thermalNoise = {} dBm\n'
            '**.cellularNic.channelModel[*].tolerateMaxDistViolation = {}\n'
            '**.cellularNic.channelModel[*].ue_noise_figure = {}\n'
            '**.cellularNic.channelModel[*].uplink_interference = {}\n'

@@ -36,8 +36,8 @@ def get_ues_time(scen: MapChess, xml_filename: str) -> List[List[Ue]]:
   accumulated_xml = ''
   ues_time: List[List[Ue]] = []
   
-  simtime_slice = int(scen.simtime_move/scen.num_slices)
-  num_slices = scen.num_slices
+  simtime_slice = int(scen.simulation_config.simtime_move/scen.simulation_config.num_slices)
+  num_slices = scen.simulation_config.num_slices
 
   last_simTime = 1*simtime_slice
   current_simTime = None
