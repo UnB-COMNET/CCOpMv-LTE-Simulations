@@ -17,55 +17,6 @@ For the used algorithms, we adapted two prominent meta-heuristics from literatur
 
 The main entry point orchestrates: **user generation → movement simulation (OMNeT++) → solver (ILP/GA/GWO) → config generation → network simulation (OMNeT++) → CSV export**. One process per seed; within each seed, one process per (mode, min_sinr).
 
-```mermaid
-flowchart LR
-    subgraph Config["Config"]
-        SEEDS["chosen_seeds"]
-        MODES["modes\n(single, fixed, varying, ga, pgwo2)"]
-        MIN_SINRS["min_sinrs\n(5, 10, 15 dB)"]
-        MAP["size_x, size_y, size_sector, n_macros"]
-    end
-
-    subgraph Step1["1. User & movement"]
-        POISSON["gen_users_t_m\n(Poisson)"]
-        UE_SLICE["ues_per_slice"]
-        MOVE_INI["ilp_move_users\n(.ini)"]
-        OMNET_MOVE["OMNeT++\nmovement run"]
-        SNAPSHOT[".sna\n(UE positions)"]
-    end
-
-    subgraph Step2["2. Solver"]
-        MAP_CHESS["MapChess\nscenario"]
-        SINR_MAP["getSinrMap()"]
-        USERS_T_M["get_map_ues_time\n(users_t_m)"]
-        SOLVER["ILP / GA / GWO"]
-        RESULT_TXT["result_*.txt\n(eNB placement)"]
-    end
-
-    subgraph Step3["3. Sim config & run"]
-        ILP_INI["ilp_sliced_ini\n(or per_slice)"]
-        ILP_NED["ilp_ned\n(.ned)"]
-        OMNET_SIM["OMNeT++\nsimulation"]
-        SCAVETOOL["scavetool → CSV"]
-    end
-
-    Config --> POISSON
-    POISSON --> UE_SLICE
-    UE_SLICE --> MOVE_INI
-    MOVE_INI --> OMNET_MOVE
-    OMNET_MOVE --> SNAPSHOT
-    SNAPSHOT --> MAP_CHESS
-    MAP_CHESS --> SINR_MAP
-    SNAPSHOT --> USERS_T_M
-    SINR_MAP --> SOLVER
-    USERS_T_M --> SOLVER
-    SOLVER --> RESULT_TXT
-    RESULT_TXT --> ILP_INI
-    ILP_INI --> ILP_NED
-    ILP_NED --> OMNET_SIM
-    OMNET_SIM --> SCAVETOOL
-```
-
 ---
 
 ### Data flow summary
