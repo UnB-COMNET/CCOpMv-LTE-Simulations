@@ -9,3 +9,8 @@
 **SimuLTE:** 1.2.0
 
 **Simu5G:** 1.1.0
+
+### Authors
+
+@GiordanoSM
+@julianobp
